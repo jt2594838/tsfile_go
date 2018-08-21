@@ -27,7 +27,7 @@ func (r *PageDataReader) HasNext() bool {
 }
 
 func (r *PageDataReader) Next() datatype.TimeValuePair {
-	panic("unimplemented")
+	panic("to be implemented")
 }
 
 func (r *PageDataReader) SkipCurrentTimeValuePair() {

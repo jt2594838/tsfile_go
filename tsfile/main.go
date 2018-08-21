@@ -4,11 +4,10 @@ package main
 import (
 	"log"
 	"strconv"
-
-	//	"tsfile/encoding/decoder"
-	//	"tsfile/file/metadata/enums"
+	_ "tsfile/encoding/decoder"
+	_ "tsfile/file/metadata/enums"
 	"tsfile/timeseries/read"
-	//	"tsfile/timeseries/read/reader/impl"
+	_ "tsfile/timeseries/read/reader/impl"
 )
 
 func main() {
@@ -22,32 +21,34 @@ func main() {
 	f.Open("D:/E2E/iot/iotdb/tsfile-hxd_thanos/test.ts")
 	defer f.Close()
 
-	magicString := f.ReadHeadMagic()
-	log.Println(magicString)
+	headerString := f.ReadHeadMagic()
+	log.Println("Header string: " + headerString)
 
-	metadata := f.ReadFileMetadata()
-	log.Println(metadata.CurrentVersion)
+	tailerString := f.ReadTailMagic()
+	log.Println("Tail string: " + tailerString)
+
+	_ = f.ReadFileMetadata()
+	//log.Println("File version: " + strconv.Itoa(metadata.CurrentVersion))
 
 	groupHeader := f.ReadRowGroupHeader()
 	//for f.HasNextRowGroup() {
-	log.Println("row group:" + groupHeader.DeltaObjectID)
-	log.Println("chunk number: " + strconv.Itoa(groupHeader.NumberOfChunks))
-	//log.Println(f.pos)
+		log.Println("row group:" + groupHeader.DeltaObjectID)
+		log.Println("chunk number: " + strconv.Itoa(groupHeader.NumberOfChunks))
+		//log.Println(f.pos)
 
-	//for i := 0; i < groupHeader.NumberOfChunks; i++ {
-	chunkHeader := f.ReadChunkHeader()
-	log.Println("chunk: " + chunkHeader.MeasurementID)
-	log.Println("page number: " + strconv.Itoa(chunkHeader.NumberOfPages))
-	//	defaultTimeDecoder := decoder.GetDecoderByType(enums.TS_2DIFF, enums.INT64)
-	//	valueDecoder := decoder.GetDecoderByType(chunkHeader.EncodingType, chunkHeader.DataType)
-	//for j := 0; j < chunkHeader.NumberOfPages; j++ {
-	pageHeader := f.ReadPageHeader()
-	log.Println("points in the page: " + strconv.Itoa(pageHeader.NumberOfValues))
-	log.Println("page data size: " + strconv.Itoa(pageHeader.CompressedSize))
-	//	pageData := f.ReadPage(pageHeader, chunkHeader.CompressionType)
-	//	reader1 := &impl.PageDataReader{DataType: chunkHeader.DataType, ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
-
-	//}
-	//}
+		//for i := 0; i < groupHeader.NumberOfChunks; i++ {
+			chunkHeader := f.ReadChunkHeader()
+			log.Println("chunk: " + chunkHeader.MeasurementID)
+			log.Println("page number: " + strconv.Itoa(chunkHeader.NumberOfPages))
+			//	defaultTimeDecoder := decoder.GetDecoderByType(enums.TS_2DIFF, enums.INT64)
+			//	valueDecoder := decoder.GetDecoderByType(chunkHeader.EncodingType, chunkHeader.DataType)
+			//for j := 0; j < chunkHeader.NumberOfPages; j++ {
+				pageHeader := f.ReadPageHeader()
+				log.Println("points in the page: " + strconv.Itoa(pageHeader.NumberOfValues))
+				log.Println("page data size: " + strconv.Itoa(pageHeader.CompressedSize))
+				//pageData := f.ReadPage(pageHeader, chunkHeader.CompressionType)
+				//reader1 := &impl.PageDataReader{DataType: chunkHeader.DataType, ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
+			//}
+		//}
 	//}
 }

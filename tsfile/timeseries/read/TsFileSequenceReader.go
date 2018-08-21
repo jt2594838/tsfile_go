@@ -5,7 +5,7 @@ import (
 	"encoding/binary"
 	"io"
 
-	//"log"
+	"log"
 	"os"
 	"tsfile/common/conf"
 	"tsfile/file/header"
@@ -31,10 +31,7 @@ func (f *TsFileSequenceReader) Open(file string) {
 		stat, _ := f.fin.Stat()
 		f.size = stat.Size()
 
-		//读出 metadata 的位置（相对于文件结尾）和大小
-		//		metasize_pos := int64(len(conf.MAGIC_STRING)) + 4 //相对于文件结尾
-		//		f.fin.Seek(-metasize_pos, io.SeekEnd)
-
+		// get matadata pos&size
 		buf := make([]byte, 4)
 		_, err := f.fin.ReadAt(buf, f.size-int64(len(conf.MAGIC_STRING))-4)
 		if err == nil {
@@ -42,7 +39,11 @@ func (f *TsFileSequenceReader) Open(file string) {
 			f.metadata_pos = f.size - int64(len(conf.MAGIC_STRING)) - 4 - int64(f.metadata_size)
 		}
 
+		// get pointer ready for reading RowGroupHeader
 		f.pos, _ = f.fin.Seek(int64(len(conf.MAGIC_STRING)), io.SeekStart)
+	} else {
+		log.Println("Failed to open file: " + file)
+		panic(err)
 	}
 }
 
@@ -75,6 +76,8 @@ func (f *TsFileSequenceReader) ReadFileMetadata() *metadata.TsFileMetaData {
 	_, err := f.fin.ReadAt(data, f.metadata_pos)
 	if err == nil {
 		tsMetadata.DeserializeFrom(data)
+	} else {
+		panic(err)
 	}
 
 	return tsMetadata
@@ -85,11 +88,7 @@ func (f *TsFileSequenceReader) HasNextRowGroup() bool {
 }
 
 func (f *TsFileSequenceReader) ReadRowGroupHeader() *header.RowGroupHeader {
-	//	pos := int64(len(conf.MAGIC_STRING))
-	//	f.pos, _ = f.fin.Seek(pos, io.SeekStart)
-
 	header := new(header.RowGroupHeader)
-	//header.DeserializeFrom(bufio.NewReader(f.fin))
 	header.DeserializeFrom(f.fin)
 
 	f.pos += int64(header.SerializedSize)

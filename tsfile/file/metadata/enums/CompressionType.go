@@ -20,51 +20,7 @@ const (
 	PLA          CompressionType = 6
 )
 
-//func (ct CompressionType) Deserialize(i int16) CompressionType {
-//	switch i {
-//	case 0:
-//		return UNCOMPRESSED
-//	case 1:
-//		return SNAPPY
-//	case 2:
-//		return GZIP
-//	case 3:
-//		return LZO
-//	case 4:
-//		return SDT
-//	case 5:
-//		return PAA
-//	default:
-//		return PLA
-//	}
-//}
-
-//func (ct CompressionType) Serialize() int16 {
-//	switch ct {
-//	case UNCOMPRESSED:
-//		return 0
-//	case SNAPPY:
-//		return 1
-//	case GZIP:
-//		return 2
-//	case LZO:
-//		return 3
-//	case SDT:
-//		return 4
-//	case PAA:
-//		return 5
-//	case PLA:
-//		return 6
-//	default:
-//		return 0
-//	}
-//}
-
-func (ct CompressionType) GetSerializedSize() int {
-	return 2
-}
-
-func (ct CompressionType) FindByShortName(name string) CompressionType {
+func (compression CompressionType) FindByShortName(name string) CompressionType {
 	if name == "" {
 		return UNCOMPRESSED
 	}
@@ -88,8 +44,8 @@ func (ct CompressionType) FindByShortName(name string) CompressionType {
 	}
 }
 
-func (ct CompressionType) GetExtension() string {
-	switch ct {
+func (compression CompressionType) GetExtension() string {
+	switch compression {
 	case UNCOMPRESSED:
 		return ""
 	case SNAPPY:

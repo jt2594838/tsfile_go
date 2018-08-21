@@ -3,8 +3,6 @@ package utils
 import (
 	//"bufio"
 	"encoding/binary"
-
-	"log"
 	"math"
 	"os"
 )
@@ -76,12 +74,10 @@ func ReadString(reader *os.File) string {
 	len_bytes := make([]byte, INT_LEN)
 	reader.Read(len_bytes)
 	len := binary.BigEndian.Uint32(len_bytes)
-	log.Println(len)
 
 	data := make([]byte, len)
 	reader.Read(data)
 	result := string(data)
-	log.Println(result)
 
 	return result
 }

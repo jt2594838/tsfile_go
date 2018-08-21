@@ -2,11 +2,11 @@ package metadata
 
 import (
 	"encoding/binary"
-	"log"
+	_ "log"
 )
 
 type TsFileMetaData struct {
-	CurrentVersion int32
+	CurrentVersion int
 
 	/**
 	 * String for application that wrote this file. This should be in the format <Application> version
@@ -20,8 +20,7 @@ type TsFileMetaData struct {
 }
 
 func (f *TsFileMetaData) DeserializeFrom(metadata []byte) {
-	size := binary.BigEndian.Uint32(metadata[0:4])
-	log.Println(size)
+	_ = binary.BigEndian.Uint32(metadata[0:4])
 
 	//        if(size > 0) {
 	//            Map<String, TsDeltaObjectMetadata> deltaObjectMap = new HashMap<>();
