@@ -1,4 +1,4 @@
-package common
+package constant
 
 type EndianType int
 

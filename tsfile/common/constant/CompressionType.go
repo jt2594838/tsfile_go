@@ -1,10 +1,6 @@
-package enums
+package constant
 
 import (
-	//	"bufio"
-	//"log"
-	//"os"
-	//"tsfile/common/utils"
 	"strings"
 )
 

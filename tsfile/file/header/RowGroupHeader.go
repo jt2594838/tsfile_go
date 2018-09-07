@@ -1,22 +1,39 @@
 package header
 
 import (
-	//	"bufio"
-	//"log"
-	"os"
+	_ "bufio"
+	_ "log"
+	_ "os"
+	"tsfile/common/constant"
 	"tsfile/common/utils"
 )
 
 type RowGroupHeader struct {
-	DeltaObjectID  string
-	DataSize       int64
-	NumberOfChunks int
-	SerializedSize int
+	device         string
+	dataSize       int64
+	numberOfChunks int
+	serializedSize int
 }
 
-func (f *RowGroupHeader) DeserializeFrom(reader *os.File) {
-	f.DeltaObjectID = utils.ReadString(reader)
-	f.DataSize = utils.ReadLong(reader)
-	f.NumberOfChunks = utils.ReadInt(reader)
-	f.SerializedSize = utils.INT_LEN + len(f.DeltaObjectID) + utils.LONG_LEN + utils.INT_LEN
+func (h *RowGroupHeader) DeserializeFrom(reader *utils.FileReader) {
+	h.device = reader.ReadString()
+	h.dataSize = reader.ReadLong()
+	h.numberOfChunks = reader.ReadInt()
+	h.serializedSize = constant.INT_LEN + len(h.device) + constant.LONG_LEN + constant.INT_LEN
+}
+
+func (h *RowGroupHeader) GetDevice() string {
+	return h.device
+}
+
+func (h *RowGroupHeader) GetDataSize() int64 {
+	return h.dataSize
+}
+
+func (h *RowGroupHeader) GetNumberOfChunks() int {
+	return h.numberOfChunks
+}
+
+func (h *RowGroupHeader) GetSerializedSize() int {
+	return h.serializedSize
 }

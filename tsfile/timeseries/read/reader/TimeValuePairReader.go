@@ -5,9 +5,11 @@ import (
 )
 
 type TimeValuePairReader interface {
+	Read(data []byte)
+
 	HasNext() bool
 
-	next() datatype.TimeValuePair
+	Next() datatype.TimeValuePair
 
 	SkipCurrentTimeValuePair()
 

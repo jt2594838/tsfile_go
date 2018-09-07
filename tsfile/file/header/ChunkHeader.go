@@ -1,30 +1,58 @@
 package header
 
 import (
-	//	"bufio"
-	//"log"
-	"os"
+	_ "bufio"
+	_ "log"
+	_ "os"
+	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"tsfile/file/metadata/enums"
 )
 
 type ChunkHeader struct {
-	MeasurementID   string
-	DataSize        int
-	DataType        enums.TSDataType
-	CompressionType enums.CompressionType
-	EncodingType    enums.TSEncoding
-	NumberOfPages   int
-	SerializedSize  int
+	sensor          string
+	dataSize        int
+	dataType        constant.TSDataType
+	compressionType constant.CompressionType
+	encodingType    constant.TSEncoding
+	numberOfPages   int
+	serializedSize  int
 }
 
-func (f *ChunkHeader) DeserializeFrom(reader *os.File) {
-	f.MeasurementID = utils.ReadString(reader)
-	f.DataSize = utils.ReadInt(reader)
-	f.DataType = enums.TSDataType(utils.ReadShort(reader))
-	f.NumberOfPages = utils.ReadInt(reader)
-	f.CompressionType = enums.CompressionType(utils.ReadShort(reader))
-	f.EncodingType = enums.TSEncoding(utils.ReadShort(reader))
+func (h *ChunkHeader) DeserializeFrom(reader *utils.FileReader) {
+	h.sensor = reader.ReadString()
+	h.dataSize = reader.ReadInt()
+	h.dataType = constant.TSDataType(reader.ReadShort())
+	h.numberOfPages = reader.ReadInt()
+	h.compressionType = constant.CompressionType(reader.ReadShort())
+	h.encodingType = constant.TSEncoding(reader.ReadShort())
 
-	f.SerializedSize = utils.INT_LEN + len(f.MeasurementID) + utils.LONG_LEN + utils.SHORT_LEN + utils.INT_LEN + utils.SHORT_LEN + utils.SHORT_LEN
+	h.serializedSize = constant.INT_LEN + len(h.sensor) + constant.INT_LEN + constant.SHORT_LEN + constant.INT_LEN + constant.SHORT_LEN + constant.SHORT_LEN
+}
+
+func (h *ChunkHeader) GetSensor() string {
+	return h.sensor
+}
+
+func (h *ChunkHeader) GetDataSize() int {
+	return h.dataSize
+}
+
+func (h *ChunkHeader) GetDataType() constant.TSDataType {
+	return h.dataType
+}
+
+func (h *ChunkHeader) GetCompressionType() constant.CompressionType {
+	return h.compressionType
+}
+
+func (h *ChunkHeader) GetEncodingType() constant.TSEncoding {
+	return h.encodingType
+}
+
+func (h *ChunkHeader) GetNumberOfPages() int {
+	return h.numberOfPages
+}
+
+func (h *ChunkHeader) GetSerializedSize() int {
+	return h.serializedSize
 }

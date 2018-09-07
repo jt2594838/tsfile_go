@@ -1,34 +1,51 @@
 package decoder
 
 import (
-	"os"
-	"tsfile/encoding/common"
-	"tsfile/file/metadata/enums"
+	_ "bytes"
+	"math"
+	_ "os"
+	"strconv"
+	"tsfile/common/constant"
+)
+
+const (
+	RLE        = 0
+	BIT_PACKED = 1
 )
 
 type Decoder interface {
-	HasNext(reader *os.File) bool
-	ReadBool(reader *os.File) bool
-	ReadShort(reader *os.File) int16
-	ReadInt(reader *os.File) int
-	ReadLong(reader *os.File) int64
-	ReadFloat(reader *os.File) float32
-	ReadDouble(reader *os.File) float64
-	//	ReadBinary(reader *os.File) interface{}
-	//	ReadBigDecimal(reader *os.File) interface{}
+	Init(data []byte)
+	HasNext() bool
+	ReadBool() bool
+	ReadShort() int16
+	ReadInt() int
+	ReadLong() int64
+	ReadFloat() float32
+	ReadDouble() float64
+	ReadString() string
+	//	ReadBigDecimal(reader *bytes.Reader) interface{}
 }
 
-func GetDecoderByType(encoding enums.TSEncoding, dataType enums.TSDataType) Decoder {
+func GetDecoderByType(encoding constant.TSEncoding, dataType constant.TSDataType) Decoder {
 	// PLA and DFT encoding are not supported in current version
 	var decoder Decoder
+
 	switch {
-	case encoding == enums.PLAIN:
-		decoder = &PlainDecoder{EndianType: common.LITTLE_ENDIAN}
-		//	case (enums.TSEncoding.RLE && dataType == TSDataType.BOOLEAN):
-		//      	 	decode = new IntRleDecoder(EndianType.LITTLE_ENDIAN)
+	case encoding == constant.PLAIN:
+		decoder = &PlainDecoder{endianType: constant.LITTLE_ENDIAN}
+	case (encoding == constant.TS_2DIFF && dataType == constant.INT32):
+		decoder = new(IntDeltaDecoder)
+	case (encoding == constant.TS_2DIFF && dataType == constant.INT64):
+		decoder = new(LongDeltaDecoder)
+	case ((encoding == constant.RLE || encoding == constant.TS_2DIFF) && (dataType == constant.FLOAT || dataType == constant.DOUBLE)):
+		decoder = &FloatDecoder{encoding: encoding, dataType: dataType}
 	default:
-		panic("Decoder not found")
+		panic("Decoder not found, encoding:" + strconv.Itoa(int(encoding)) + ", dataType:" + strconv.Itoa(int(dataType)))
 	}
 
 	return decoder
+}
+
+func ceil(v int) int {
+	return int(math.Ceil(float64(v) / 8.0))
 }

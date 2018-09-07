@@ -1,29 +1,48 @@
 package header
 
 import (
-	//	"bufio"
-	//"log"
-	"os"
+	_ "bufio"
+	_ "log"
+	_ "os"
+	"tsfile/common/constant"
 	"tsfile/common/utils"
+	"tsfile/file/metadata/statistics"
 )
 
 type PageHeader struct {
-	UncompressedSize int
-	CompressedSize   int
-	NumberOfValues   int
-	//Statistics       Statistics
-	Max_timestamp  int64
-	Min_timestamp  int64
-	SerializedSize int
+	uncompressedSize int
+	compressedSize   int
+	numberOfValues   int
+	max_timestamp    int64
+	min_timestamp    int64
+	statistics       statistics.Statistics
+	serializedSize   int
 }
 
-func (f *PageHeader) DeserializeFrom(reader *os.File) {
-	f.UncompressedSize = utils.ReadInt(reader)
-	f.CompressedSize = utils.ReadInt(reader)
-	f.NumberOfValues = utils.ReadInt(reader)
-	//f.Statistics = utils.ReadInt(reader)
-	f.Max_timestamp = utils.ReadLong(reader)
-	f.Min_timestamp = utils.ReadLong(reader)
+func (h *PageHeader) DeserializeFrom(reader *utils.FileReader, dataType constant.TSDataType) {
+	h.uncompressedSize = reader.ReadInt()
+	h.compressedSize = reader.ReadInt()
+	h.numberOfValues = reader.ReadInt()
+	h.max_timestamp = reader.ReadLong()
+	h.min_timestamp = reader.ReadLong()
 
-	f.SerializedSize = 3*utils.INT_LEN + 2*utils.LONG_LEN // + statistics.getSerializedSize()
+	h.statistics = statistics.DeserializeFrom(reader, dataType)
+
+	h.serializedSize = 3*constant.INT_LEN + 2*constant.LONG_LEN + h.statistics.GetSerializedSize()
+}
+
+func (h *PageHeader) GetUncompressedSize() int {
+	return h.uncompressedSize
+}
+
+func (h *PageHeader) GetCompressedSize() int {
+	return h.compressedSize
+}
+
+func (h *PageHeader) GetNumberOfValues() int {
+	return h.numberOfValues
+}
+
+func (h *PageHeader) GetSerializedSize() int {
+	return h.serializedSize
 }
