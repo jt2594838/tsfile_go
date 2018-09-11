@@ -36,5 +36,5 @@ func (f *ChunkMetaData) GetSerializedSize() int {
 		size_statistics = f.valuesStatistics.GetSerializedSize()
 	}
 
-	return (constant.INT_LEN + len(f.sensor) + 5*constant.LONG_LEN + size_statistics)
+	return constant.INT_LEN + len(f.sensor) + 5*constant.LONG_LEN + size_statistics
 }

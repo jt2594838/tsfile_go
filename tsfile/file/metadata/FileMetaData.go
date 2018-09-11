@@ -20,7 +20,7 @@ type FileMetaData struct {
 
 func (f *FileMetaData) DeserializeFrom(metadata []byte) {
 	reader := utils.NewBytesReader(metadata)
-	size := reader.ReadInt()
+	size := int(reader.ReadInt())
 	f.deviceMap = make(map[string]*DeviceMetaData)
 	if size > 0 {
 		for i := 0; i < size; i++ {
@@ -33,7 +33,7 @@ func (f *FileMetaData) DeserializeFrom(metadata []byte) {
 		}
 	}
 
-	size = reader.ReadInt()
+	size = int(reader.ReadInt())
 	f.timeSeriesMetadataMap = make(map[string]*TimeSeriesMetaData)
 	if size > 0 {
 		for i := 0; i < size; i++ {
@@ -44,7 +44,7 @@ func (f *FileMetaData) DeserializeFrom(metadata []byte) {
 		}
 	}
 
-	f.currentVersion = reader.ReadInt()
+	f.currentVersion = int(reader.ReadInt())
 	if reader.ReadBool() {
 		f.createdBy = reader.ReadString()
 	}

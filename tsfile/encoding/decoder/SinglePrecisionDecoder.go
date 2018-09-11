@@ -1,0 +1,105 @@
+package decoder
+
+import (
+	_ "bytes"
+	"math"
+	"tsfile/common/conf"
+	"tsfile/common/constant"
+	"tsfile/common/utils"
+)
+
+type SinglePrecisionDecoder struct {
+	endianType constant.EndianType
+	reader     *utils.BytesReader
+	preValue   int32
+
+	base GorillaDecoder
+}
+
+func (d *SinglePrecisionDecoder) Init(data []byte) {
+	d.reader = utils.NewBytesReader(data)
+}
+
+func (d *SinglePrecisionDecoder) HasNext() bool {
+	return d.reader.Len() > 0
+}
+
+func (d *SinglePrecisionDecoder) ReadFloat() float32 {
+	if !d.base.flag {
+		d.base.flag = true
+
+		ch := d.reader.ReadSlice(4)
+		d.preValue = int32(ch[0]) + int32(ch[1]<<8) + int32(ch[2]<<16) + int32(ch[3]<<24)
+		d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
+		d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
+		tmp := math.Float32frombits(uint32(d.preValue))
+		d.base.fillBuffer(d.reader)
+		d.getNextValue()
+
+		return tmp
+	} else {
+		tmp := math.Float32frombits(uint32(d.preValue))
+		d.getNextValue()
+
+		return tmp
+	}
+}
+
+func (d *SinglePrecisionDecoder) getNextValue() {
+	d.base.nextFlag1 = d.base.readBit(d.reader)
+	// case: '0'
+	if !d.base.nextFlag1 {
+		return
+	}
+	d.base.nextFlag2 = d.base.readBit(d.reader)
+
+	if !d.base.nextFlag2 {
+		// case: '10'
+		var tmp int32 = 0
+		for i := 0; i < conf.FLOAT_LENGTH-int(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
+			var bit int32
+			if d.base.readBit(d.reader) {
+				bit = 1
+			} else {
+				bit = 0
+			}
+			tmp |= bit << uint(conf.FLOAT_LENGTH-1-int(d.base.leadingZeroNum)-i)
+		}
+		tmp ^= d.preValue
+		d.preValue = tmp
+	} else {
+		// case: '11'
+		leadingZeroNumTmp := int(d.base.readIntFromStream(d.reader, conf.FLAOT_LEADING_ZERO_LENGTH))
+		lenTmp := int(d.base.readIntFromStream(d.reader, conf.FLOAT_VALUE_LENGTH))
+		var tmp int32 = d.base.readIntFromStream(d.reader, lenTmp)
+		tmp <<= uint(conf.FLOAT_LENGTH - leadingZeroNumTmp - lenTmp)
+		tmp ^= d.preValue
+		d.preValue = tmp
+	}
+	d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
+	d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
+}
+
+func (d *SinglePrecisionDecoder) ReadBool() bool {
+	panic("ReadBoolean not supported by SinglePrecisionDecoder")
+}
+
+func (d *SinglePrecisionDecoder) ReadShort() int16 {
+	panic("ReadShort not supported by SinglePrecisionDecoder")
+}
+
+func (d *SinglePrecisionDecoder) ReadInt() int32 {
+	panic("ReadInt not supported by SinglePrecisionDecoder")
+}
+
+func (d *SinglePrecisionDecoder) ReadLong() int64 {
+	panic("ReadLong not supported by SinglePrecisionDecoder")
+}
+
+func (d *SinglePrecisionDecoder) ReadDouble() float64 {
+	panic("ReadDouble not supported by SinglePrecisionDecoder")
+}
+
+func (d *SinglePrecisionDecoder) ReadString() string {
+	panic("ReadString not supported by SinglePrecisionDecoder")
+}

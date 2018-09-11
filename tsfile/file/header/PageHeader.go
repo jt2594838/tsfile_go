@@ -20,9 +20,9 @@ type PageHeader struct {
 }
 
 func (h *PageHeader) DeserializeFrom(reader *utils.FileReader, dataType constant.TSDataType) {
-	h.uncompressedSize = reader.ReadInt()
-	h.compressedSize = reader.ReadInt()
-	h.numberOfValues = reader.ReadInt()
+	h.uncompressedSize = int(reader.ReadInt())
+	h.compressedSize = int(reader.ReadInt())
+	h.numberOfValues = int(reader.ReadInt())
 	h.max_timestamp = reader.ReadLong()
 	h.min_timestamp = reader.ReadLong()
 

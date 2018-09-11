@@ -22,11 +22,11 @@ import (
 // 				rle-header := varint-encode( (number of times repeated) << 1)
 // 				repeated-value := value that is repeated, using a fixed-width of round-up-to-next-byte(bit-width)
 
-type IntRleDecoder struct {
+type LongRleDecoder struct {
 	endianType constant.EndianType
 
 	reader *utils.BytesReader
-	packer *bitpacking.IntPacker
+	packer *bitpacking.LongPacker
 
 	packageReader *utils.BytesReader
 	// how many bytes for all encoded data
@@ -40,39 +40,39 @@ type IntRleDecoder struct {
 	// number of bit-packing group in which is saved in header
 	bitPackingNum int
 
-	currentValue  int32
-	decodedValues []int32
+	currentValue  int64
+	decodedValues []int64
 
 	isReadingBegan bool
 }
 
-func (d *IntRleDecoder) Init(data []byte) {
+func (d *LongRleDecoder) Init(data []byte) {
 	d.reader = utils.NewBytesReader(data)
 	d.currentCount = 0
 	d.currentValue = 0
 	d.isReadingBegan = false
 }
 
-func (d *IntRleDecoder) HasNext() bool {
+func (d *LongRleDecoder) HasNext() bool {
 	if d.currentCount > 0 || d.reader.Len() > 0 || d.packageReader.Len() > 0 {
 		return true
 	}
 	return false
 }
 
-func (d *IntRleDecoder) ReadBool() bool {
-	return (d.ReadInt() == 0)
+func (d *LongRleDecoder) ReadBool() bool {
+	return (d.ReadLong() == 0)
 }
 
-func (d *IntRleDecoder) ReadInt() int32 {
+func (d *LongRleDecoder) ReadLong() int64 {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
 		d.length = int(d.reader.ReadUnsignedVarInt())
 
-		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(int(d.length)))
+		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(d.length))
 		d.bitWidth = int(d.packageReader.Read())
 
-		d.packer = &bitpacking.IntPacker{BitWidth: d.bitWidth}
+		d.packer = &bitpacking.LongPacker{BitWidth: d.bitWidth}
 
 		d.isReadingBegan = true
 	}
@@ -83,7 +83,7 @@ func (d *IntRleDecoder) ReadInt() int32 {
 
 	d.currentCount--
 
-	var result int32 = 0
+	var result int64 = 0
 	switch d.mode {
 	case RLE:
 		result = d.currentValue
@@ -92,17 +92,17 @@ func (d *IntRleDecoder) ReadInt() int32 {
 		result = d.decodedValues[d.bitPackingNum-d.currentCount-1]
 		break
 	default:
-		panic("tsfile-encoding IntRleDecoder: not a valid mode")
+		panic("tsfile-encoding LongRleDecoder: not a valid mode")
 	}
 
-	//	if d.packageReader.Len() <= 0 {
-	//		d.isReadingBegan = false
-	//	}
+	if d.packageReader.Len() <= 0 {
+		d.isReadingBegan = false
+	}
 
 	return result
 }
 
-func (d *IntRleDecoder) readPackage() {
+func (d *LongRleDecoder) readPackage() {
 	header := int(d.packageReader.ReadUnsignedVarInt())
 	if (header & 1) == 0 {
 		d.mode = RLE
@@ -113,7 +113,7 @@ func (d *IntRleDecoder) readPackage() {
 	switch d.mode {
 	case RLE:
 		d.currentCount = header >> 1
-		d.currentValue = d.readIntLittleEndianPaddedOnBitWidth(d.packageReader, d.bitWidth)
+		d.currentValue = d.readLongLittleEndianPaddedOnBitWidth(d.packageReader, d.bitWidth)
 
 	case BIT_PACKED:
 		bitPackedGroupCount := header >> 1
@@ -123,61 +123,58 @@ func (d *IntRleDecoder) readPackage() {
 			d.currentCount = (bitPackedGroupCount-1)*conf.RLE_MIN_REPEATED_NUM + lastBitPackedNum
 			d.bitPackingNum = d.currentCount
 		} else {
-			panic("tsfile-encoding IntRleDecoder: bitPackedGroupCount smaller than 1")
+			panic("tsfile-encoding LongRleDecoder: bitPackedGroupCount smaller than 1")
 		}
 
 		d.readBitPackingBuffer(bitPackedGroupCount, lastBitPackedNum, d.bitWidth)
 	default:
-		panic("tsfile-encoding IntRleDecoder: unknown encoding mode")
+		panic("tsfile-encoding LongRleDecoder: unknown encoding mode")
 	}
 }
 
 // unpack all values from packageReader into decodedValues
-func (d *IntRleDecoder) readBitPackingBuffer(bitPackedGroupCount int, lastBitPackedNum int, bitWidth int) {
+func (d *LongRleDecoder) readBitPackingBuffer(bitPackedGroupCount int, lastBitPackedNum int, bitWidth int) {
 	bytesToRead := bitPackedGroupCount * bitWidth
 	if bytesToRead > d.packageReader.Len() {
 		bytesToRead = d.packageReader.Len()
 	}
 	bytes := d.packageReader.ReadSlice(int(bytesToRead))
 
-	d.decodedValues = make([]int32, bitPackedGroupCount*conf.RLE_MIN_REPEATED_NUM)
+	d.decodedValues = make([]int64, bitPackedGroupCount*(conf.RLE_MIN_REPEATED_NUM))
 	d.packer.UnpackAllValues(bytes, bytesToRead, d.decodedValues)
 }
 
-func (r *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int32 {
+func (r *LongRleDecoder) readLongLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int64 {
 	paddedByteNum := (bitWidth + 7) / 8
-	if paddedByteNum > 4 {
-		panic("readIntLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
+	if paddedByteNum > 8 {
+		panic("ReadLongLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
 	}
 
-	var result int32 = 0
-	offset := 0
-	for paddedByteNum > 0 {
+	var result int64 = 0
+	for i := 0; i < paddedByteNum; i++ {
 		ch := reader.Read()
-		result += ch << uint(offset)
-		offset += 8
-		paddedByteNum--
+		result <<= 8
+		result |= int64(ch & 0xff)
 	}
-
 	return result
 }
 
-func (d *IntRleDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by IntRleDecoder")
+func (d *LongRleDecoder) ReadShort() int16 {
+	panic("ReadShort not supported by LongRleDecoder")
 }
 
-func (d *IntRleDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by IntRleDecoder")
+func (d *LongRleDecoder) ReadInt() int32 {
+	panic("ReadLong not supported by LongRleDecoder")
 }
 
-func (d *IntRleDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by IntRleDecoder")
+func (d *LongRleDecoder) ReadFloat() float32 {
+	panic("ReadFloat not supported by LongRleDecoder")
 }
 
-func (d *IntRleDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by IntRleDecoder")
+func (d *LongRleDecoder) ReadDouble() float64 {
+	panic("ReadDouble not supported by LongRleDecoder")
 }
 
-func (d *IntRleDecoder) ReadString() string {
-	panic("ReadString not supported by IntRleDecoder")
+func (d *LongRleDecoder) ReadString() string {
+	panic("ReadString not supported by LongRleDecoder")
 }

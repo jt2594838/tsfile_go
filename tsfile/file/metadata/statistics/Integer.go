@@ -6,10 +6,10 @@ import (
 )
 
 type Integer struct {
-	max   int
-	min   int
-	first int
-	last  int
+	max   int32
+	min   int32
+	first int32
+	last  int32
 	sum   float64
 }
 

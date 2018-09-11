@@ -14,10 +14,9 @@ type Digest struct {
 func (f *Digest) DeserializeFrom(reader *utils.BytesReader) {
 	f.serializedSize = constant.INT_LEN
 
-	size := reader.ReadInt()
+	size := int(reader.ReadInt())
 	f.statistics = make(map[string][]byte)
 	if size > 0 {
-
 		for i := 0; i < size; i++ {
 			key := reader.ReadString()
 			value := reader.ReadStringBinary()

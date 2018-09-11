@@ -18,7 +18,7 @@ type RowGroupHeader struct {
 func (h *RowGroupHeader) DeserializeFrom(reader *utils.FileReader) {
 	h.device = reader.ReadString()
 	h.dataSize = reader.ReadLong()
-	h.numberOfChunks = reader.ReadInt()
+	h.numberOfChunks = int(reader.ReadInt())
 	h.serializedSize = constant.INT_LEN + len(h.device) + constant.LONG_LEN + constant.INT_LEN
 }
 

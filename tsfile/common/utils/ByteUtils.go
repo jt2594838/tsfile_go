@@ -23,13 +23,13 @@ func GetByteN(data byte, offset int) int {
 // if offset is 4, value is 1, return 1016({00000000 00000000 00000011 111 "1" 1000})
 // if offset is 9, value is 0 return 488({00000000 00000000 000000 "0" 1 11101000})
 // if offset is 0, value is 0 return 1000(no change)
-func SetIntN(data int, offset int, value int) int {
+func SetIntN(data int32, offset int, value int) int32 {
 	offset %= 32
 
 	if value == 1 {
-		return (data | (1 << uint(offset)))
+		return (data | (1 << uint32(offset)))
 	} else {
-		return (data & ^(1 << uint(offset)))
+		return (data & ^(1 << uint32(offset)))
 	}
 }
 
@@ -38,15 +38,15 @@ func SetLongN(data int64, offset int, value int) int64 {
 	offset %= 64
 
 	if value == 1 {
-		return (data | (1 << uint(offset)))
+		return (data | (1 << uint32(offset)))
 	} else {
-		return (data & ^(1 << uint(offset)))
+		return (data & ^(1 << uint32(offset)))
 	}
 }
 
 // given a byte array, read width bits from specified position bits and convert it to an integer
-func BytesToInt(result []byte, pos int, width int) int {
-	var value int = 0
+func BytesToInt(result []byte, pos int, width int) int32 {
+	var value int32 = 0
 	var temp int = 0
 
 	for i := 0; i < width; i++ {

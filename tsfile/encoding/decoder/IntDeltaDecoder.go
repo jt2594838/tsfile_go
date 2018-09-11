@@ -8,10 +8,10 @@ import (
 )
 
 // This package is a decoder for decoding the byte array that encoded by DeltaBinaryDecoder just supports integer and long values.
-// 0-3 bits int 存储数值个数
-// 4-7 bits int 存储单个数值宽度
-// 8-11 bits int 存储最小值，作为所有数值的基数
-// 12-15 bits int 存储第一个值
+// 0-3 bits int32 存储数值个数
+// 4-7 bits int32 存储单个数值宽度
+// 8-11 bits int32 存储最小值，作为所有数值的基数
+// 12-15 bits int32 存储第一个值
 // 15 bit 之后存储数值
 type IntDeltaDecoder struct {
 	reader *utils.BytesReader
@@ -23,10 +23,10 @@ type IntDeltaDecoder struct {
 	//value index for reading
 	index int
 
-	baseValue     int
-	firstValue    int
-	previousValue int
-	decodedValues []int
+	baseValue     int32
+	firstValue    int32
+	previousValue int32
+	decodedValues []int32
 }
 
 func (d *IntDeltaDecoder) Init(data []byte) {
@@ -37,20 +37,20 @@ func (d *IntDeltaDecoder) HasNext() bool {
 	return (d.index < d.count) || (d.reader.Len() > 0)
 }
 
-func (d *IntDeltaDecoder) ReadInt() int {
+func (d *IntDeltaDecoder) ReadInt() int32 {
 	if d.index == d.count {
 		return d.loadPack()
 	} else {
 		result := d.decodedValues[d.index]
 		d.index++
 
-		return result
+		return int32(result)
 	}
 }
 
-func (d *IntDeltaDecoder) loadPack() int {
-	d.count = d.reader.ReadInt()
-	d.width = d.reader.ReadInt()
+func (d *IntDeltaDecoder) loadPack() int32 {
+	d.count = int(d.reader.ReadInt())
+	d.width = int(d.reader.ReadInt())
 	d.baseValue = d.reader.ReadInt()
 	d.firstValue = d.reader.ReadInt()
 
@@ -61,12 +61,12 @@ func (d *IntDeltaDecoder) loadPack() int {
 	valueBuffer := d.reader.ReadSlice(encodingLength)
 
 	//allocateDataArray
-	d.decodedValues = make([]int, d.count)
+	d.decodedValues = make([]int32, d.count)
 
 	d.previousValue = d.firstValue
 	for i := 0; i < d.count; i++ {
 		p := d.width * i
-		//v := int(binary.BigEndian.Uint32(valueBuffer[p:p + d.width]))
+		//v := int32(binary.BigEndian.Uint32(valueBuffer[p:p + d.width]))
 		v := utils.BytesToInt(valueBuffer, p, d.width)
 		d.decodedValues[i] = d.previousValue + d.baseValue + v
 

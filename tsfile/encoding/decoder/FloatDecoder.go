@@ -22,10 +22,9 @@ func (d *FloatDecoder) Init(data []byte) {
 	if d.encoding == constant.RLE {
 		if d.dataType == constant.FLOAT {
 			d.decoder = &IntRleDecoder{endianType: constant.LITTLE_ENDIAN}
-			//log.Println("tsfile-encoding FloatDecoder: init decoder using int-rle and float")
+			//log.Println("tsfile-encoding FloatDecoder: init decoder using int32-rle and float")
 		} else if d.dataType == constant.DOUBLE {
-			panic("encoding is not supported by FloatDecoder: RLE + DOUBLE")
-			//d.decoder = &LongRleDecoder{endianType: EndianType.LITTLE_ENDIAN}
+			d.decoder = &LongRleDecoder{endianType: constant.LITTLE_ENDIAN}
 			//log.Println("tsfile-encoding FloatDecoder: init decoder using long-rle and double")
 		} else {
 			panic("data type is not supported by FloatDecoder: " + strconv.Itoa(int(d.dataType)))
@@ -90,7 +89,7 @@ func (d *FloatDecoder) ReadShort() int16 {
 	panic("ReadShort not supported by FloatDecoder")
 }
 
-func (d *FloatDecoder) ReadInt() int {
+func (d *FloatDecoder) ReadInt() int32 {
 	panic("ReadInt not supported by FloatDecoder")
 }
 

@@ -44,8 +44,9 @@ func (r *BytesReader) ReadShort() int16 {
 	return result
 }
 
-func (r *BytesReader) ReadInt() int {
-	result := int(binary.BigEndian.Uint32(r.buf[r.pos : r.pos+4]))
+func (r *BytesReader) ReadInt() int32 {
+	bytes := r.buf[r.pos : r.pos+4]
+	result := int32(binary.BigEndian.Uint32(bytes))
 	r.pos += 4
 
 	return result
@@ -75,15 +76,24 @@ func (r *BytesReader) ReadDouble() float64 {
 }
 
 func (r *BytesReader) ReadString() string {
-	length := r.ReadInt()
+	length := int(r.ReadInt())
 	result := string(r.buf[r.pos : r.pos+length])
 	r.pos += length
 
 	return result
 }
 
+func (r *BytesReader) ReadBytes(length int) []byte {
+	dst := make([]byte, length)
+	copy(dst, r.buf[r.pos:r.pos+length])
+
+	r.pos += length
+
+	return dst
+}
+
 func (r *BytesReader) ReadStringBinary() []byte {
-	length := r.ReadInt()
+	length := int(r.ReadInt())
 
 	dst := make([]byte, length)
 	copy(dst, r.buf[r.pos:r.pos+length])
@@ -100,47 +110,29 @@ func (r *BytesReader) ReadSlice(length int) []byte {
 	return result
 }
 
-func (r *BytesReader) Read() int {
+// read a byte
+func (r *BytesReader) Read() int32 {
 	result := r.buf[r.pos]
 	r.pos++
 
-	return int(result)
+	return int32(result)
 }
 
 // for decoding
-func (r *BytesReader) ReadUnsignedVarInt() int {
-	var value int = 0
-	var i uint = 0
+func (r *BytesReader) ReadUnsignedVarInt() int32 {
+	var value int32 = 0
+	var i uint32 = 0
 
 	b := r.buf[r.pos]
 	r.pos++
 
 	for r.pos <= len(r.buf) && (b&0x80) != 0 {
-		value |= int(b&0x7F) << i
+		value |= int32(b&0x7F) << i
 		i += 7
 
 		b = r.buf[r.pos]
 		r.pos++
 	}
 
-	return value | int(b<<i)
-}
-
-// for decoding
-func (r *BytesReader) ReadIntLittleEndianPaddedOnBitWidth(bitWidth int) int {
-	paddedByteNum := (bitWidth + 7) / 8
-	if paddedByteNum > 4 {
-		panic("ReadIntLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
-	}
-
-	result := 0
-	offset := 0
-	for paddedByteNum > 0 {
-		ch := r.Read()
-		result += ch << uint(offset)
-		offset += 8
-		paddedByteNum--
-	}
-
-	return result
+	return value | int32(b<<i)
 }

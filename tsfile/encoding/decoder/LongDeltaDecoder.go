@@ -8,8 +8,8 @@ import (
 )
 
 // This package is a decoder for decoding the byte array that encoded by DeltaBinaryDecoder just supports integer and long values.
-// 0-3 bits int 存储数值个数
-// 4-7 bits int 存储单个数值宽度
+// 0-3 bits int32 存储数值个数
+// 4-7 bits int32 存储单个数值宽度
 // 8-15 bits int64 存储最小值，作为所有数值的基数
 // 16-23 bits int64 存储第一个值
 // 24 bit 之后存储数值
@@ -49,8 +49,8 @@ func (d *LongDeltaDecoder) ReadLong() int64 {
 }
 
 func (d *LongDeltaDecoder) loadPack() int64 {
-	d.count = d.reader.ReadInt()
-	d.width = d.reader.ReadInt()
+	d.count = int(d.reader.ReadInt())
+	d.width = int(d.reader.ReadInt())
 	d.baseValue = d.reader.ReadLong()
 	d.firstValue = d.reader.ReadLong()
 
@@ -82,7 +82,7 @@ func (d *LongDeltaDecoder) ReadBool() bool {
 func (d *LongDeltaDecoder) ReadShort() int16 {
 	panic("ReadShort not supported by LongDeltaDecoder")
 }
-func (d *LongDeltaDecoder) ReadInt() int {
+func (d *LongDeltaDecoder) ReadInt() int32 {
 	panic("ReadInt not supported by LongDeltaDecoder")
 }
 func (d *LongDeltaDecoder) ReadFloat() float32 {

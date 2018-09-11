@@ -19,7 +19,7 @@ func (f *RowGroupMetaData) DeserializeFrom(reader *utils.BytesReader) {
 	f.device = reader.ReadString()
 	f.totalByteSize = reader.ReadLong()
 	f.fileOffsetOfCorrespondingData = reader.ReadLong()
-	size := reader.ReadInt()
+	size := int(reader.ReadInt())
 
 	f.serializedSize = constant.INT_LEN + len(f.device) + constant.LONG_LEN + constant.INT_LEN
 

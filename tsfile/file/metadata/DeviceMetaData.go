@@ -18,7 +18,7 @@ func (f *DeviceMetaData) DeserializeFrom(reader *utils.BytesReader) {
 	f.startTime = reader.ReadLong()
 	f.endTime = reader.ReadLong()
 
-	size := reader.ReadInt()
+	size := int(reader.ReadInt())
 	if size > 0 {
 		f.rowGroupMetadataList = list.New()
 		for i := 0; i < size; i++ {

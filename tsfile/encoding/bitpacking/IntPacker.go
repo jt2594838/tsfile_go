@@ -41,7 +41,7 @@ type IntPacker struct {
  * @param offset - the offset of first Integer to be encoded
  * @param buf    - encoded bytes, buf size must be equal to ({@link IntPacker#NUM_OF_INTS} * {@link IntPacker#width} / 8)
  */
-func (p *IntPacker) Pack8Values(values []int, offset int, buf []byte) {
+func (p *IntPacker) Pack8Values(values []int32, offset int, buf []byte) {
 	var bufIdx int = 0
 	var valueIdx int = offset
 	//remaining bits for the current unfinished Integer
@@ -49,13 +49,13 @@ func (p *IntPacker) Pack8Values(values []int, offset int, buf []byte) {
 
 	for valueIdx < NUM_OF_INTS+offset {
 		// buffer is used for saving 32 bits as a part of result
-		var buffer int = 0
+		var buffer int32 = 0
 		// remaining size of bits in the 'buffer'
 		var leftSize int = 32
 
 		// encode the left bits of current Integer to 'buffer'
 		if leftBit > 0 {
-			buffer |= (values[valueIdx] << uint(32-leftBit))
+			buffer |= (values[valueIdx] << uint32(32-leftBit))
 			leftSize -= leftBit
 			leftBit = 0
 			valueIdx++
@@ -63,21 +63,21 @@ func (p *IntPacker) Pack8Values(values []int, offset int, buf []byte) {
 
 		for leftSize >= p.BitWidth && valueIdx < NUM_OF_INTS+offset {
 			//encode one Integer to the 'buffer'
-			buffer |= (values[valueIdx] << uint(leftSize-p.BitWidth))
+			buffer |= (values[valueIdx] << uint32(leftSize-p.BitWidth))
 			leftSize -= p.BitWidth
 			valueIdx++
 		}
 		// If the remaining space of the buffer can not save the bits for one Integer,
 		if leftSize > 0 && valueIdx < NUM_OF_INTS+offset {
 			// put the first 'leftSize' bits of the Integer into remaining space of the buffer
-			buffer |= (values[valueIdx] >> uint(p.BitWidth-leftSize))
+			buffer |= (values[valueIdx] >> uint32(p.BitWidth-leftSize))
 			leftBit = p.BitWidth - leftSize
 			leftSize = 0
 		}
 
 		// put the buffer into the final result
 		for j := 0; j < 4; j++ {
-			buf[bufIdx] = (byte)((buffer >> uint((3-j)*8)) & 0xFF)
+			buf[bufIdx] = (byte)((buffer >> uint32((3-j)*8)) & 0xFF)
 			bufIdx++
 			if bufIdx >= p.BitWidth {
 				return
@@ -93,7 +93,7 @@ func (p *IntPacker) Pack8Values(values []int, offset int, buf []byte) {
  * @param offset - offset of first byte to be decoded in buf
  * @param values - decoded result , the length of 'values' should be @{link IntPacker#NUM_OF_INTS}
  */
-func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int) {
+func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int32) {
 	var byteIdx int = offset
 	var buffer int64 = 0
 	//total bits which have read from 'buf' to 'buffer'. i.e., number of available bits to be decoded.
@@ -112,10 +112,10 @@ func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int) {
 		//If current available bits are enough to decode one Integer, then decode one Integer one by one
 		//until left bits in 'buffer' is not enough to decode one Integer.
 		for totalBits >= p.BitWidth && valueIdx < 8 {
-			values[valueIdx] = (int)(buffer >> uint(totalBits-p.BitWidth))
+			values[valueIdx] = (int32)(buffer >> uint(totalBits-p.BitWidth))
 			valueIdx++
 			totalBits -= p.BitWidth
-			buffer = (buffer & ((1 << uint(totalBits)) - 1))
+			buffer = (buffer & ((1 << uint32(totalBits)) - 1))
 		}
 	}
 }
@@ -129,11 +129,11 @@ func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int) {
  * @param length: length of bytes to be decoded in buf.
  * @param values: decoded result.
  */
-func (p *IntPacker) UnpackAllValues(buf []byte, offset int, length int, values []int) {
+func (p *IntPacker) UnpackAllValues(buf []byte, length int, values []int32) {
 	var idx int = 0
 	var k int = 0
 	for idx < length {
-		tv := make([]int, 8)
+		tv := make([]int32, 8)
 		//decode 8 values one time, current result will be saved in the array named 'tv'
 		p.Unpack8Values(buf, idx, tv)
 
