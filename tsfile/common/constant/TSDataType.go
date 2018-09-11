@@ -1,10 +1,5 @@
 package constant
 
-//	"bufio"
-//"log"
-//"os"
-//"tsfile/common/utils"
-
 type TSDataType int16
 
 const (

@@ -1,11 +1,9 @@
 package utils
 
 import (
-	_ "bytes"
 	"encoding/binary"
 	_ "log"
 	"math"
-	_ "tsfile/common/constant"
 )
 
 // bytes slice reader, result is the reference of source

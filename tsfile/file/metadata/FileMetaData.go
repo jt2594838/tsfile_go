@@ -18,27 +18,26 @@ type FileMetaData struct {
 	timeSeriesMetadataMap map[string]*TimeSeriesMetaData
 }
 
-func (f *FileMetaData) DeserializeFrom(metadata []byte) {
+func (f *FileMetaData) Deserialize(metadata []byte) {
 	reader := utils.NewBytesReader(metadata)
-	size := int(reader.ReadInt())
+
 	f.deviceMap = make(map[string]*DeviceMetaData)
-	if size > 0 {
+	if size := int(reader.ReadInt()); size > 0 {
 		for i := 0; i < size; i++ {
 			key := reader.ReadString()
 
 			value := new(DeviceMetaData)
-			value.DeserializeFrom(reader)
+			value.Deserialize(reader)
 
 			f.deviceMap[key] = value
 		}
 	}
 
-	size = int(reader.ReadInt())
 	f.timeSeriesMetadataMap = make(map[string]*TimeSeriesMetaData)
-	if size > 0 {
+	if size := int(reader.ReadInt()); size > 0 {
 		for i := 0; i < size; i++ {
 			value := new(TimeSeriesMetaData)
-			value.DeserializeFrom(reader)
+			value.Deserialize(reader)
 
 			f.timeSeriesMetadataMap[value.GetSensor()] = value
 		}

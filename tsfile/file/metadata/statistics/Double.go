@@ -13,7 +13,7 @@ type Double struct {
 	sum   float64
 }
 
-func (s *Double) DeserializeFrom(reader *utils.FileReader) {
+func (s *Double) Deserialize(reader *utils.FileReader) {
 	s.min = reader.ReadDouble()
 	s.max = reader.ReadDouble()
 	s.first = reader.ReadDouble()

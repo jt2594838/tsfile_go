@@ -19,7 +19,7 @@ type ChunkHeader struct {
 	serializedSize   int
 }
 
-func (h *ChunkHeader) DeserializeFrom(reader *utils.FileReader) {
+func (h *ChunkHeader) Deserialize(reader *utils.FileReader) {
 	h.sensor = reader.ReadString()
 	h.dataSize = int(reader.ReadInt())
 	h.dataType = constant.TSDataType(reader.ReadShort())

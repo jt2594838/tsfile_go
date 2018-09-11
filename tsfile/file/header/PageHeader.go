@@ -19,14 +19,13 @@ type PageHeader struct {
 	serializedSize   int
 }
 
-func (h *PageHeader) DeserializeFrom(reader *utils.FileReader, dataType constant.TSDataType) {
+func (h *PageHeader) Deserialize(reader *utils.FileReader, dataType constant.TSDataType) {
 	h.uncompressedSize = int(reader.ReadInt())
 	h.compressedSize = int(reader.ReadInt())
 	h.numberOfValues = int(reader.ReadInt())
 	h.max_timestamp = reader.ReadLong()
 	h.min_timestamp = reader.ReadLong()
-
-	h.statistics = statistics.DeserializeFrom(reader, dataType)
+	h.statistics = statistics.Deserialize(reader, dataType)
 
 	h.serializedSize = 3*constant.INT_LEN + 2*constant.LONG_LEN + h.statistics.GetSerializedSize()
 }

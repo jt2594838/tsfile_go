@@ -11,7 +11,7 @@ type TimeSeriesMetaData struct {
 	dataType constant.TSDataType
 }
 
-func (f *TimeSeriesMetaData) DeserializeFrom(reader *utils.BytesReader) {
+func (f *TimeSeriesMetaData) Deserialize(reader *utils.BytesReader) {
 	if reader.ReadBool() {
 		f.sensor = reader.ReadString()
 	}

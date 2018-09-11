@@ -12,7 +12,7 @@ type Binary struct {
 	sum   float64 //meaningless
 }
 
-func (s *Binary) DeserializeFrom(reader *utils.FileReader) {
+func (s *Binary) Deserialize(reader *utils.FileReader) {
 	s.min = reader.ReadString()
 	s.max = reader.ReadString()
 	s.first = reader.ReadString()

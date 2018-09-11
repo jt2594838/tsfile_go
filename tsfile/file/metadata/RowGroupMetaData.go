@@ -15,7 +15,7 @@ type RowGroupMetaData struct {
 	timeSeriesChunkMetaDataList   *list.List
 }
 
-func (f *RowGroupMetaData) DeserializeFrom(reader *utils.BytesReader) {
+func (f *RowGroupMetaData) Deserialize(reader *utils.BytesReader) {
 	f.device = reader.ReadString()
 	f.totalByteSize = reader.ReadLong()
 	f.fileOffsetOfCorrespondingData = reader.ReadLong()
@@ -26,7 +26,7 @@ func (f *RowGroupMetaData) DeserializeFrom(reader *utils.BytesReader) {
 	f.timeSeriesChunkMetaDataList = list.New()
 	for i := 0; i < size; i++ {
 		chunkMetaData := new(ChunkMetaData)
-		chunkMetaData.DeserializeFrom(reader)
+		chunkMetaData.Deserialize(reader)
 
 		f.timeSeriesChunkMetaDataList.PushBack(chunkMetaData)
 		f.serializedSize += chunkMetaData.GetSerializedSize()

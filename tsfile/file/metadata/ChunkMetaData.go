@@ -16,7 +16,7 @@ type ChunkMetaData struct {
 	valuesStatistics              *Digest
 }
 
-func (f *ChunkMetaData) DeserializeFrom(reader *utils.BytesReader) {
+func (f *ChunkMetaData) Deserialize(reader *utils.BytesReader) {
 	f.sensor = reader.ReadString()
 	f.fileOffsetOfCorrespondingData = reader.ReadLong()
 	f.numOfPoints = reader.ReadLong()
@@ -25,7 +25,7 @@ func (f *ChunkMetaData) DeserializeFrom(reader *utils.BytesReader) {
 	f.endTime = reader.ReadLong()
 
 	digest := new(Digest)
-	digest.DeserializeFrom(reader)
+	digest.Deserialize(reader)
 
 	f.valuesStatistics = digest
 }

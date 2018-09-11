@@ -7,11 +7,11 @@ import (
 )
 
 type Statistics interface {
-	DeserializeFrom(reader *utils.FileReader)
+	Deserialize(reader *utils.FileReader)
 	GetSerializedSize() int
 }
 
-func DeserializeFrom(reader *utils.FileReader, dataType constant.TSDataType) Statistics {
+func Deserialize(reader *utils.FileReader, dataType constant.TSDataType) Statistics {
 	var statistics Statistics
 
 	switch dataType {
@@ -31,7 +31,7 @@ func DeserializeFrom(reader *utils.FileReader, dataType constant.TSDataType) Sta
 		panic("Statistics unknown dataType: " + strconv.Itoa(int(dataType)))
 	}
 
-	statistics.DeserializeFrom(reader)
+	statistics.Deserialize(reader)
 
 	return statistics
 }

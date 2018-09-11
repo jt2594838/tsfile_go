@@ -1,6 +1,6 @@
 package constant
 
-type EndianType int
+type EndianType int16
 
 const (
 	BIG_ENDIAN    EndianType = 0

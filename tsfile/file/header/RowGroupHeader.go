@@ -15,10 +15,11 @@ type RowGroupHeader struct {
 	serializedSize int
 }
 
-func (h *RowGroupHeader) DeserializeFrom(reader *utils.FileReader) {
+func (h *RowGroupHeader) Deserialize(reader *utils.FileReader) {
 	h.device = reader.ReadString()
 	h.dataSize = reader.ReadLong()
 	h.numberOfChunks = int(reader.ReadInt())
+
 	h.serializedSize = constant.INT_LEN + len(h.device) + constant.LONG_LEN + constant.INT_LEN
 }
 

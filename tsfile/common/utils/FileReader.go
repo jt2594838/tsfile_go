@@ -1,9 +1,8 @@
 package utils
 
 import (
-	"io"
-	//"bufio"
 	"encoding/binary"
+	"io"
 	_ "log"
 	"math"
 	"os"

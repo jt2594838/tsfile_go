@@ -1,10 +1,5 @@
 package constant
 
-//	"bufio"
-//"log"
-//"os"
-//"tsfile/common/utils"
-
 type TSEncoding int16
 
 const (

@@ -6,7 +6,6 @@ import (
 	"io"
 	"log"
 	"os"
-	"strconv"
 	"tsfile/common/conf"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
@@ -66,7 +65,7 @@ func (f *TsFileSequenceReader) ReadFileMetadata() *metadata.FileMetaData {
 	fileMetadata := new(metadata.FileMetaData)
 
 	data := f.reader.ReadAt(f.metadata_size, f.metadata_pos)
-	fileMetadata.DeserializeFrom(data)
+	fileMetadata.Deserialize(data)
 
 	return fileMetadata
 }
@@ -77,18 +76,14 @@ func (f *TsFileSequenceReader) HasNextRowGroup() bool {
 
 func (f *TsFileSequenceReader) ReadRowGroupHeader() *header.RowGroupHeader {
 	header := new(header.RowGroupHeader)
-	header.DeserializeFrom(f.reader)
-
-	log.Println("posistion after ReadRowGroupHeader: " + strconv.FormatInt(f.reader.Pos(), 10))
+	header.Deserialize(f.reader)
 
 	return header
 }
 
 func (f *TsFileSequenceReader) ReadChunkHeader() *header.ChunkHeader {
 	header := new(header.ChunkHeader)
-	header.DeserializeFrom(f.reader)
-
-	log.Println("posistion after ReadChunkHeader: " + strconv.FormatInt(f.reader.Pos(), 10))
+	header.Deserialize(f.reader)
 
 	return header
 }
@@ -121,9 +116,7 @@ func (f *TsFileSequenceReader) ReadRaw(position int64, length int) []byte {
 
 func (f *TsFileSequenceReader) ReadPageHeader(dataType constant.TSDataType) *header.PageHeader {
 	header := new(header.PageHeader)
-	header.DeserializeFrom(f.reader, dataType)
-
-	log.Println("posistion after ReadPageHeader: " + strconv.FormatInt(f.reader.Pos(), 10))
+	header.Deserialize(f.reader, dataType)
 
 	return header
 }
@@ -135,8 +128,6 @@ func (f *TsFileSequenceReader) ReadPageHeaderAt(dataType constant.TSDataType, of
 
 func (f *TsFileSequenceReader) ReadPage(header *header.PageHeader, compression constant.CompressionType) []byte {
 	data := f.reader.ReadSlice(header.GetCompressedSize())
-
-	log.Println("posistion after ReadPage: " + strconv.FormatInt(f.reader.Pos(), 10))
 
 	switch {
 	case compression == constant.UNCOMPRESSED:
@@ -150,6 +141,10 @@ func (f *TsFileSequenceReader) ReadPage(header *header.PageHeader, compression c
 			panic(err)
 		}
 	}
+}
+
+func (f *TsFileSequenceReader) Pos() int64 {
+	return f.reader.Pos()
 }
 
 func (f TsFileSequenceReader) Close() {

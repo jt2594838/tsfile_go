@@ -13,7 +13,7 @@ type Boolean struct {
 	sum   float64
 }
 
-func (s *Boolean) DeserializeFrom(reader *utils.FileReader) {
+func (s *Boolean) Deserialize(reader *utils.FileReader) {
 	s.min = reader.ReadBool()
 	s.max = reader.ReadBool()
 	s.first = reader.ReadBool()
