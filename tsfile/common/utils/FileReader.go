@@ -41,16 +41,19 @@ func (f *FileReader) Close() error {
 
 func (f *FileReader) ReadSlice(length int) []byte {
 	if length <= SIZE_BUF { // buffer size greater than reading size, so we get data from buffer
-		// buffer remaining is not enough, we needs to read from file
+		// buffer remaining is not enough, we needs to read data from file into buffer first
 		if f.l-f.p < length {
 			if f.l > f.p {
 				copy(f.b[0:], f.b[f.p:f.l])
 			}
-
-			f.l = f.l - f.p
+			f.l -= f.p
 			f.p = 0
+
 			if n, err := f.reader.Read(f.b[f.l:]); err == nil || err == io.EOF {
-				f.l = f.l + n
+				f.l += n
+				if f.l < length {
+					panic("file has no enough data to read")
+				}
 			} else {
 				panic(err)
 			}
