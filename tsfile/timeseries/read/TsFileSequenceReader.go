@@ -133,8 +133,8 @@ func (f *TsFileSequenceReader) ReadPage(header *header.PageHeader, compression c
 	case compression == constant.UNCOMPRESSED:
 		return data
 	default:
-		unCompressor := compress.GetUnCompressor(compression)
-		unCompressedData, err := unCompressor.UnCompress(data)
+		unCompressor := compress.GetDecompressor(compression)
+		unCompressedData, err := unCompressor.Decompress(data)
 		if err == nil {
 			return unCompressedData
 		} else {
