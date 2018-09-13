@@ -11,6 +11,7 @@ import (
 type SinglePrecisionDecoder struct {
 	endianType constant.EndianType
 	reader     *utils.BytesReader
+	flag       bool
 	preValue   int32
 
 	base GorillaDecoder
@@ -25,11 +26,11 @@ func (d *SinglePrecisionDecoder) HasNext() bool {
 }
 
 func (d *SinglePrecisionDecoder) ReadFloat() float32 {
-	if !d.base.flag {
-		d.base.flag = true
+	if !d.flag {
+		d.flag = true
 
 		ch := d.reader.ReadSlice(4)
-		d.preValue = int32(ch[0]) + int32(ch[1]<<8) + int32(ch[2]<<16) + int32(ch[3]<<24)
+		d.preValue = int32(ch[0]) + int32(ch[1])<<8 + int32(ch[2])<<16 + int32(ch[3])<<24
 		d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
 		d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
 		tmp := math.Float32frombits(uint32(d.preValue))

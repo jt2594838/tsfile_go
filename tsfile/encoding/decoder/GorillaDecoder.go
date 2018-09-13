@@ -9,7 +9,6 @@ import (
 const EOF = -1
 
 type GorillaDecoder struct {
-	flag                           bool
 	leadingZeroNum, tailingZeroNum int32
 	buffer                         int32
 	numberLeftInBuffer             int
@@ -81,7 +80,7 @@ func (g *GorillaDecoder) numberOfLeadingZeros(i int32) int32 {
 		n += 2
 		i <<= 2
 	}
-	n -= i >> 31
+	n -= int32(uint32(i) >> 31)
 
 	return n
 }
@@ -114,7 +113,7 @@ func (g *GorillaDecoder) numberOfTrailingZeros(i int32) int32 {
 		i = y
 	}
 
-	return n - ((i << 1) >> 31)
+	return n - int32(uint32(i<<1)>>31)
 }
 
 func (g *GorillaDecoder) numberOfLeadingZerosLong(i int64) int32 {
@@ -123,30 +122,31 @@ func (g *GorillaDecoder) numberOfLeadingZerosLong(i int64) int32 {
 	}
 
 	var n int32 = 1
-	var x int32 = int32(i >> 32)
+	var x int32 = int32(uint64(i) >> 32)
+
 	if x == 0 {
 		n += 32
 		x = int32(i)
 	}
-	if x>>16 == 0 {
+	if uint32(x)>>16 == 0 {
 		n += 16
 		x <<= 16
 	}
-	if x>>24 == 0 {
+	if uint32(x)>>24 == 0 {
 		n += 8
 		x <<= 8
 	}
-	if x>>28 == 0 {
+	if uint32(x)>>28 == 0 {
 		n += 4
 		x <<= 4
 	}
-	if x>>30 == 0 {
+	if uint32(x)>>30 == 0 {
 		n += 2
 		x <<= 2
 	}
-	n -= x >> 31
+	n -= int32(uint32(x) >> 31)
 
-	return int32(n)
+	return n
 }
 
 func (g *GorillaDecoder) numberOfTrailingZerosLong(i int64) int32 {
@@ -162,7 +162,7 @@ func (g *GorillaDecoder) numberOfTrailingZerosLong(i int64) int32 {
 		n = n - 32
 		x = y
 	} else {
-		x = (int32)(i >> 32)
+		x = (int32)(uint64(i) >> 32)
 	}
 	y = x << 16
 	if y != 0 {
@@ -185,5 +185,5 @@ func (g *GorillaDecoder) numberOfTrailingZerosLong(i int64) int32 {
 		x = y
 	}
 
-	return int32(n - ((x << 1) >> 31))
+	return n - int32(uint32(x<<1)>>31)
 }

@@ -70,14 +70,14 @@ func (p *IntPacker) Pack8Values(values []int32, offset int, buf []byte) {
 		// If the remaining space of the buffer can not save the bits for one Integer,
 		if leftSize > 0 && valueIdx < NUM_OF_INTS+offset {
 			// put the first 'leftSize' bits of the Integer into remaining space of the buffer
-			buffer |= (values[valueIdx] >> uint32(p.BitWidth-leftSize))
+			buffer |= int32(uint32(values[valueIdx]) >> uint32(p.BitWidth-leftSize))
 			leftBit = p.BitWidth - leftSize
 			leftSize = 0
 		}
 
 		// put the buffer into the final result
 		for j := 0; j < 4; j++ {
-			buf[bufIdx] = (byte)((buffer >> uint32((3-j)*8)) & 0xFF)
+			buf[bufIdx] = (byte)((uint32(buffer) >> uint32((3-j)*8)) & 0xFF)
 			bufIdx++
 			if bufIdx >= p.BitWidth {
 				return
@@ -112,7 +112,7 @@ func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int32) {
 		//If current available bits are enough to decode one Integer, then decode one Integer one by one
 		//until left bits in 'buffer' is not enough to decode one Integer.
 		for totalBits >= p.BitWidth && valueIdx < 8 {
-			values[valueIdx] = (int32)(buffer >> uint(totalBits-p.BitWidth))
+			values[valueIdx] = (int32)(uint32(buffer) >> uint(totalBits-p.BitWidth))
 			valueIdx++
 			totalBits -= p.BitWidth
 			buffer = (buffer & ((1 << uint32(totalBits)) - 1))

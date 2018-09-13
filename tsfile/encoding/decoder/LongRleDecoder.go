@@ -95,9 +95,9 @@ func (d *LongRleDecoder) ReadLong() int64 {
 		panic("tsfile-encoding LongRleDecoder: not a valid mode")
 	}
 
-	if d.packageReader.Len() <= 0 {
-		d.isReadingBegan = false
-	}
+	//	if d.currentCount > 0 || d.packageReader.Len() <= 0 {
+	//		d.isReadingBegan = false
+	//	}
 
 	return result
 }

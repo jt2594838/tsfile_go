@@ -11,6 +11,7 @@ import (
 type DoublePrecisionDecoder struct {
 	endianType constant.EndianType
 	reader     *utils.BytesReader
+	flag       bool
 	preValue   int64
 
 	base GorillaDecoder
@@ -25,13 +26,13 @@ func (d *DoublePrecisionDecoder) HasNext() bool {
 }
 
 func (d *DoublePrecisionDecoder) ReadDouble() float64 {
-	if !d.base.flag {
-		d.base.flag = true
+	if !d.flag {
+		d.flag = true
 
 		ch := d.reader.ReadSlice(8)
 		var res int64 = 0
 		for i := 0; i < 8; i++ {
-			res += int64(ch[i] << uint(i*8))
+			res += int64(ch[i]) << uint(i*8)
 		}
 		d.preValue = res
 

@@ -95,7 +95,7 @@ func (d *IntRleDecoder) ReadInt() int32 {
 		panic("tsfile-encoding IntRleDecoder: not a valid mode")
 	}
 
-	//	if d.packageReader.Len() <= 0 {
+	//	if d.currentCount > 0 || d.packageReader.Len() <= 0 {
 	//		d.isReadingBegan = false
 	//	}
 

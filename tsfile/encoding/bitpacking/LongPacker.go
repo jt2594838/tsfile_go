@@ -70,14 +70,14 @@ func (p *LongPacker) Pack8Values(values []int64, offset int, buf []byte) {
 		// If the remaining space of the buffer can not save the bits for one Integer,
 		if leftSize > 0 && valueIdx < NUM_OF_LONGS+offset {
 			// put the first 'leftSize' bits of the Long into remaining space of the buffer
-			buffer |= (values[valueIdx] >> uint(p.BitWidth-leftSize))
+			buffer |= int64(uint64(values[valueIdx]) >> uint(p.BitWidth-leftSize))
 			leftBit = p.BitWidth - leftSize
 			leftSize = 0
 		}
 
 		// put the buffer into the final result
 		for j := 0; j < 8; j++ {
-			buf[bufIdx] = (byte)((buffer >> uint((8-j-1)*8)) & 0xFF)
+			buf[bufIdx] = (byte)((uint64(buffer) >> uint((8-j-1)*8)) & 0xFF)
 			bufIdx++
 			if bufIdx >= p.BitWidth*8/8 {
 				return
@@ -110,8 +110,8 @@ func (p *LongPacker) Unpack8Values(buf []byte, offset int, values []int64) {
 			//If 'leftBits' in current byte belongs to current long value
 			if p.BitWidth-totalBits >= leftBits {
 				//then put left bits in current byte to current long value
-				values[valueIdx] = values[valueIdx] << uint(leftBits)
-				values[valueIdx] = (values[valueIdx] | ((1<<uint(leftBits) - 1) & int64(buf[byteIdx])))
+				values[valueIdx] = values[valueIdx] << uint32(leftBits)
+				values[valueIdx] = (values[valueIdx] | ((1<<uint32(leftBits) - 1) & int64(buf[byteIdx])))
 				totalBits += leftBits
 				//get next byte
 				byteIdx++
@@ -121,8 +121,12 @@ func (p *LongPacker) Unpack8Values(buf []byte, offset int, values []int64) {
 			} else {
 				//numbers of bits to be take
 				t := p.BitWidth - totalBits
-				values[valueIdx] = values[valueIdx] << uint(t)
-				values[valueIdx] = int64(values[valueIdx] | (((1 << uint(leftBits)) - 1) & int64(buf[byteIdx]>>uint(leftBits-t))))
+				values[valueIdx] = values[valueIdx] << uint32(t)
+
+				temp := int64((1<<uint(leftBits) - 1) & buf[byteIdx])
+				temp = temp >> uint(leftBits-t)
+				values[valueIdx] = values[valueIdx] | temp
+
 				leftBits -= t
 				totalBits += t
 			}
