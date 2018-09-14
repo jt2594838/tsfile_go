@@ -58,8 +58,6 @@ func init() {
 }
 
 func loadProperties() {
-	log.Println(GroupSizeInByte)
-
 	file, err := os.Open(CONFIG_FILE_NAME)
 	if err != nil {
 		log.Fatal(err)

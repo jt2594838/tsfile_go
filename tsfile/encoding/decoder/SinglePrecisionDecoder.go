@@ -10,6 +10,7 @@ import (
 
 type SinglePrecisionDecoder struct {
 	endianType constant.EndianType
+	dataType   constant.TSDataType
 	reader     *utils.BytesReader
 	flag       bool
 	preValue   int32
@@ -25,7 +26,7 @@ func (d *SinglePrecisionDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
-func (d *SinglePrecisionDecoder) ReadFloat() float32 {
+func (d *SinglePrecisionDecoder) ReadValue() interface{} {
 	if !d.flag {
 		d.flag = true
 
@@ -79,28 +80,4 @@ func (d *SinglePrecisionDecoder) getNextValue() {
 	}
 	d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
 	d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
-}
-
-func (d *SinglePrecisionDecoder) ReadBool() bool {
-	panic("ReadBoolean not supported by SinglePrecisionDecoder")
-}
-
-func (d *SinglePrecisionDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by SinglePrecisionDecoder")
-}
-
-func (d *SinglePrecisionDecoder) ReadInt() int32 {
-	panic("ReadInt not supported by SinglePrecisionDecoder")
-}
-
-func (d *SinglePrecisionDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by SinglePrecisionDecoder")
-}
-
-func (d *SinglePrecisionDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by SinglePrecisionDecoder")
-}
-
-func (d *SinglePrecisionDecoder) ReadString() string {
-	panic("ReadString not supported by SinglePrecisionDecoder")
 }

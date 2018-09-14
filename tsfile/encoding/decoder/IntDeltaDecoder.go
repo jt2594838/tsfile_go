@@ -3,7 +3,8 @@ package decoder
 import (
 	_ "bytes"
 	_ "encoding/binary"
-	_ "tsfile/common/constant"
+	"math"
+	"tsfile/common/constant"
 	"tsfile/common/utils"
 )
 
@@ -14,7 +15,8 @@ import (
 // 12-15 bits int32 存储第一个值
 // 15 bit 之后存储数值
 type IntDeltaDecoder struct {
-	reader *utils.BytesReader
+	dataType constant.TSDataType
+	reader   *utils.BytesReader
 
 	//value count
 	count int
@@ -37,7 +39,7 @@ func (d *IntDeltaDecoder) HasNext() bool {
 	return (d.index < d.count) || (d.reader.Len() > 0)
 }
 
-func (d *IntDeltaDecoder) ReadInt() int32 {
+func (d *IntDeltaDecoder) ReadValue() interface{} {
 	if d.index == d.count {
 		return d.loadPack()
 	} else {
@@ -57,7 +59,7 @@ func (d *IntDeltaDecoder) loadPack() int32 {
 	d.index = 0
 
 	//how many bytes data takes after encoding
-	encodingLength := ceil(d.count * d.width)
+	encodingLength := int(math.Ceil(float64(d.count*d.width) / 8.0))
 	valueBuffer := d.reader.ReadSlice(encodingLength)
 
 	//allocateDataArray
@@ -74,23 +76,4 @@ func (d *IntDeltaDecoder) loadPack() int32 {
 	}
 
 	return d.firstValue
-}
-
-func (d *IntDeltaDecoder) ReadBool() bool {
-	panic("ReadBool not supported by IntDeltaDecoder")
-}
-func (d *IntDeltaDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by IntDeltaDecoder")
-}
-func (d *IntDeltaDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by IntDeltaDecoder")
-}
-func (d *IntDeltaDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by IntDeltaDecoder")
-}
-func (d *IntDeltaDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by IntDeltaDecoder")
-}
-func (d *IntDeltaDecoder) ReadString() string {
-	panic("ReadString not supported by IntDeltaDecoder")
 }

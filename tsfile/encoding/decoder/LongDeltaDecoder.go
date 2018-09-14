@@ -3,7 +3,8 @@ package decoder
 import (
 	_ "bytes"
 	_ "encoding/binary"
-	_ "tsfile/common/constant"
+	"math"
+	"tsfile/common/constant"
 	"tsfile/common/utils"
 )
 
@@ -14,7 +15,8 @@ import (
 // 16-23 bits int64 存储第一个值
 // 24 bit 之后存储数值
 type LongDeltaDecoder struct {
-	reader *utils.BytesReader
+	dataType constant.TSDataType
+	reader   *utils.BytesReader
 
 	//value count
 	count int
@@ -37,7 +39,7 @@ func (d *LongDeltaDecoder) HasNext() bool {
 	return (d.index < d.count) || (d.reader.Len() > 0)
 }
 
-func (d *LongDeltaDecoder) ReadLong() int64 {
+func (d *LongDeltaDecoder) ReadValue() interface{} {
 	if d.index == d.count {
 		return d.loadPack()
 	} else {
@@ -57,7 +59,7 @@ func (d *LongDeltaDecoder) loadPack() int64 {
 	d.index = 0
 
 	//how many bytes data takes after encoding
-	encodingLength := ceil(d.count * d.width)
+	encodingLength := int(math.Ceil(float64(d.count*d.width) / 8.0))
 	valueBuffer := d.reader.ReadSlice(encodingLength)
 
 	//allocateDataArray
@@ -74,23 +76,4 @@ func (d *LongDeltaDecoder) loadPack() int64 {
 	}
 
 	return d.firstValue
-}
-
-func (d *LongDeltaDecoder) ReadBool() bool {
-	panic("ReadBool not supported by LongDeltaDecoder")
-}
-func (d *LongDeltaDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by LongDeltaDecoder")
-}
-func (d *LongDeltaDecoder) ReadInt() int32 {
-	panic("ReadInt not supported by LongDeltaDecoder")
-}
-func (d *LongDeltaDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by LongDeltaDecoder")
-}
-func (d *LongDeltaDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by LongDeltaDecoder")
-}
-func (d *LongDeltaDecoder) ReadString() string {
-	panic("ReadString not supported by LongDeltaDecoder")
 }

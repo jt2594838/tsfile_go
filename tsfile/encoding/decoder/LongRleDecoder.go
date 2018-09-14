@@ -24,6 +24,7 @@ import (
 
 type LongRleDecoder struct {
 	endianType constant.EndianType
+	dataType   constant.TSDataType
 
 	reader *utils.BytesReader
 	packer *bitpacking.LongPacker
@@ -60,11 +61,7 @@ func (d *LongRleDecoder) HasNext() bool {
 	return false
 }
 
-func (d *LongRleDecoder) ReadBool() bool {
-	return (d.ReadLong() == 0)
-}
-
-func (d *LongRleDecoder) ReadLong() int64 {
+func (d *LongRleDecoder) ReadValue() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
 		d.length = int(d.reader.ReadUnsignedVarInt())
@@ -157,24 +154,4 @@ func (r *LongRleDecoder) readLongLittleEndianPaddedOnBitWidth(reader *utils.Byte
 		result |= int64(ch & 0xff)
 	}
 	return result
-}
-
-func (d *LongRleDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by LongRleDecoder")
-}
-
-func (d *LongRleDecoder) ReadInt() int32 {
-	panic("ReadLong not supported by LongRleDecoder")
-}
-
-func (d *LongRleDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by LongRleDecoder")
-}
-
-func (d *LongRleDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by LongRleDecoder")
-}
-
-func (d *LongRleDecoder) ReadString() string {
-	panic("ReadString not supported by LongRleDecoder")
 }

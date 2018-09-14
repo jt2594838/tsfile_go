@@ -2,6 +2,7 @@
 package main
 
 import (
+	_ "flag"
 	"fmt"
 	"log"
 	"strconv"
@@ -18,8 +19,14 @@ func main() {
 		}
 	}()
 
+	//	file := *flag.String("f", "", "tsfile name to read")
+	//	if file == "" {
+	//		log.Println("Please input tsfile name")
+	//	}
+
+	file := "D:/E2E/iot/iotdb/tsfile-hxd_thanos/test.ts"
 	f := new(read.TsFileSequenceReader)
-	f.Open("D:/E2E/iot/iotdb/tsfile-hxd_thanos/test.ts")
+	f.Open(file)
 	defer f.Close()
 
 	headerString := f.ReadHeadMagic()
@@ -37,8 +44,8 @@ func main() {
 		for i := 0; i < groupHeader.GetNumberOfChunks(); i++ {
 			chunkHeader := f.ReadChunkHeader()
 			log.Println("  chunk: " + chunkHeader.GetSensor() + ", page number: " + strconv.Itoa(chunkHeader.GetNumberOfPages()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
-			defaultTimeDecoder := decoder.GetDecoderByType(constant.TS_2DIFF, constant.INT64)
-			valueDecoder := decoder.GetDecoderByType(chunkHeader.GetEncodingType(), chunkHeader.GetDataType())
+			defaultTimeDecoder := decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)
+			valueDecoder := decoder.CreateDecoder(chunkHeader.GetEncodingType(), chunkHeader.GetDataType())
 			for j := 0; j < chunkHeader.GetNumberOfPages(); j++ {
 				pageHeader := f.ReadPageHeader(chunkHeader.GetDataType())
 				log.Println("    page dps: " + strconv.Itoa(pageHeader.GetNumberOfValues()) + ", page data size: " + strconv.Itoa(pageHeader.GetCompressedSize()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))

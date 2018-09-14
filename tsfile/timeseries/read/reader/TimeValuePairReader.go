@@ -11,7 +11,7 @@ type TimeValuePairReader interface {
 
 	Next() datatype.TimeValuePair
 
-	SkipCurrentTimeValuePair()
+	Skip()
 
 	Close()
 }

@@ -24,6 +24,7 @@ import (
 
 type IntRleDecoder struct {
 	endianType constant.EndianType
+	dataType   constant.TSDataType
 
 	reader *utils.BytesReader
 	packer *bitpacking.IntPacker
@@ -60,11 +61,7 @@ func (d *IntRleDecoder) HasNext() bool {
 	return false
 }
 
-func (d *IntRleDecoder) ReadBool() bool {
-	return (d.ReadInt() == 0)
-}
-
-func (d *IntRleDecoder) ReadInt() int32 {
+func (d *IntRleDecoder) ReadValue() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
 		d.length = int(d.reader.ReadUnsignedVarInt())
@@ -160,24 +157,4 @@ func (r *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesR
 	}
 
 	return result
-}
-
-func (d *IntRleDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by IntRleDecoder")
-}
-
-func (d *IntRleDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by IntRleDecoder")
-}
-
-func (d *IntRleDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by IntRleDecoder")
-}
-
-func (d *IntRleDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by IntRleDecoder")
-}
-
-func (d *IntRleDecoder) ReadString() string {
-	panic("ReadString not supported by IntRleDecoder")
 }

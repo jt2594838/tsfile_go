@@ -31,7 +31,7 @@ func (d *BitmapDecoder) Init(data []byte) {
 	d.currentCount = 0
 }
 
-func (d *BitmapDecoder) ReadInt() int32 {
+func (d *BitmapDecoder) ReadValue() interface{} {
 	if d.currentCount == 0 {
 		// reset
 		d.length = 0
@@ -72,23 +72,4 @@ func (d *BitmapDecoder) readPackage() {
 	}
 
 	d.currentCount = d.number
-}
-
-func (d *BitmapDecoder) ReadBool() bool {
-	panic("ReadBool not supported by BitmapDecoder")
-}
-func (d *BitmapDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by BitmapDecoder")
-}
-func (d *BitmapDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by BitmapDecoder")
-}
-func (d *BitmapDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by BitmapDecoder")
-}
-func (d *BitmapDecoder) ReadDouble() float64 {
-	panic("ReadDouble not supported by BitmapDecoder")
-}
-func (d *BitmapDecoder) ReadString() string {
-	panic("ReadString not supported by BitmapDecoder")
 }

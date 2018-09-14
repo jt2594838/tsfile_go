@@ -8,7 +8,7 @@ import (
 	"tsfile/common/utils"
 )
 
-type FloatDecoder struct {
+type DoubleDecoder struct {
 	encoding constant.TSEncoding
 	dataType constant.TSDataType
 
@@ -17,13 +17,13 @@ type FloatDecoder struct {
 	maxPointValue float64
 }
 
-func (d *FloatDecoder) Init(data []byte) {
+func (d *DoubleDecoder) Init(data []byte) {
 	if d.encoding == constant.RLE {
-		d.baseDecoder = &IntRleDecoder{dataType: d.dataType}
+		d.baseDecoder = &LongRleDecoder{dataType: d.dataType}
 	} else if d.encoding == constant.TS_2DIFF {
-		d.baseDecoder = &IntDeltaDecoder{dataType: d.dataType}
+		d.baseDecoder = &LongDeltaDecoder{dataType: d.dataType}
 	} else {
-		panic("data type is not supported by FloatDecoder: " + strconv.Itoa(int(d.dataType)))
+		panic("encoding is not supported by DoubleDecoder: " + strconv.Itoa(int(d.encoding)))
 	}
 
 	d.reader = utils.NewBytesReader(data)
@@ -38,16 +38,16 @@ func (d *FloatDecoder) Init(data []byte) {
 	d.baseDecoder.Init(d.reader.Remaining())
 }
 
-func (d *FloatDecoder) HasNext() bool {
+func (d *DoubleDecoder) HasNext() bool {
 	if d.baseDecoder == nil {
 		return false
 	}
 	return d.baseDecoder.HasNext()
 }
 
-func (d *FloatDecoder) ReadValue() interface{} {
-	value := d.baseDecoder.ReadValue().(int32)
+func (d *DoubleDecoder) ReadValue() interface{} {
+	value := d.baseDecoder.ReadValue().(int64)
 	result := float64(value) / d.maxPointValue
 
-	return float32(result)
+	return result
 }

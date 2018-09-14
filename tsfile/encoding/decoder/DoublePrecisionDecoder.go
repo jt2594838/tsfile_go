@@ -10,6 +10,7 @@ import (
 
 type DoublePrecisionDecoder struct {
 	endianType constant.EndianType
+	dataType   constant.TSDataType
 	reader     *utils.BytesReader
 	flag       bool
 	preValue   int64
@@ -25,7 +26,7 @@ func (d *DoublePrecisionDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
-func (d *DoublePrecisionDecoder) ReadDouble() float64 {
+func (d *DoublePrecisionDecoder) ReadValue() interface{} {
 	if !d.flag {
 		d.flag = true
 
@@ -84,28 +85,4 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 	}
 	d.base.leadingZeroNum = d.base.numberOfLeadingZerosLong(d.preValue)
 	d.base.tailingZeroNum = d.base.numberOfTrailingZerosLong(d.preValue)
-}
-
-func (d *DoublePrecisionDecoder) ReadBool() bool {
-	panic("ReadBoolean not supported by DoublePrecisionDecoder")
-}
-
-func (d *DoublePrecisionDecoder) ReadShort() int16 {
-	panic("ReadShort not supported by DoublePrecisionDecoder")
-}
-
-func (d *DoublePrecisionDecoder) ReadInt() int32 {
-	panic("ReadInt not supported by DoublePrecisionDecoder")
-}
-
-func (d *DoublePrecisionDecoder) ReadLong() int64 {
-	panic("ReadLong not supported by DoublePrecisionDecoder")
-}
-
-func (d *DoublePrecisionDecoder) ReadFloat() float32 {
-	panic("ReadFloat not supported by DoublePrecisionDecoder")
-}
-
-func (d *DoublePrecisionDecoder) ReadString() string {
-	panic("ReadString not supported by DoublePrecisionDecoder")
 }
