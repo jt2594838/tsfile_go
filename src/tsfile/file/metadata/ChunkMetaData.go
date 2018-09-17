@@ -16,6 +16,14 @@ type ChunkMetaData struct {
 	valuesStatistics              *Digest
 }
 
+func (c *ChunkMetaData) TotalByteSizeOfPagesOnDisk() int64 {
+	return c.totalByteSizeOfPagesOnDisk
+}
+
+func (c *ChunkMetaData) FileOffsetOfCorrespondingData() int64 {
+	return c.fileOffsetOfCorrespondingData
+}
+
 func (f *ChunkMetaData) Deserialize(reader *utils.BytesReader) {
 	f.sensor = reader.ReadString()
 	f.fileOffsetOfCorrespondingData = reader.ReadLong()

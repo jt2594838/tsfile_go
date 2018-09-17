@@ -18,6 +18,14 @@ type FileMetaData struct {
 	timeSeriesMetadataMap map[string]*TimeSeriesMetaData
 }
 
+func (f *FileMetaData) TimeSeriesMetadataMap() map[string]*TimeSeriesMetaData {
+	return f.timeSeriesMetadataMap
+}
+
+func (f *FileMetaData) DeviceMap() map[string]*DeviceMetaData {
+	return f.deviceMap
+}
+
 func (f *FileMetaData) Deserialize(metadata []byte) {
 	reader := utils.NewBytesReader(metadata)
 

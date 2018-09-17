@@ -9,6 +9,7 @@ const (
 	FLOAT   TSDataType = 3
 	DOUBLE  TSDataType = 4
 	TEXT    TSDataType = 5
+	INVALID TSDataType = -1
 )
 
 const (

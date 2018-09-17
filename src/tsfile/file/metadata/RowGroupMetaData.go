@@ -15,6 +15,10 @@ type RowGroupMetaData struct {
 	timeSeriesChunkMetaDataList   *list.List
 }
 
+func (r *RowGroupMetaData) TimeSeriesChunkMetaDataList() *list.List {
+	return r.timeSeriesChunkMetaDataList
+}
+
 func (f *RowGroupMetaData) Deserialize(reader *utils.BytesReader) {
 	f.device = reader.ReadString()
 	f.totalByteSize = reader.ReadLong()

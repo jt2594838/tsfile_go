@@ -14,6 +14,10 @@ type DeviceMetaData struct {
 	rowGroupMetadataList *list.List
 }
 
+func (d *DeviceMetaData) RowGroupMetadataList() *list.List {
+	return d.rowGroupMetadataList
+}
+
 func (f *DeviceMetaData) Deserialize(reader *utils.BytesReader) {
 	f.startTime = reader.ReadLong()
 	f.endTime = reader.ReadLong()
