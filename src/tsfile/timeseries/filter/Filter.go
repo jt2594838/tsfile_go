@@ -1,5 +1,5 @@
 package filter
 
 type Filter interface {
-	satisfy(val interface{}) bool
+	Satisfy(val interface{}) bool
 }

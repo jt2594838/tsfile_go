@@ -1,11 +1,13 @@
 package operator
 
+import "tsfile/timeseries/filter"
+
 type NotFilter struct {
-	inner Filter
+	inner filter.Filter
 }
 
-func (f *NotFilter) satisfy(val interface{}) bool {
-	return !f.inner.satisfy(val)
+func (f *NotFilter) Satisfy(val interface{}) bool {
+	return !f.inner.Satisfy(val)
 }
 
 

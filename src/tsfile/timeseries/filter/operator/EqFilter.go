@@ -6,7 +6,7 @@ type IntEqFilter struct {
 	ref int32
 }
 
-func (f *IntEqFilter) satisfy(val interface{}) bool {
+func (f *IntEqFilter) Satisfy(val interface{}) bool {
 	if v, ok := val.(int32); ok {
 		return f.ref == v
 	}
@@ -17,7 +17,7 @@ type LongEqFilter struct {
 	ref int64
 }
 
-func (f *LongEqFilter) satisfy(val interface{}) bool {
+func (f *LongEqFilter) Satisfy(val interface{}) bool {
 	if v, ok := val.(int64); ok {
 		return f.ref == v
 	}
@@ -28,7 +28,7 @@ type StrEqFilter struct {
 	ref string
 }
 
-func (f *StrEqFilter) satisfy(val interface{}) bool {
+func (f *StrEqFilter) Satisfy(val interface{}) bool {
 	if v, ok := val.(string); ok {
 		return strings.Compare(v, f.ref) == 0
 	}
@@ -39,7 +39,7 @@ type FloatEqFilter struct {
 	ref float32
 }
 
-func (f *FloatEqFilter) satisfy(val interface{}) bool {
+func (f *FloatEqFilter) Satisfy(val interface{}) bool {
 	if v, ok := val.(float32); ok {
 		return v == f.ref
 	}
@@ -50,7 +50,7 @@ type DoubleEqFilter struct {
 	ref float64
 }
 
-func (f *DoubleEqFilter) satisfy(val interface{}) bool {
+func (f *DoubleEqFilter) Satisfy(val interface{}) bool {
 	if v, ok := val.(float64); ok {
 		return v == f.ref
 	}

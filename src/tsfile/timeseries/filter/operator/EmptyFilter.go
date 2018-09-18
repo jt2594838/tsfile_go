@@ -4,7 +4,7 @@ type EmptyFilter struct {
 
 }
 
-func (EmptyFilter) satisfy(val interface{}) bool {
+func (EmptyFilter) Satisfy(val interface{}) bool {
 	return true
 }
 

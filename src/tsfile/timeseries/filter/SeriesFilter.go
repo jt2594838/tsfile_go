@@ -7,12 +7,12 @@ type SeriesFilter struct {
 	filter Filter
 }
 
-func (s *SeriesFilter) satisfy(val interface{}) bool {
+func (s *SeriesFilter) Satisfy(val interface{}) bool {
 	if m, ok := val.(datatype.RowRecord); ok {
-		if v, ok := m[s.seriesName]; ok {
-			return s.filter.satisfy(v)
-		} else {
-			return false
+		for i, path := range m.Paths() {
+			if path == s.seriesName {
+				return s.filter.Satisfy(m.Values()[i])
+			}
 		}
 	}
 	return false

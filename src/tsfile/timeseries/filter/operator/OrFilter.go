@@ -1,10 +1,12 @@
 package operator
 
+import "tsfile/timeseries/filter"
+
 type OrFilter struct {
-	left Filter
-	right Filter
+	left filter.Filter
+	right filter.Filter
 }
 
-func (f *OrFilter) satisfy(val interface{}) bool {
-	return f.left.satisfy(val) || f.right.satisfy(val)
+func (f *OrFilter) Satisfy(val interface{}) bool {
+	return f.left.Satisfy(val) || f.right.Satisfy(val)
 }
