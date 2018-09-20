@@ -3,12 +3,17 @@ package seek
 import (
 	"tsfile/timeseries/read/reader/impl/basic"
 	"tsfile/timeseries/read/datatype"
+	"tsfile/timeseries/read/reader"
 )
 
 type SeekableRowReader struct {
-	basic.RowRecordReader
+	*basic.RowRecordReader
 
 	current *datatype.RowRecord
+}
+
+func NewSeekableRowReader(paths []string, readerMap map[string]reader.TimeValuePairReader) *SeekableRowReader {
+	return &SeekableRowReader{basic.NewRecordReader(paths, readerMap), nil}
 }
 
 func (r *SeekableRowReader) Next() *datatype.RowRecord{

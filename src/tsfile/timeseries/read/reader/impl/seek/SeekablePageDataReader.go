@@ -6,7 +6,7 @@ import (
 )
 
 type SeekablePageDataReader struct {
-	basic.PageDataReader
+	*basic.PageDataReader
 
 	current *datatype.TimeValuePair
 }

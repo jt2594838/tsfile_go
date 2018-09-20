@@ -11,6 +11,8 @@ import (
 	"tsfile/timeseries/read/reader"
 	impl2 "tsfile/timeseries/query/dataset/impl"
 	"tsfile/timeseries/read/reader/impl/basic"
+	"tsfile/timeseries/filter"
+	"tsfile/common/utils"
 )
 
 type Engine struct {
@@ -30,7 +32,24 @@ func (e *Engine) Close() {
 }
 
 func (e *Engine) Query(exp *query.QueryExpression) dataset.IQueryDataSet{
-	readerMap := make(map[string]reader.ISeriesReader)
+	readerMap := e.constructReaderMap(exp)
+	dataSet := impl2.NewMergeQueryDataSet(exp.SelectPaths(), exp.ConditionPaths(), readerMap, exp.Filter())
+	return dataSet
+}
+
+// decideQuerySet chooses one of MergeQueryDataSet and TimestampQueryDataSet by following criteria:
+// If selectPaths and conditionPaths have common paths, use MergeQueryDataSet, else use TimestampQueryDataSet.
+func (e *Engine) decideQuerySet(selectPaths []string, conditionPaths []string,
+	readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) dataset.IQueryDataSet {
+	if utils.TestCommonStrs(selectPaths, conditionPaths) {
+		return impl2.NewMergeQueryDataSet(selectPaths, conditionPaths, readerMap, filter)
+	} else {
+		return impl2.NewTimestampQueryDataSet(selectPaths, conditionPaths, readerMap, filter)
+	}
+}
+
+func (e *Engine) constructReaderMap(exp *query.QueryExpression) map[string]reader.TimeValuePairReader{
+	readerMap := make(map[string]reader.TimeValuePairReader)
 	for _, path := range exp.SelectPaths(){
 		readerMap[path] = e.constructReader(path)
 	}
@@ -39,11 +58,10 @@ func (e *Engine) Query(exp *query.QueryExpression) dataset.IQueryDataSet{
 			readerMap[path] = e.constructReader(path)
 		}
 	}
-	dataSet := impl2.NewQueryDataSet(exp.SelectPaths(), exp.ConditionPaths(), readerMap, exp.Filter())
-	return dataSet
+	return readerMap
 }
 
-func (e *Engine) constructReader(path string) reader.ISeriesReader {
+func (e *Engine) constructReader(path string) reader.TimeValuePairReader {
 	dataType := e.getDataType(path)
 	if dataType == constant.INVALID {
 		log.Println(fmt.Sprintf("No such timeseries in this file : %s", path))

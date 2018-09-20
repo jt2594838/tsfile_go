@@ -19,7 +19,8 @@ type MergeQueryDataSet struct {
 	pathIndex map[string]int
 }
 
-func NewQueryDataSet(selectPaths []string, conditionPaths []string, readerMap map[string]reader.ISeriesReader, filter filter.Filter) *MergeQueryDataSet {
+func NewMergeQueryDataSet(selectPaths []string, conditionPaths []string, readerMap map[string]reader.TimeValuePairReader,
+							filter filter.Filter) *MergeQueryDataSet {
 	allPaths := utils.MergeStrings(selectPaths, conditionPaths)
 	rowReader := basic.NewFilteredRowReader(allPaths, readerMap, filter)
 	dataSet := &MergeQueryDataSet{reader: rowReader}
