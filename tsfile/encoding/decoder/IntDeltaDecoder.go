@@ -39,7 +39,7 @@ func (d *IntDeltaDecoder) HasNext() bool {
 	return (d.index < d.count) || (d.reader.Len() > 0)
 }
 
-func (d *IntDeltaDecoder) ReadValue() interface{} {
+func (d *IntDeltaDecoder) Next() interface{} {
 	if d.index == d.count {
 		return d.loadPack()
 	} else {

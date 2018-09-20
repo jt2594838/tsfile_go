@@ -15,7 +15,7 @@ const (
 type Decoder interface {
 	Init(data []byte)
 	HasNext() bool
-	ReadValue() interface{}
+	Next() interface{}
 }
 
 func CreateDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) Decoder {

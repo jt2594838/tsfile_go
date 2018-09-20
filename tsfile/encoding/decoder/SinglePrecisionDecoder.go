@@ -26,7 +26,7 @@ func (d *SinglePrecisionDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
-func (d *SinglePrecisionDecoder) ReadValue() interface{} {
+func (d *SinglePrecisionDecoder) Next() interface{} {
 	if !d.flag {
 		d.flag = true
 

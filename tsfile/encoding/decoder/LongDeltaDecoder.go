@@ -39,7 +39,7 @@ func (d *LongDeltaDecoder) HasNext() bool {
 	return (d.index < d.count) || (d.reader.Len() > 0)
 }
 
-func (d *LongDeltaDecoder) ReadValue() interface{} {
+func (d *LongDeltaDecoder) Next() interface{} {
 	if d.index == d.count {
 		return d.loadPack()
 	} else {
