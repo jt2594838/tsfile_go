@@ -3,10 +3,18 @@ package operator
 import "tsfile/timeseries/filter"
 
 type AndFilter struct {
-	left filter.Filter
-	right filter.Filter
+	filters []filter.Filter
 }
 
 func (f *AndFilter) Satisfy(val interface{}) bool {
-	return f.left.Satisfy(val) && f.right.Satisfy(val)
+	if f.filters == nil {
+		return true
+	}
+
+	for _, filt := range f.filters {
+		if !filt.Satisfy(val) {
+			return false
+		}
+	}
+	return true
 }

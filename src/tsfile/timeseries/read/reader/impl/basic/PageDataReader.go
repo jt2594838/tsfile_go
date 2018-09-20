@@ -1,4 +1,4 @@
-package impl
+package basic
 
 import (
 	_ "bytes"
@@ -28,8 +28,8 @@ func (r *PageDataReader) HasNext() bool {
 	return r.TimeDecoder.HasNext() && r.ValueDecoder.HasNext()
 }
 
-func (r *PageDataReader) Next() datatype.TimeValuePair {
-	return datatype.TimeValuePair{Timestamp: r.TimeDecoder.ReadValue().(int64), Value: r.ValueDecoder.ReadValue()}
+func (r *PageDataReader) Next() *datatype.TimeValuePair {
+	return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.ReadValue().(int64), Value: r.ValueDecoder.ReadValue()}
 }
 
 func (r *PageDataReader) Skip() {

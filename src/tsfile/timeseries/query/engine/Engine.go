@@ -5,11 +5,12 @@ import (
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/query"
 	"tsfile/timeseries/query/dataset"
-	"tsfile/timeseries/read/reader/impl"
 	"log"
 	"fmt"
 	"tsfile/common/constant"
 	"tsfile/timeseries/read/reader"
+	impl2 "tsfile/timeseries/query/dataset/impl"
+	"tsfile/timeseries/read/reader/impl/basic"
 )
 
 type Engine struct {
@@ -28,12 +29,17 @@ func (e *Engine) Close() {
 	e.fileMeta = nil
 }
 
-func (e *Engine) uery(exp *query.QueryExpression) *dataset.QueryDataSet{
+func (e *Engine) Query(exp *query.QueryExpression) dataset.IQueryDataSet{
 	readerMap := make(map[string]reader.ISeriesReader)
-	for _, path := range exp.Paths(){
-		 readerMap[path] = e.constructReader(path)
+	for _, path := range exp.SelectPaths(){
+		readerMap[path] = e.constructReader(path)
 	}
-	dataSet := dataset.NewQueryDataSet(exp.Paths(), readerMap, exp.Filter())
+	for _, path := range exp.ConditionPaths(){
+		if _, ok := readerMap[path]; !ok {
+			readerMap[path] = e.constructReader(path)
+		}
+	}
+	dataSet := impl2.NewQueryDataSet(exp.SelectPaths(), exp.ConditionPaths(), readerMap, exp.Filter())
 	return dataSet
 }
 
@@ -52,7 +58,8 @@ func (e *Engine) constructReader(path string) reader.ISeriesReader {
 
 	var offsets []int64
 	var sizes []int
-	// find the offsets and sizes of all pages of this path
+	// var headers []*header.PageHeader
+	// find the offsets, sizes and headers(optional) of all pages of this path
 	for ele := deviceMeta.RowGroupMetadataList().Front(); ele != nil; ele = ele.Next() {
 		if rowGroupMeta, ok := ele.Value.(metadata.RowGroupMetaData); ok {
 			for c := rowGroupMeta.TimeSeriesChunkMetaDataList().Front(); c != nil; c = c.Next() {
@@ -62,12 +69,13 @@ func (e *Engine) constructReader(path string) reader.ISeriesReader {
 						pageHeader := e.reader.ReadPageHeader(dataType)
 						offsets = append(offsets, e.reader.Pos())
 						sizes = append(sizes, pageHeader.GetCompressedSize())
+						// headers = append(headers, pageHeader)
 					}
 				}
 			}
 		}
 	}
-	return impl.NewSeriesReader(offsets, sizes, e.reader)
+	return basic.NewSeriesReader(offsets, sizes, e.reader)
 }
 
 func (e* Engine) getDataType(path string) constant.TSDataType {

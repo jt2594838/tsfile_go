@@ -1,4 +1,4 @@
-package impl
+package basic
 
 import (
 	"tsfile/timeseries/filter"
@@ -13,27 +13,32 @@ type FilteredRowReader struct {
 	row *datatype.RowRecord
 }
 
-func (r *FilteredRowReader) HasNext() bool {
-	if r.row != nil {
-		return true
-	}
+func (r *FilteredRowReader) fillCache() {
 	for {
 		if !r.reader.HasNext() {
-			return false
+			return
 		} else {
 			row := r.reader.Next()
-			if r.filter.Satisfy(row) {
+			if r.filter == nil || r.filter.Satisfy(row) {
 				r.row = row
 				break
 			}
 		}
 	}
+}
+
+func (r *FilteredRowReader) HasNext() bool {
+	if r.row != nil {
+		return true
+	}
+	r.fillCache()
 	return r.row != nil
 }
 
 func (r *FilteredRowReader) Next() *datatype.RowRecord {
 	ret := r.row
-	r.row = nil
+	r. row = nil
+	r.fillCache()
 	return ret
 }
 

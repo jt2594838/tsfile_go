@@ -19,6 +19,14 @@ type PageHeader struct {
 	serializedSize   int
 }
 
+func (p *PageHeader) Min_timestamp() int64 {
+	return p.min_timestamp
+}
+
+func (p *PageHeader) Max_timestamp() int64 {
+	return p.max_timestamp
+}
+
 func (h *PageHeader) Deserialize(reader *utils.FileReader, dataType constant.TSDataType) {
 	h.uncompressedSize = int(reader.ReadInt())
 	h.compressedSize = int(reader.ReadInt())

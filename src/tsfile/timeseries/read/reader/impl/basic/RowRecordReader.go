@@ -1,4 +1,4 @@
-package impl
+package basic
 
 import (
 	"tsfile/timeseries/read/datatype"
@@ -8,7 +8,7 @@ import (
 
 type RowRecordReader struct {
 	paths []string
-	readerMap map[string]reader.ISeriesReader
+	readerMap map[string]reader.TimeValuePairReader
 
 	cacheList []*datatype.TimeValuePair
 	row       *datatype.RowRecord
@@ -16,7 +16,7 @@ type RowRecordReader struct {
 	currTime int64
 }
 
-func NewRecordReader(paths []string, readerMap map[string]reader.ISeriesReader) *RowRecordReader{
+func NewRecordReader(paths []string, readerMap map[string]reader.TimeValuePairReader) *RowRecordReader{
 	ret := &RowRecordReader{paths:paths, readerMap:readerMap}
 	ret.row = datatype.NewRowRecordWithPaths(paths)
 	ret.cacheList = make([]*datatype.TimeValuePair, len(paths))
@@ -26,15 +26,12 @@ func NewRecordReader(paths []string, readerMap map[string]reader.ISeriesReader) 
 	return ret
 }
 
-func (r *RowRecordReader) HasNext() bool {
-	if r.rowCached {
-		return true
-	}
+func (r *RowRecordReader) fillCache() {
 	// try filling the column caches and update the currTime
 	for i, path := range r.paths {
 		if r.cacheList[i] == nil && r.readerMap[path].HasNext() {
 			tv := r.readerMap[path].Next()
-			r.cacheList[i] = &tv
+			r.cacheList[i] = tv
 			if tv.Timestamp < r.currTime {
 				r.currTime =  tv.Timestamp
 			}
@@ -51,6 +48,13 @@ func (r *RowRecordReader) HasNext() bool {
 		}
 	}
 	r.row.SetTimestamp(r.currTime)
+}
+
+func (r *RowRecordReader) HasNext() bool {
+	if r.rowCached {
+		return true
+	}
+	r.fillCache()
 	return r.rowCached
 }
 
@@ -61,6 +65,7 @@ func (r *RowRecordReader) HasNext() bool {
 func (r *RowRecordReader) Next() *datatype.RowRecord {
 	r.rowCached = false
 	r.currTime = math.MaxInt64
+	r.fillCache()
 	return r.row
 }
 

@@ -2,12 +2,12 @@ package filter
 
 import "tsfile/timeseries/read/datatype"
 
-type SeriesFilter struct {
+type RowRecordValFilter struct {
 	seriesName string
 	filter Filter
 }
 
-func (s *SeriesFilter) Satisfy(val interface{}) bool {
+func (s *RowRecordValFilter) Satisfy(val interface{}) bool {
 	if m, ok := val.(datatype.RowRecord); ok {
 		for i, path := range m.Paths() {
 			if path == s.seriesName {
