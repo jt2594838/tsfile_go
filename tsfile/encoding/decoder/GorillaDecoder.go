@@ -6,8 +6,6 @@ import (
 	"tsfile/common/utils"
 )
 
-const EOF = -1
-
 type GorillaDecoder struct {
 	leadingZeroNum, tailingZeroNum int32
 	buffer                         int32

@@ -18,16 +18,12 @@ type IntDeltaDecoder struct {
 	dataType constant.TSDataType
 	reader   *utils.BytesReader
 
-	//value count
 	count int
-	//width per value
 	width int
-	//value index for reading
 	index int
 
 	baseValue     int32
 	firstValue    int32
-	previousValue int32
 	decodedValues []int32
 }
 
@@ -62,17 +58,14 @@ func (d *IntDeltaDecoder) loadPack() int32 {
 	encodingLength := int(math.Ceil(float64(d.count*d.width) / 8.0))
 	valueBuffer := d.reader.ReadSlice(encodingLength)
 
-	//allocateDataArray
+	previousValue := d.firstValue
 	d.decodedValues = make([]int32, d.count)
-
-	d.previousValue = d.firstValue
 	for i := 0; i < d.count; i++ {
 		p := d.width * i
-		//v := int32(binary.BigEndian.Uint32(valueBuffer[p:p + d.width]))
 		v := utils.BytesToInt(valueBuffer, p, d.width)
-		d.decodedValues[i] = d.previousValue + d.baseValue + v
+		d.decodedValues[i] = previousValue + d.baseValue + v
 
-		d.previousValue = d.decodedValues[i]
+		previousValue = d.decodedValues[i]
 	}
 
 	return d.firstValue
