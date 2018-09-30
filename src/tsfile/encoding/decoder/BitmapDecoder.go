@@ -31,7 +31,7 @@ func (d *BitmapDecoder) Init(data []byte) {
 	d.currentCount = 0
 }
 
-func (d *BitmapDecoder) ReadValue() interface{} {
+func (d *BitmapDecoder) Next() interface{} {
 	if d.currentCount == 0 {
 		// reset
 		d.length = 0

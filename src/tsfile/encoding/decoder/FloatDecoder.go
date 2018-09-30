@@ -23,7 +23,7 @@ func (d *FloatDecoder) Init(data []byte) {
 	} else if d.encoding == constant.TS_2DIFF {
 		d.baseDecoder = &IntDeltaDecoder{dataType: d.dataType}
 	} else {
-		panic("data type is not supported by FloatDecoder: " + strconv.Itoa(int(d.dataType)))
+		panic("encoding is not supported by FloatDecoder: " + strconv.Itoa(int(d.dataType)))
 	}
 
 	d.reader = utils.NewBytesReader(data)
@@ -45,8 +45,8 @@ func (d *FloatDecoder) HasNext() bool {
 	return d.baseDecoder.HasNext()
 }
 
-func (d *FloatDecoder) ReadValue() interface{} {
-	value := d.baseDecoder.ReadValue().(int32)
+func (d *FloatDecoder) Next() interface{} {
+	value := d.baseDecoder.Next().(int32)
 	result := float64(value) / d.maxPointValue
 
 	return float32(result)

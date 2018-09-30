@@ -45,8 +45,8 @@ func (d *DoubleDecoder) HasNext() bool {
 	return d.baseDecoder.HasNext()
 }
 
-func (d *DoubleDecoder) ReadValue() interface{} {
-	value := d.baseDecoder.ReadValue().(int64)
+func (d *DoubleDecoder) Next() interface{} {
+	value := d.baseDecoder.Next().(int64)
 	result := float64(value) / d.maxPointValue
 
 	return result

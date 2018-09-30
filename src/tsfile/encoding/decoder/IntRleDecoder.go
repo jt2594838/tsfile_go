@@ -61,7 +61,7 @@ func (d *IntRleDecoder) HasNext() bool {
 	return false
 }
 
-func (d *IntRleDecoder) ReadValue() interface{} {
+func (d *IntRleDecoder) Next() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
 		d.length = int(d.reader.ReadUnsignedVarInt())

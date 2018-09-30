@@ -20,7 +20,7 @@ func (d *PlainDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
-func (d *PlainDecoder) ReadValue() interface{} {
+func (d *PlainDecoder) Next() interface{} {
 	switch {
 	case d.dataType == constant.BOOLEAN:
 		return d.reader.ReadBool()
