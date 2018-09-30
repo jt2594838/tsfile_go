@@ -8,10 +8,12 @@ import (
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/query/timegen/impl"
 	"tsfile/common/constant"
+	"tsfile/timeseries/read/reader/impl/basic"
 )
 
 type TimestampQueryDataSet struct {
 	tGen timegen.ITimestampGenerator
+	rGen *basic.FilteredRowReader
 	r reader.ISeekableRowReader
 
 	currTime int64
@@ -21,13 +23,20 @@ type TimestampQueryDataSet struct {
 func NewTimestampQueryDataSet(selectPaths []string, conditionPaths []string,
 	selectReaderMap map[string]reader.ISeekableTimeValuePairReader, conditionReaderMap map[string]reader.TimeValuePairReader, filter filter.Filter) *TimestampQueryDataSet {
 	tGen := impl.NewRowRecordTimestampGenerator(conditionPaths, conditionReaderMap, filter)
+	rGen := basic.NewFilteredRowReader(conditionPaths, conditionReaderMap, filter)
 	r := seek.NewSeekableRowReader(selectPaths, selectReaderMap)
-	return &TimestampQueryDataSet{tGen:tGen, r:r, currTime:constant.INVALID_TIMESTAMP}
+	return &TimestampQueryDataSet{tGen:tGen, rGen:rGen, r:r, currTime:constant.INVALID_TIMESTAMP}
 }
 
 func (set *TimestampQueryDataSet) fetch() {
-	if set.tGen.HasNext() {
-		currTime := set.tGen.Next()
+	//if set.tGen.HasNext() {
+	//	currTime := set.tGen.Next()
+	//	if set.r.Seek(currTime) {
+	//		set.current = set.r.Current()
+	//	}
+	//}
+	if set.rGen.HasNext() {
+		currTime := set.rGen.Next().Timestamp()
 		if set.r.Seek(currTime) {
 			set.current = set.r.Current()
 		}
