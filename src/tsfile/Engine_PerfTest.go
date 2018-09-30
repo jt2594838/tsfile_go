@@ -19,7 +19,7 @@ var SEPARATOR = "."
 var ptNum = 1000000
 var selectNum = 10
 var conditionPathNum = 4
-var selectRate = 0.01
+var selectRate = 0.1
 
 
 func TestEnginePerf() {

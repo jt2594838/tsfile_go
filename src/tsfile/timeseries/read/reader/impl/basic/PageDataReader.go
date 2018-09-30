@@ -29,7 +29,7 @@ func (r *PageDataReader) HasNext() bool {
 }
 
 func (r *PageDataReader) Next() *datatype.TimeValuePair {
-	return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.ReadValue().(int64), Value: r.ValueDecoder.ReadValue()}
+	return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.Next().(int64), Value: r.ValueDecoder.Next()}
 }
 
 func (r *PageDataReader) Skip() {
