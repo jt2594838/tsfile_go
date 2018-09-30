@@ -4,6 +4,8 @@ import (
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
+	"tsfile/encoding/decoder"
+	"tsfile/common/constant"
 )
 
 type SeriesReader struct {
@@ -15,6 +17,9 @@ type SeriesReader struct {
 	Sizes      []int
 	FileReader *read.TsFileSequenceReader
 	PageReader reader.TimeValuePairReader
+	DType      constant.TSDataType
+	Encoding   constant.TSEncoding
+
 }
 
 func (r *SeriesReader) Read(data []byte) {
@@ -29,13 +34,13 @@ func (r *SeriesReader) HasNext() bool {
 	if r.PageReader != nil {
 		if r.PageReader.HasNext() {
 			return true
-		} else if r.PageIndex < r.PageLimit {
+		} else if r.PageIndex < r.PageLimit -1 {
 			r.nextPageReader()
 			return r.HasNext()
 		} else {
 			return false
 		}
-	} else if r.PageIndex < r.PageLimit {
+	} else if r.PageIndex < r.PageLimit - 1 {
 		r.nextPageReader()
 		return r.HasNext()
 	}
@@ -44,7 +49,8 @@ func (r *SeriesReader) HasNext() bool {
 
 func (r *SeriesReader) Next() *datatype.TimeValuePair {
 	if r.PageReader.HasNext() {
-		return r.PageReader.Next()
+		ret := r.PageReader.Next()
+		return ret
 	} else {
 		r.nextPageReader()
 		return r.Next()
@@ -58,8 +64,8 @@ func (r *SeriesReader) Close() {
 	r.FileReader = nil
 }
 
-func NewSeriesReader(offsets []int64, sizes []int, reader *read.TsFileSequenceReader) *SeriesReader {
-	return &SeriesReader{-1, len(offsets), offsets, sizes, reader, nil}
+func NewSeriesReader(offsets []int64, sizes []int, reader *read.TsFileSequenceReader, dType constant.TSDataType, encoding constant.TSEncoding) *SeriesReader {
+	return &SeriesReader{-1, len(offsets), offsets, sizes, reader, nil, dType, encoding}
 }
 
 func (r *SeriesReader) hasNextPageReader() bool {
@@ -69,6 +75,7 @@ func (r *SeriesReader) hasNextPageReader() bool {
 
 func (r *SeriesReader) nextPageReader() {
 	r.PageIndex ++
-	r.PageReader = new(PageDataReader)
+	r.PageReader = &PageDataReader{DataType:r.DType, ValueDecoder:decoder.CreateDecoder(r.Encoding, r.DType),
+									TimeDecoder:decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}
 	r.PageReader.Read(r.FileReader.ReadRaw(r.Offsets[r.PageIndex], r.Sizes[r.PageIndex]))
 }

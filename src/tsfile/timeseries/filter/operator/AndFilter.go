@@ -2,16 +2,17 @@ package operator
 
 import "tsfile/timeseries/filter"
 
+// AndFilter returns true iff the value satisfies all its children or it has no children.
 type AndFilter struct {
-	filters []filter.Filter
+	Filters []filter.Filter
 }
 
 func (f *AndFilter) Satisfy(val interface{}) bool {
-	if f.filters == nil {
+	if f.Filters == nil {
 		return true
 	}
 
-	for _, filt := range f.filters {
+	for _, filt := range f.Filters {
 		if !filt.Satisfy(val) {
 			return false
 		}

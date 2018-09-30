@@ -58,7 +58,7 @@ func (r *BytesReader) ReadLong() int64 {
 }
 
 func (r *BytesReader) ReadFloat() float32 {
-	bits := binary.BigEndian.Uint32(r.buf[r.pos : r.pos+4])
+	bits := binary.LittleEndian.Uint32(r.buf[r.pos : r.pos+4])
 	result := math.Float32frombits(bits)
 	r.pos += 4
 
@@ -66,7 +66,7 @@ func (r *BytesReader) ReadFloat() float32 {
 }
 
 func (r *BytesReader) ReadDouble() float64 {
-	bits := binary.BigEndian.Uint64(r.buf[r.pos : r.pos+8])
+	bits := binary.LittleEndian.Uint64(r.buf[r.pos : r.pos+8])
 	result := math.Float64frombits(bits)
 	r.pos += 8
 
@@ -132,5 +132,5 @@ func (r *BytesReader) ReadUnsignedVarInt() int32 {
 		r.pos++
 	}
 
-	return value | int32(b<<i)
+	return (value | int32(b)<<i)
 }

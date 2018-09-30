@@ -9,7 +9,8 @@ import (
 	"tsfile/common/constant"
 	"tsfile/encoding/decoder"
 	"tsfile/timeseries/read"
-	"tsfile/timeseries/read/reader/impl"
+
+	"tsfile/timeseries/read/reader/impl/basic"
 )
 
 func main() {
@@ -51,7 +52,7 @@ func main() {
 				log.Println("    page dps: " + strconv.Itoa(pageHeader.GetNumberOfValues()) + ", page data size: " + strconv.Itoa(pageHeader.GetCompressedSize()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 
 				pageData := f.ReadPage(pageHeader, chunkHeader.GetCompressionType())
-				reader1 := &impl.PageDataReader{DataType: chunkHeader.GetDataType(), ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
+				reader1 := &basic.PageDataReader{DataType: chunkHeader.GetDataType(), ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
 				reader1.Read(pageData)
 				for reader1.HasNext() {
 					pair := reader1.Next()

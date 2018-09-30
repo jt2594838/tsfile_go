@@ -1,7 +1,10 @@
 package constant
 
 const (
-	TIME = "time"
 
 	INVALID_TIMESTAMP = -1
+
+	INDEX_NOT_SET = -1
+
+	PATH_SEPARATOR = "."
 )

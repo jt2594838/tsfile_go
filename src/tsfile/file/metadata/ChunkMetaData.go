@@ -16,6 +16,10 @@ type ChunkMetaData struct {
 	valuesStatistics              *Digest
 }
 
+func (c *ChunkMetaData) Sensor() string {
+	return c.sensor
+}
+
 func (c *ChunkMetaData) TotalByteSizeOfPagesOnDisk() int64 {
 	return c.totalByteSizeOfPagesOnDisk
 }

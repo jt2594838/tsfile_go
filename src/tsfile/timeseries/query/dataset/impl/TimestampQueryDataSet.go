@@ -18,9 +18,10 @@ type TimestampQueryDataSet struct {
 	current  *datatype.RowRecord
 }
 
-func NewTimestampQueryDataSet(selectPaths []string, conditionPaths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *TimestampQueryDataSet {
-	tGen := impl.NewRowRecordTimestampGenerator(conditionPaths, readerMap, filter)
-	r := seek.NewSeekableRowReader(selectPaths, readerMap)
+func NewTimestampQueryDataSet(selectPaths []string, conditionPaths []string,
+	selectReaderMap map[string]reader.ISeekableTimeValuePairReader, conditionReaderMap map[string]reader.TimeValuePairReader, filter filter.Filter) *TimestampQueryDataSet {
+	tGen := impl.NewRowRecordTimestampGenerator(conditionPaths, conditionReaderMap, filter)
+	r := seek.NewSeekableRowReader(selectPaths, selectReaderMap)
 	return &TimestampQueryDataSet{tGen:tGen, r:r, currTime:constant.INVALID_TIMESTAMP}
 }
 
@@ -35,7 +36,7 @@ func (set *TimestampQueryDataSet) fetch() {
 
 func (set *TimestampQueryDataSet) HasNext() bool {
 	if set.current != nil {
-		return false
+		return true
 	}
 	set.fetch()
 	return set.current != nil

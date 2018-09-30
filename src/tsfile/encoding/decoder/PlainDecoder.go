@@ -29,9 +29,9 @@ func (d *PlainDecoder) ReadValue() interface{} {
 	case d.dataType == constant.INT64:
 		return d.reader.ReadLong()
 	case d.dataType == constant.FLOAT:
-		return d.reader.ReadLong()
+		return d.reader.ReadFloat()
 	case d.dataType == constant.DOUBLE:
-		return d.reader.ReadLong()
+		return d.reader.ReadDouble()
 	case d.dataType == constant.TEXT:
 		return d.reader.ReadString()
 	default:

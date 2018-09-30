@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CONFIG_FILE_NAME string = "tsfile-format.properties"
+	CONFIG_FILE_NAME string = "/Users/koutakashi/codes/tsfile_golang/src/tsfile/tsfile-format.properties"
 
 	MAGIC_STRING string = "TsFilev0.8.0"
 

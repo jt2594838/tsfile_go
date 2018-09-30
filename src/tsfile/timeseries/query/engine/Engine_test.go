@@ -60,7 +60,7 @@ func TestEngine(t *testing.T) {
 
 	// test an existing series but no value satisfies the given condition
 	paths = []string{series[0]}
-	var filt filter.Filter = &filter.RowRecordValFilter{series[0], &operator.IntGtFilter{5}}
+	var filt filter.Filter = filter.NewRowRecordValFilter(series[0], &operator.IntGtFilter{5})
 	exp.SetSelectPaths(paths)
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
@@ -70,7 +70,7 @@ func TestEngine(t *testing.T) {
 
 	// test an existing series with some satisfying values
 	paths = []string{series[0]}
-	filt = &filter.RowRecordValFilter{series[0], &operator.IntLtEqFilter{3}}
+	filt = filter.NewRowRecordValFilter(series[0], &operator.IntLtEqFilter{3})
 	exp.SetSelectPaths(paths)
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
@@ -118,7 +118,7 @@ func TestEngine(t *testing.T) {
 	// test selecting multiple series with satisfiable conditions
 	// and the condition path is among the select paths
 	paths = []string{series[0], series[1]}
-	filt = &filter.RowRecordValFilter{series[0], &operator.IntGtEqFilter{4}}
+	filt = filter.NewRowRecordValFilter(series[0], &operator.IntGtEqFilter{4})
 	exp.SetSelectPaths(paths)
 	exp.SetConditionPaths([]string{series[0]})
 	exp.SetFilter(filt)
@@ -140,7 +140,7 @@ func TestEngine(t *testing.T) {
 	// test selecting multiple series with satisfiable conditions
 	// and the condition path is outside the select paths
 	paths = []string{series[0], series[1]}
-	filt = &filter.RowRecordValFilter{series[2], &operator.IntGtEqFilter{4}}
+	filt = filter.NewRowRecordValFilter(series[2], &operator.IntGtEqFilter{4})
 	exp.SetConditionPaths([]string{series[2]})
 	exp.SetSelectPaths(paths)
 	exp.SetFilter(filt)
@@ -162,8 +162,8 @@ func TestEngine(t *testing.T) {
 	// test selecting multiple series with satisfiable conditions
 	// and the condition paths share some common paths with the select paths
 	paths = []string{series[0], series[1]}
-	filt = &operator.AndFilter{[]filter.Filter{&filter.RowRecordValFilter{series[2], &operator.IntGtEqFilter{4}},
-								&filter.RowRecordValFilter{series[1], &operator.IntGtEqFilter{3}}}}
+	filt = &operator.AndFilter{[]filter.Filter{filter.NewRowRecordValFilter(series[2], &operator.IntGtEqFilter{4}),
+		filter.NewRowRecordValFilter(series[1], &operator.IntGtEqFilter{3})}}
 
 	exp.SetConditionPaths([]string{series[2]})
 	exp.SetSelectPaths(paths)

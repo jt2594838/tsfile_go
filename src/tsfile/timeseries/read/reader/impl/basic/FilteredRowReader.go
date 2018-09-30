@@ -19,8 +19,12 @@ func (r *FilteredRowReader) fillCache() {
 			return
 		} else {
 			row := r.reader.Next()
+			if row.Timestamp() > 200000 {
+				//print("here")
+			}
 			if r.filter == nil || r.filter.Satisfy(row) {
 				r.row = row
+				//fmt.Printf("Row %v satisfies\n", row.Timestamp())
 				break
 			}
 		}
@@ -28,17 +32,19 @@ func (r *FilteredRowReader) fillCache() {
 }
 
 func (r *FilteredRowReader) HasNext() bool {
-	if r.row != nil {
-		return true
+	if r.row == nil {
+		r.fillCache()
 	}
-	r.fillCache()
 	return r.row != nil
 }
 
 func (r *FilteredRowReader) Next() *datatype.RowRecord {
+	if r.row == nil {
+		r.fillCache()
+	}
 	ret := r.row
 	r. row = nil
-	r.fillCache()
+
 	return ret
 }
 
@@ -46,7 +52,7 @@ func (r *FilteredRowReader) Close() {
 	r.reader.Close()
 }
 
-func NewFilteredRowReader(paths []string, readerMap map[string]reader.ISeriesReader, filter filter.Filter) *FilteredRowReader{
+func NewFilteredRowReader(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *FilteredRowReader{
 	rowReader := NewRecordReader(paths, readerMap)
 	dataSet := &FilteredRowReader{reader:rowReader, filter:filter}
 	return dataSet

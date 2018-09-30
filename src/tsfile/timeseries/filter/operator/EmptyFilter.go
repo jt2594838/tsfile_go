@@ -1,5 +1,6 @@
 package operator
 
+// EmptyFilter always returns true.
 type EmptyFilter struct {
 
 }

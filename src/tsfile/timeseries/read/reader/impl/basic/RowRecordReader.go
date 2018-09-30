@@ -12,7 +12,6 @@ type RowRecordReader struct {
 
 	cacheList []*datatype.TimeValuePair
 	row       *datatype.RowRecord
-	rowCached bool
 	currTime int64
 }
 
@@ -21,7 +20,6 @@ func NewRecordReader(paths []string, readerMap map[string]reader.TimeValuePairRe
 	ret.row = datatype.NewRowRecordWithPaths(paths)
 	ret.cacheList = make([]*datatype.TimeValuePair, len(paths))
 	ret.currTime = math.MaxInt64
-	ret.rowCached = false
 
 	return ret
 }
@@ -32,17 +30,20 @@ func (r *RowRecordReader) fillCache() {
 		if r.cacheList[i] == nil && r.readerMap[path].HasNext() {
 			tv := r.readerMap[path].Next()
 			r.cacheList[i] = tv
-			if tv.Timestamp < r.currTime {
-				r.currTime =  tv.Timestamp
-			}
+
+		}
+		if r.cacheList[i] != nil && r.cacheList[i].Timestamp < r.currTime {
+			r.currTime =  r.cacheList[i].Timestamp
 		}
 	}
+}
+
+func (r *RowRecordReader) fillRow() {
 	// fill the row cache using column caches
 	for i, _ := range r.paths {
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp == r.currTime {
 			r.row.Values()[i] = r.cacheList[i].Value
 			r.cacheList[i] = nil
-			r.rowCached = true
 		} else  {
 			r.row.Values()[i] = nil
 		}
@@ -51,11 +52,11 @@ func (r *RowRecordReader) fillCache() {
 }
 
 func (r *RowRecordReader) HasNext() bool {
-	if r.rowCached {
+	if r.currTime != math.MaxInt64 {
 		return true
 	}
 	r.fillCache()
-	return r.rowCached
+	return r.currTime != math.MaxInt64
 }
 
 /*
@@ -63,7 +64,7 @@ func (r *RowRecordReader) HasNext() bool {
 	overhead. You can only copy the values in the RowRecord instead of copying the pointer of the return value.
  */
 func (r *RowRecordReader) Next() *datatype.RowRecord {
-	r.rowCached = false
+	r.fillRow()
 	r.currTime = math.MaxInt64
 	r.fillCache()
 	return r.row

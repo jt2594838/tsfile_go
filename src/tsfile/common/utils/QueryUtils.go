@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// MergeStrings sorts and merges two string lists in ascent order
+// MergeStrings sorts and merges two string lists in ascent order.
 func MergeStrings(strsA []string, strsB []string) []string {
 	if strsB == nil {
 		return strsA
@@ -17,7 +17,7 @@ func MergeStrings(strsA []string, strsB []string) []string {
 	indexA, indexB := 0, 0
 	sort.Strings(strsA)
 	sort.Strings(strsB)
-	ret := make([]string, lenA + lenB)
+	var ret []string
 	for indexA < lenA && indexB < lenB{
 		order := strings.Compare(strsA[indexA], strsB[indexB])
 		if order == 0 {
@@ -43,7 +43,7 @@ func MergeStrings(strsA []string, strsB []string) []string {
 	return ret
 }
 
-// TestCommonStrs tests if two string slices have common strings using sort and merge
+// TestCommonStrs tests if two string slices have common strings using sort and merge.
 func TestCommonStrs(strsA []string, strsB []string) bool {
 	if strsB == nil || strsA == nil {
 		return false
