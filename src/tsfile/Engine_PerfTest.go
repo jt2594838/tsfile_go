@@ -1,14 +1,14 @@
 package main
 
 import (
-	"tsfile/timeseries/read"
-	"tsfile/timeseries/query"
+	"fmt"
+	"strconv"
+	"time"
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/filter/operator"
-	"fmt"
-	"time"
+	"tsfile/timeseries/query"
 	"tsfile/timeseries/query/engine"
-	"strconv"
+	"tsfile/timeseries/read"
 )
 
 var filePath = "/Users/koutakashi/codes/tsfile_golang/gen.ts_plain"
@@ -20,7 +20,6 @@ var ptNum = 1000000
 var selectNum = 10
 var conditionPathNum = 4
 var selectRate = 0.1
-
 
 func TestEnginePerf() {
 
@@ -35,7 +34,7 @@ func TestEnginePerf() {
 
 	var paths []string
 	for i := 0; i < selectNum; i++ {
-		paths = append(paths, DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i))
+		paths = append(paths, DEVICE_PREFIX+strconv.Itoa(i)+SEPARATOR+SENSOR_PREFIX+strconv.Itoa(i))
 	}
 
 	// condition paths all in select paths
@@ -57,22 +56,22 @@ func TestEnginePerf() {
 	cnt := 0
 	for dataSet.HasNext() {
 		dataSet.Next()
-		cnt ++
+		cnt++
 	}
-	fmt.Printf("******Query with Inner Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds() / 1000000, cnt)
+	fmt.Printf("******Query with Inner Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds()/1000000, cnt)
 
 	// condition paths half in select paths
 	conditionPaths = nil
 	seriesFilters = nil
 	exp = new(query.QueryExpression)
-	for i := 0; i < conditionPathNum / 2; i++ {
+	for i := 0; i < conditionPathNum/2; i++ {
 		conditionPath := DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i)
 		conditionPaths = append(conditionPaths, conditionPath)
 		seriesFilters = append(seriesFilters, filter.NewRowRecordValFilter(conditionPath,
 			&operator.DoubleLtFilter{selectRate * float64(ptNum)}))
 	}
 	for i := conditionPathNum / 2; i < conditionPathNum; i++ {
-		conditionPath := DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i + 1)
+		conditionPath := DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i+1)
 		conditionPaths = append(conditionPaths, conditionPath)
 		seriesFilters = append(seriesFilters, filter.NewRowRecordValFilter(conditionPath,
 			&operator.DoubleLtFilter{selectRate * float64(ptNum)}))
@@ -86,16 +85,16 @@ func TestEnginePerf() {
 	cnt = 0
 	for dataSet.HasNext() {
 		dataSet.Next()
-		cnt ++
+		cnt++
 	}
-	fmt.Printf("******Query with Cross Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds() / 1000000, cnt)
+	fmt.Printf("******Query with Cross Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds()/1000000, cnt)
 
 	// condition paths none in select paths
 	conditionPaths = nil
 	seriesFilters = nil
 	exp = new(query.QueryExpression)
 	for i := 0; i < conditionPathNum; i++ {
-		conditionPath := DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i + 1)
+		conditionPath := DEVICE_PREFIX + strconv.Itoa(i) + SEPARATOR + SENSOR_PREFIX + strconv.Itoa(i+1)
 		conditionPaths = append(conditionPaths, conditionPath)
 		seriesFilters = append(seriesFilters, filter.NewRowRecordValFilter(conditionPath,
 			&operator.DoubleLtFilter{selectRate * float64(ptNum)}))
@@ -109,9 +108,9 @@ func TestEnginePerf() {
 	cnt = 0
 	for dataSet.HasNext() {
 		dataSet.Next()
-		cnt ++
+		cnt++
 	}
-	fmt.Printf("******Query with outer Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds() / 1000000, cnt)
+	fmt.Printf("******Query with outer Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds()/1000000, cnt)
 
 	// time condition only
 	conditionPaths = nil
@@ -125,9 +124,9 @@ func TestEnginePerf() {
 	cnt = 0
 	for dataSet.HasNext() {
 		dataSet.Next()
-		cnt ++
+		cnt++
 	}
-	fmt.Printf("******Query with Time Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds() / 1000000, cnt)
+	fmt.Printf("******Query with Time Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds()/1000000, cnt)
 
 	// no condition
 	exp = new(query.QueryExpression)
@@ -137,12 +136,12 @@ func TestEnginePerf() {
 	cnt = 0
 	for dataSet.HasNext() {
 		dataSet.Next()
-		cnt ++
+		cnt++
 	}
-	fmt.Printf("******Query with no Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds() / 1000000, cnt)
+	fmt.Printf("******Query with no Conditions****** %d ms, %d pts\n", time.Now().Sub(startTime).Nanoseconds()/1000000, cnt)
 
-	}
-
-func main() {
-	TestEnginePerf()
 }
+
+//func main() {
+//	TestEnginePerf()
+//}

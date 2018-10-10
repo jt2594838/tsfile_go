@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	CONFIG_FILE_NAME string = "/Users/koutakashi/codes/tsfile_golang/src/tsfile/tsfile-format.properties"
+	CONFIG_FILE_NAME string = "tsfile-format.properties"
 
 	MAGIC_STRING string = "TsFilev0.8.0"
 
@@ -60,7 +60,8 @@ func init() {
 func loadProperties() {
 	file, err := os.Open(CONFIG_FILE_NAME)
 	if err != nil {
-		log.Fatal(err)
+		log.Println("Warn:", err)
+		return
 	}
 	defer file.Close()
 

@@ -1,6 +1,7 @@
 package decoder
 
 import (
+	"encoding/binary"
 	"strconv"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
@@ -25,9 +26,11 @@ func (d *PlainDecoder) Next() interface{} {
 	case d.dataType == constant.BOOLEAN:
 		return d.reader.ReadBool()
 	case d.dataType == constant.INT32:
-		return d.reader.ReadInt()
+		result := d.reader.ReadSlice(4)
+		return int32(binary.LittleEndian.Uint32(result))
 	case d.dataType == constant.INT64:
-		return d.reader.ReadLong()
+		result := d.reader.ReadSlice(8)
+		return int64(binary.LittleEndian.Uint64(result))
 	case d.dataType == constant.FLOAT:
 		return d.reader.ReadFloat()
 	case d.dataType == constant.DOUBLE:
