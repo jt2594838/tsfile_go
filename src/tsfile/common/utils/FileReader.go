@@ -135,6 +135,16 @@ func (f *FileReader) ReadString() string {
 	return result
 }
 
+func (f *FileReader) ReadStringBinary() []byte {
+	length := int(f.ReadInt())
+
+	dst := make([]byte, length)
+	buf := f.ReadSlice(length)
+
+	copy(dst, buf)
+
+	return dst
+}
 // this func does not change file pointer position and buffer
 func (f *FileReader) ReadAt(length int, pos int64) []byte {
 	buf := make([]byte, length)

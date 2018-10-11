@@ -6,21 +6,22 @@ import (
 	_ "os"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
+	"bytes"
 )
 
 type RowGroupHeader struct {
 	device         string
 	dataSize       int64
-	numberOfChunks int
-	serializedSize int
+	numberOfChunks int32
+	serializedSize int32
 }
 
 func (h *RowGroupHeader) Deserialize(reader *utils.FileReader) {
 	h.device = reader.ReadString()
 	h.dataSize = reader.ReadLong()
-	h.numberOfChunks = int(reader.ReadInt())
+	h.numberOfChunks = reader.ReadInt()
 
-	h.serializedSize = constant.INT_LEN + len(h.device) + constant.LONG_LEN + constant.INT_LEN
+	h.serializedSize = int32(constant.INT_LEN + len(h.device) + constant.LONG_LEN + constant.INT_LEN)
 }
 
 func (h *RowGroupHeader) GetDevice() string {
@@ -31,10 +32,34 @@ func (h *RowGroupHeader) GetDataSize() int64 {
 	return h.dataSize
 }
 
-func (h *RowGroupHeader) GetNumberOfChunks() int {
+func (h *RowGroupHeader) GetNumberOfChunks() int32 {
 	return h.numberOfChunks
 }
 
-func (h *RowGroupHeader) GetSerializedSize() int {
+func (h *RowGroupHeader) GetSerializedSize() int32{
 	return h.serializedSize
+}
+
+func (r *RowGroupHeader) RowGroupHeaderToMemory (buffer *bytes.Buffer) (int32) {
+	// write header to buffer
+	buffer.Write(utils.Int32ToByte(int32(len(r.device))))
+	buffer.Write([]byte(r.device))
+	buffer.Write(utils.Int64ToByte(r.dataSize))
+	buffer.Write(utils.Int32ToByte(r.numberOfChunks))
+
+	return r.serializedSize
+}
+
+func GetRowGroupSerializedSize (deviceId string) (int) {
+	return 1 * 4 + 1 * 8 + len(deviceId) + 1 * 4
+}
+
+func NewRowGroupHeader(dId string, rgs int64, sn int32) (*RowGroupHeader, error) {
+	ss := 1 * 4 + 1 * 8 + len(dId) + 1 * 4
+	return &RowGroupHeader{
+		device:dId,
+		dataSize:rgs,
+		numberOfChunks:sn,
+		serializedSize:int32(ss),
+	},nil
 }

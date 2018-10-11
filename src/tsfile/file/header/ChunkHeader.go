@@ -6,6 +6,7 @@ import (
 	_ "os"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
+	"bytes"
 )
 
 type ChunkHeader struct {
@@ -61,4 +62,39 @@ func (h *ChunkHeader) GetMaxTombstoneTime() int64 {
 
 func (h *ChunkHeader) GetSerializedSize() int {
 	return h.serializedSize
+}
+
+func (c *ChunkHeader) ChunkHeaderToMemory(buffer *bytes.Buffer)(int32){
+	// write chunk header to buffer
+	buffer.Write(utils.Int32ToByte(int32(len(c.sensor))))
+	buffer.Write([]byte(c.sensor))
+	buffer.Write(utils.Int32ToByte(int32(c.dataSize)))
+	buffer.Write(utils.Int16ToByte(int16(c.dataType)))
+	buffer.Write(utils.Int32ToByte(int32(c.numberOfPages)))
+	buffer.Write(utils.Int16ToByte(int16(c.compressionType)))
+	buffer.Write(utils.Int16ToByte(int16(c.encodingType)))
+	buffer.Write(utils.Int64ToByte(c.maxTombstoneTime))
+	return int32(c.serializedSize)
+}
+
+func (c *ChunkHeader) SetMaxTombstoneTime (mtt int64) () {
+	c.maxTombstoneTime = mtt
+}
+
+func GetChunkSerializedSize (sensorId string) (int) {
+	return 3 * 4 + 3 * 2 + len(sensorId) + 8
+}
+
+func NewChunkHeader(sId string, pbs int, tdt int16, ct int16, et int16, nop int, mtt int64) (*ChunkHeader, error) {
+	ss := 3 * 4 + 3 * 2 + len(sId) + 8
+	return &ChunkHeader{
+		sensor:sId,
+		dataSize:pbs,
+		dataType:constant.TSDataType(tdt),
+		compressionType:constant.CompressionType(ct),
+		encodingType:constant.TSEncoding(et),
+		numberOfPages:nop,
+		serializedSize:ss,
+		maxTombstoneTime:mtt,
+	},nil
 }

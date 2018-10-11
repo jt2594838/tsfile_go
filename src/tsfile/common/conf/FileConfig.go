@@ -53,17 +53,23 @@ var ValueEncoder string = "PLAIN"
 
 var Compressor string = "UNCOMPRESSED"
 
+// Default block size of two-diff. delta encoding is 128
+var DeltaBlockSize = 128
+
+// Current version is 3
+var CurrentVersion = 3
+
 func init() {
 	loadProperties()
 }
 
 func loadProperties() {
 	file, err := os.Open(CONFIG_FILE_NAME)
+	defer file.Close()
 	if err != nil {
 		log.Println("Warn:", err)
 		return
 	}
-	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {

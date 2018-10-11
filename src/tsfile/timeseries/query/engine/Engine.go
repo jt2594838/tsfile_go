@@ -115,29 +115,25 @@ func (e *Engine) getPageInfo(path string, needHeader bool) (dataType constant.TS
 
 	var headers []*header.PageHeader
 	// find the offsets, sizes and headers(optional) of all pages of this path
-	for ele := deviceMeta.RowGroupMetadataList().Front(); ele != nil; ele = ele.Next() {
-		if rowGroupMeta, ok := ele.Value.(*metadata.RowGroupMetaData); ok {
-			for c := rowGroupMeta.TimeSeriesChunkMetaDataList().Front(); c != nil; c = c.Next() {
-				if chunkMeta, ok := c.Value.(*metadata.ChunkMetaData); ok {
-					if chunkMeta.Sensor() != sensorId {
-						continue
-					}
-					chunkHeader := e.reader.ReadChunkHeaderAt(chunkMeta.FileOffsetOfCorrespondingData())
-					encoding = chunkHeader.GetEncodingType()
-					pos := e.reader.Pos()
-					for i := 0; i < chunkHeader.GetNumberOfPages(); i ++ {
-						pageHeader := e.reader.ReadPageHeaderAt(dataType, pos)
-						offsets = append(offsets, e.reader.Pos())
-						sizes = append(sizes, pageHeader.GetCompressedSize())
-						pos = e.reader.Pos() + int64(pageHeader.GetCompressedSize())
-						if needHeader {
-							headers = append(headers, pageHeader)
-						}
-					}
+	for ele, i := deviceMeta.GetRowGroups(), 0; i<len(ele); i++ {
+		rowGroupMeta := ele[i]
+		for c, j := rowGroupMeta.GetChunkMetaDataSli(), 0; j < len(c); j++ {
+			chunkMeta := c[j]
+			if chunkMeta.Sensor() != sensorId {
+				continue
+			}
+			chunkHeader := e.reader.ReadChunkHeaderAt(chunkMeta.FileOffsetOfCorrespondingData())
+			encoding = chunkHeader.GetEncodingType()
+			pos := e.reader.Pos()
+			for i := 0; i < chunkHeader.GetNumberOfPages(); i ++ {
+				pageHeader := e.reader.ReadPageHeaderAt(dataType, pos)
+				offsets = append(offsets, e.reader.Pos())
+				sizes = append(sizes, int(pageHeader.GetCompressedSize()))
+				pos = e.reader.Pos() + int64(pageHeader.GetCompressedSize())
+				if needHeader {
+					headers = append(headers, pageHeader)
 				}
 			}
-		} else {
-			log.Println("Invalid RowgroupMetadata")
 		}
 	}
 	return dataType, encoding, offsets, sizes, headers

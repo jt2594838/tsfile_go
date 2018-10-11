@@ -128,7 +128,7 @@ func (f *TsFileSequenceReader) ReadPageHeaderAt(dataType constant.TSDataType, of
 
 func (f *TsFileSequenceReader) ReadPage(header *header.PageHeader, compression constant.CompressionType) []byte {
 	unCompressor := compress.GetDecompressor(compression)
-	data := f.reader.ReadSlice(header.GetCompressedSize())
+	data := f.reader.ReadSlice(int(header.GetCompressedSize()))
 
 	if unCompressedData, err := unCompressor.Decompress(data); err == nil {
 		return unCompressedData

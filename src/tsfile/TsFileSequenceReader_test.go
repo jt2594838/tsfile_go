@@ -19,7 +19,7 @@ func TestRead(t *testing.T) {
 		}
 	}()
 
-	file := "D:/test.ts"
+	file := "/home/steven/code/go/src/github.com/tsfile_golang/test.ts"
 	f := new(read.TsFileSequenceReader)
 	f.Open(file)
 	defer f.Close()
@@ -35,15 +35,15 @@ func TestRead(t *testing.T) {
 
 	for f.HasNextRowGroup() {
 		groupHeader := f.ReadRowGroupHeader()
-		log.Println("row group: " + groupHeader.GetDevice() + ", chunk number: " + strconv.Itoa(groupHeader.GetNumberOfChunks()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
-		for i := 0; i < groupHeader.GetNumberOfChunks(); i++ {
+		log.Println("row group: " + groupHeader.GetDevice() + ", chunk number: " + strconv.Itoa(int(groupHeader.GetNumberOfChunks())) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
+		for i := 0; i < int(groupHeader.GetNumberOfChunks()); i++ {
 			chunkHeader := f.ReadChunkHeader()
 			log.Println("  chunk: " + chunkHeader.GetSensor() + ", page number: " + strconv.Itoa(chunkHeader.GetNumberOfPages()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 			defaultTimeDecoder := decoder.CreateDecoder(constant.PLAIN, constant.INT64)
 			valueDecoder := decoder.CreateDecoder(chunkHeader.GetEncodingType(), chunkHeader.GetDataType())
 			for j := 0; j < chunkHeader.GetNumberOfPages(); j++ {
 				pageHeader := f.ReadPageHeader(chunkHeader.GetDataType())
-				log.Println("    page dps: " + strconv.Itoa(pageHeader.GetNumberOfValues()) + ", page data size: " + strconv.Itoa(pageHeader.GetCompressedSize()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
+				log.Println("    page dps: " + strconv.Itoa(int(pageHeader.GetNumberOfValues())) + ", page data size: " + strconv.Itoa(int(pageHeader.GetCompressedSize())) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 
 				pageData := f.ReadPage(pageHeader, chunkHeader.GetCompressionType())
 				reader1 := &basic.PageDataReader{DataType: chunkHeader.GetDataType(), ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
