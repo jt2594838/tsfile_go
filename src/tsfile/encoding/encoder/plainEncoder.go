@@ -19,20 +19,20 @@ type PlainEncoder struct {
 	tsDataType		int16
 }
 
-func (i *PlainEncoder) Encode (value interface{}, buffer *bytes.Buffer) () {
+func (p *PlainEncoder) Encode (value interface{}, buffer *bytes.Buffer) () {
 	log.Info("enter PlainEncoder!!")
 	switch {
-	case i.tsDataType == int16(constant.BOOLEAN):
+	case p.tsDataType == int16(constant.BOOLEAN):
 		if data, ok := value.(bool); ok {
-			i.EncBool(data, buffer)
+			p.EncBool(data, buffer)
 		}
-	case i.tsDataType == int16(constant.INT32):
+	case p.tsDataType == int16(constant.INT32):
 		if data, ok := value.(int32); ok {
-			i.EncInt32(data, buffer)
+			p.EncInt32(data, buffer)
 		}
-	case i.tsDataType == int16(constant.FLOAT):
+	case p.tsDataType == int16(constant.FLOAT):
 		if data, ok := value.(float32); ok {
-			i.EncFloat32(data, buffer)
+			p.EncFloat32(data, buffer)
 		}
 	}
 	return
@@ -71,6 +71,10 @@ func (i *PlainEncoder) EncFloat32 (value float32, buffer *bytes.Buffer) () {
 func (i *PlainEncoder) EncBinary (value []byte, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input float32 value: %d", value)
 	buffer.Write(value)
+	return
+}
+
+func (i *PlainEncoder) Flush (buffer *bytes.Buffer) () {
 	return
 }
 
