@@ -28,10 +28,24 @@ type ValueWriter struct {
 }
 
 func (v *ValueWriter) GetCurrentMemSize() (int) {
-	return v.timeBuf.Len() + v.valueBuf.Len()
+	var sizeT int64 = 0
+	var sizeV int64 = 0
+	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
+		sizeT = encT.GetMaxByteSize()
+	}
+	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
+		sizeV = encV.GetMaxByteSize()
+	}
+	return v.timeBuf.Len() + v.valueBuf.Len() + int(sizeT) + int(sizeV)
 }
 
 func (v *ValueWriter) PrepareEndWriteOnePage() () {
+	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
+		encT.Flush(v.timeBuf)
+	}
+	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
+		encV.Flush(v.valueBuf)
+	}
 	return
 }
 

@@ -11,6 +11,7 @@ package sensorDescriptor
 import (
 	"tsfile/compress"
 	"tsfile/common/constant"
+	"tsfile/encoding/encoder"
 )
 
 type SensorDescriptor struct {
@@ -56,6 +57,16 @@ func (s *SensorDescriptor) GetCompresstionType() (int16) {
 // the return type should be Compressor, after finished Compressor we should modify it.
 func (s *SensorDescriptor) GetCompressor() (*compress.Encompress) {
 	return s.compressor
+}
+
+func (s *SensorDescriptor) GetTimeEncoder() (encoder.Encoder) {
+	//return TSEncodingBuilder.getConverter(constant.TS_2DIFF).getEncoder(constant.INT64)
+	return nil
+}
+
+func (s *SensorDescriptor) GetValueEncoder() (encoder.Encoder) {
+	//return TSEncodingBuilder.getConverter(s.tsEncoding).getEncoder(s.tsDataType)
+	return nil
 }
 
 func (s *SensorDescriptor) Close() (bool) {

@@ -53,7 +53,9 @@ func (f *FileSchema) Registermeasurement (sd *sensorDescriptor.SensorDescriptor)
 	f.indexSensorDataType(sd.GetSensorId(), sd.GetTsDataType())
 	f.AddTimeSeriesMetaData(sd.GetSensorId(), sd.GetTsDataType())
 	// todo fileschema.java line:178
-	//f.enlargeMaxByteSizeInOneRow()
+	if sd.GetTimeEncoder() != nil && sd.GetValueEncoder() != nil {
+		f.enlargeMaxByteSizeInOneRow(sd.GetTimeEncoder().GetOneItemMaxSize() + sd.GetValueEncoder().GetOneItemMaxSize())
+	}
 	return true
 }
 
