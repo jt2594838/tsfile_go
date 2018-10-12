@@ -21,6 +21,8 @@ const (
 type Encoder interface {
 	Encode(value interface{}, buffer *bytes.Buffer) ()
 	Flush(buffer *bytes.Buffer) ()
+	GetOneItemMaxSize() (int)
+	GetMaxByteSize() (int64)
 }
 
 func GetEncoder(et int16, tdt int16) (Encoder) {

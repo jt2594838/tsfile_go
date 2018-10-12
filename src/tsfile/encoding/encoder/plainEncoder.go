@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"tsfile/common/utils"
 	"tsfile/common/constant"
+	"tsfile/common/conf"
 )
 
 /**
@@ -97,6 +98,31 @@ func (p *PlainEncoder) EncBinary(value []byte, buffer *bytes.Buffer) () {
 
 func (p *PlainEncoder) Flush(buffer *bytes.Buffer) () {
 	return
+}
+
+func (p *PlainEncoder) GetMaxByteSize() (int) {
+	return 0
+}
+
+func (p *PlainEncoder) GetOneItemMaxSize() (int) {
+	switch p.tsDataType {
+	case int16(constant.BOOLEAN):
+		return 1
+	case int16(constant.INT32):
+		return 4
+	case int16(constant.INT64):
+		return 8
+	case int16(constant.FLOAT):
+		return 4
+	case int16(constant.DOUBLE):
+		return 8
+	case int16(constant.TEXT):
+		return 4 + conf.BYTE_SIZE_PER_CHAR * conf.MaxStringLength
+	default:
+		log.Error("invalid input dataType in plainEncoder. tsDataType: %d", p.tsDataType)
+
+	}
+	return 0
 }
 
 func NewPlainEncoder(tdt int16, endianType int16) (*PlainEncoder, error) {

@@ -59,6 +59,11 @@ var DeltaBlockSize = 128
 // Current version is 3
 var CurrentVersion = 3
 
+/**
+* String encoder with UTF-8 encodes a character to at most 4 bytes.
+ */
+var BYTE_SIZE_PER_CHAR int = 4
+
 func init() {
 	loadProperties()
 }
