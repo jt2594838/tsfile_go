@@ -100,7 +100,7 @@ func (p *PlainEncoder) Flush(buffer *bytes.Buffer) () {
 	return
 }
 
-func (p *PlainEncoder) GetMaxByteSize() (int) {
+func (p *PlainEncoder) GetMaxByteSize() (int64) {
 	return 0
 }
 
