@@ -73,12 +73,13 @@ func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
 }
 
 // write with encoder
-func (v *ValueWriter) WriteWithEncoder(t int64, tdt int16, value interface{}, valueCount int) () {
+func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
 
-	if encT, ok := v.timeEncoder.(encoder.Encoder);ok {
+	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
 		encT.Encode(t, v.timeBuf)
 	}
-	if encV, ok := v.timeEncoder.(encoder.Encoder);ok {
+
+	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
 
 		switch tdt {
 		case 0:
@@ -131,7 +132,7 @@ func (v *ValueWriter) WriteWithEncoder(t int64, tdt int16, value interface{}, va
 }
 
 // write without encoder
-func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
+func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, valueCount int) () {
 	var timeByteData []byte
 	var valueByteData []byte
 	switch tdt {
@@ -139,7 +140,7 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 		// bool
 		if data, ok := value.(bool); ok {
 			// encode
-			valueByteData = utils.BoolToByte(data, 0)
+			valueByteData = utils.BoolToByte(data, 1)
 		}
 	case 1:
 		//int32
@@ -149,19 +150,18 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 	case 2:
 		//int64
 		if data, ok := value.(int64); ok {
-			valueByteData = utils.Int64ToByte(data, 0)
+			valueByteData = utils.Int64ToByte(data, 1)
 		}
 
 	case 3:
 		//float
-		//if data, ok := value.(float32); ok {
 		if data, ok := value.(float32); ok {
-			valueByteData = utils.Float32ToByte(data, 0)
+			valueByteData = utils.Float32ToByte(data, 1)
 		}
 	case 4:
 		//double , float64 in golang as double in c
 		if data, ok := value.(float64); ok {
-			valueByteData = utils.Float64ToByte(data, 0)
+			valueByteData = utils.Float64ToByte(data, 1)
 		}
 	case 5:
 		//text

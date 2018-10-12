@@ -17,8 +17,10 @@ import (
  */
 
 type PlainEncoder struct {
-	tsDataType int16
-	endianType int16
+	tsDataType   int16
+	endianType   int16
+	encodeEndian int16
+	valueCount   int
 }
 
 func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) () {
@@ -34,7 +36,23 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) () {
 		}
 	case p.tsDataType == int16(constant.INT64):
 		if data, ok := value.(int64); ok {
-			p.EncInt64(data, buffer)
+			if p.valueCount == -1 {
+				aa := []byte{24}
+				buffer.Write(aa)
+				p.EncInt64(data, buffer)
+				p.EncInt64(data, buffer)
+				p.EncInt64(data, buffer)
+				p.valueCount += 1
+			}
+			if p.valueCount == conf.DeltaBlockSize {
+				p.EncInt64(data, buffer)
+				p.EncInt64(data, buffer)
+				p.EncInt64(data, buffer)
+				p.valueCount = 0
+			} else {
+				p.valueCount += 1
+			}
+
 		}
 	case p.tsDataType == int16(constant.FLOAT):
 		if data, ok := value.(float32); ok {
@@ -56,37 +74,37 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) () {
 
 func (p *PlainEncoder) EncBool(value bool, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input bool value: %d", value)
-	buffer.Write(utils.BoolToByte(value, p.endianType))
+	buffer.Write(utils.BoolToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncShort(value int16, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input int16 value: %d", value)
-	buffer.Write(utils.Int16ToByte(value, p.endianType))
+	buffer.Write(utils.Int16ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncInt32(value int32, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input int32 value: %d", value)
-	buffer.Write(utils.Int32ToByte(value, p.endianType))
+	buffer.Write(utils.Int32ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncInt64(value int64, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input int64 value: %d", value)
-	buffer.Write(utils.Int64ToByte(value, p.endianType))
+	buffer.Write(utils.Int64ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncFloat32(value float32, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input float32 value: %d", value)
-	buffer.Write(utils.Float32ToByte(value, p.endianType))
+	buffer.Write(utils.Float32ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncFloat64(value float64, buffer *bytes.Buffer) () {
 	log.Info("final enc ok! input float64 value: %d", value)
-	buffer.Write(utils.Float64ToByte(value, p.endianType))
+	buffer.Write(utils.Float64ToByte(value, p.encodeEndian))
 	return
 }
 
@@ -117,7 +135,7 @@ func (p *PlainEncoder) GetOneItemMaxSize() (int) {
 	case int16(constant.DOUBLE):
 		return 8
 	case int16(constant.TEXT):
-		return 4 + conf.BYTE_SIZE_PER_CHAR * conf.MaxStringLength
+		return 4 + conf.BYTE_SIZE_PER_CHAR*conf.MaxStringLength
 	default:
 		log.Error("invalid input dataType in plainEncoder. tsDataType: %d", p.tsDataType)
 
@@ -127,7 +145,9 @@ func (p *PlainEncoder) GetOneItemMaxSize() (int) {
 
 func NewPlainEncoder(tdt int16, endianType int16) (*PlainEncoder, error) {
 	return &PlainEncoder{
-		tsDataType: tdt,
-		endianType: endianType,
+		tsDataType:   tdt,
+		endianType:   endianType,
+		encodeEndian: 1,
+		valueCount:   -1,
 	}, nil
 }
