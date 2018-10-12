@@ -33,26 +33,26 @@ func (f *TimeSeriesMetaData) GetSensor() string {
 func (t *TimeSeriesMetaData) Serialize (buf *bytes.Buffer) (int) {
 	var byteLen int
 	if t.sensor == "" {
-		n1, _ := buf.Write(utils.BoolToByte(false))
+		n1, _ := buf.Write(utils.BoolToByte(false, 0))
 		byteLen += n1
 	} else {
-		n2, _ := buf.Write(utils.BoolToByte(true))
+		n2, _ := buf.Write(utils.BoolToByte(true, 0))
 		byteLen += n2
 
-		n3, _ := buf.Write(utils.Int32ToByte(int32(len(t.sensor))))
+		n3, _ := buf.Write(utils.Int32ToByte(int32(len(t.sensor)), 0))
 		byteLen += n3
 		n4, _ := buf.Write([]byte(t.sensor))
 		byteLen += n4
 	}
 
 	if t.dataType >= 0 && t.dataType <= 9 { // not empty
-		n5, _ := buf.Write(utils.BoolToByte(true))
+		n5, _ := buf.Write(utils.BoolToByte(true, 0))
 		byteLen += n5
 
-		n6, _ := buf.Write(utils.Int16ToByte(int16(t.dataType)))
+		n6, _ := buf.Write(utils.Int16ToByte(int16(t.dataType), 0))
 		byteLen += n6
 	} else {
-		n7, _ := buf.Write(utils.BoolToByte(false))
+		n7, _ := buf.Write(utils.BoolToByte(false, 0))
 		byteLen += n7
 	}
 

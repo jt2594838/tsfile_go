@@ -75,20 +75,20 @@ func (t *ChunkMetaData) SetNumOfPoints (num int64) () {
 func (t *ChunkMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 	var byteLen int
 
-	n1, _ := buf.Write(utils.Int32ToByte(int32(len(t.sensor))))
+	n1, _ := buf.Write(utils.Int32ToByte(int32(len(t.sensor)), 0))
 	byteLen += n1
 	n2, _ := buf.Write([]byte(t.sensor))
 	byteLen += n2
 
-	n3, _ := buf.Write(utils.Int64ToByte(t.fileOffsetOfCorrespondingData))
+	n3, _ := buf.Write(utils.Int64ToByte(t.fileOffsetOfCorrespondingData, 0))
 	byteLen += n3
-	n4, _ := buf.Write(utils.Int64ToByte(t.numOfPoints))
+	n4, _ := buf.Write(utils.Int64ToByte(t.numOfPoints, 0))
 	byteLen += n4
-	n5, _ := buf.Write(utils.Int64ToByte(t.totalByteSizeOfPagesOnDisk))
+	n5, _ := buf.Write(utils.Int64ToByte(t.totalByteSizeOfPagesOnDisk, 0))
 	byteLen += n5
-	n6, _ := buf.Write(utils.Int64ToByte(t.startTime))
+	n6, _ := buf.Write(utils.Int64ToByte(t.startTime, 0))
 	byteLen += n6
-	n7, _ := buf.Write(utils.Int64ToByte(t.endTime))
+	n7, _ := buf.Write(utils.Int64ToByte(t.endTime, 0))
 	byteLen += n7
 
 	if t.valuesStatistics.sizeOfList <= 0 {

@@ -57,11 +57,11 @@ func (h *PageHeader) GetSerializedSize() int32 {
 
 func (p *PageHeader)PageHeaderToMemory(buffer *bytes.Buffer, tsDataType int16)(int32){
 	// write header to buffer
-	buffer.Write(utils.Int32ToByte(p.uncompressedSize))
-	buffer.Write(utils.Int32ToByte(p.compressedSize))
-	buffer.Write(utils.Int32ToByte(p.numberOfValues))
-	buffer.Write(utils.Int64ToByte(p.max_timestamp))
-	buffer.Write(utils.Int64ToByte(p.min_timestamp))
+	buffer.Write(utils.Int32ToByte(p.uncompressedSize, 0))
+	buffer.Write(utils.Int32ToByte(p.compressedSize, 0))
+	buffer.Write(utils.Int32ToByte(p.numberOfValues, 0))
+	buffer.Write(utils.Int64ToByte(p.max_timestamp, 0))
+	buffer.Write(utils.Int64ToByte(p.min_timestamp, 0))
 	statistics.Serialize(p.statistics, buffer, tsDataType)
 	return p.serializedSize
 }

@@ -69,16 +69,16 @@ func (f *FileMetaData) GetCurrentVersion() int {
 func (t *FileMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 	var byteLen int
 	if t.deviceMap == nil {
-		n, _ := buf.Write(utils.Int32ToByte(0))
+		n, _ := buf.Write(utils.Int32ToByte(0, 0))
 		byteLen += n
 	} else {
 		n := len(t.deviceMap)
-		d1, _ := buf.Write(utils.Int32ToByte(int32(n)))
+		d1, _ := buf.Write(utils.Int32ToByte(int32(n), 0))
 		byteLen += d1
 
 		for k, v := range t.deviceMap {
 			// write string tsDeviceMetaData key
-			d2, _ := buf.Write(utils.Int32ToByte(int32(len(k))))
+			d2, _ := buf.Write(utils.Int32ToByte(int32(len(k)), 0))
 			byteLen += d2
 			d3, _ := buf.Write([]byte(k))
 			byteLen += d3
@@ -88,10 +88,10 @@ func (t *FileMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 		}
 	}
 	if t.timeSeriesMetadataMap == nil {
-		e1, _ := buf.Write(utils.Int32ToByte(0))
+		e1, _ := buf.Write(utils.Int32ToByte(0, 0))
 		byteLen += e1
 	} else {
-		e2, _ := buf.Write(utils.Int32ToByte(int32(len(t.timeSeriesMetadataMap))))
+		e2, _ := buf.Write(utils.Int32ToByte(int32(len(t.timeSeriesMetadataMap)), 0))
 		byteLen += e2
 		for _, vv := range t.timeSeriesMetadataMap {
 			// timeSeriesMetaData SerializeTo
@@ -99,30 +99,30 @@ func (t *FileMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 			// log.Info("vv: %s", vv)
 		}
 	}
-	f1, _ := buf.Write(utils.Int32ToByte(int32(t.currentVersion)))
+	f1, _ := buf.Write(utils.Int32ToByte(int32(t.currentVersion), 0))
 	byteLen += f1
 	if t.createdBy == "" {
 		// write flag for t.createBy
-		f2, _ := buf.Write(utils.BoolToByte(false))
+		f2, _ := buf.Write(utils.BoolToByte(false, 0))
 		byteLen += f2
 	} else {
 		// write flag for t.createBy
-		f3, _ := buf.Write(utils.BoolToByte(true))
+		f3, _ := buf.Write(utils.BoolToByte(true, 0))
 		byteLen += f3
 		// write string t.createBy
-		f4, _ := buf.Write(utils.Int32ToByte(int32(len(t.createdBy))))
+		f4, _ := buf.Write(utils.Int32ToByte(int32(len(t.createdBy)), 0))
 		byteLen += f4
 		f5, _ := buf.Write([]byte(t.createdBy))
 		byteLen += f5
 	}
 
-	off1, _ := buf.Write(utils.Int64ToByte(t.firstTimeSeriesMetadataOffset))
+	off1, _ := buf.Write(utils.Int64ToByte(t.firstTimeSeriesMetadataOffset, 0))
 	byteLen += off1
-	off2, _ := buf.Write(utils.Int64ToByte(t.lastTimeSeriesMetadataOffset))
+	off2, _ := buf.Write(utils.Int64ToByte(t.lastTimeSeriesMetadataOffset, 0))
 	byteLen += off2
-	off3, _ := buf.Write(utils.Int64ToByte(t.firstTsDeltaObjectMetadataOffset))
+	off3, _ := buf.Write(utils.Int64ToByte(t.firstTsDeltaObjectMetadataOffset, 0))
 	byteLen += off3
-	off4, _ := buf.Write(utils.Int64ToByte(t.lastTsDeltaObjectMetadataOffset))
+	off4, _ := buf.Write(utils.Int64ToByte(t.lastTsDeltaObjectMetadataOffset, 0))
 	byteLen += off4
 
 	return byteLen

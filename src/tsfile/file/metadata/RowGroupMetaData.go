@@ -61,17 +61,17 @@ func (r *RowGroupMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 	}
 	var byteLen int
 
-	n1, _ := buf.Write(utils.Int32ToByte(int32(len(r.device))))
+	n1, _ := buf.Write(utils.Int32ToByte(int32(len(r.device)), 0))
 	byteLen += n1
 	n2, _ := buf.Write([]byte(r.device))
 	byteLen += n2
 
-	n3, _ := buf.Write(utils.Int64ToByte(r.totalByteSize))
+	n3, _ := buf.Write(utils.Int64ToByte(r.totalByteSize, 0))
 	byteLen += n3
-	n4, _ := buf.Write(utils.Int64ToByte(r.fileOffsetOfCorrespondingData))
+	n4, _ := buf.Write(utils.Int64ToByte(r.fileOffsetOfCorrespondingData, 0))
 	byteLen += n4
 
-	n5, _ := buf.Write(utils.Int32ToByte(int32(len(r.ChunkMetaDataSli))))
+	n5, _ := buf.Write(utils.Int32ToByte(int32(len(r.ChunkMetaDataSli)), 0))
 	byteLen += n5
 	for _, v := range r.ChunkMetaDataSli {
 		byteLen += v.SerializeTo(buf)

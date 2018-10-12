@@ -60,18 +60,18 @@ func (t *TsDigest) serializeTo (buf *bytes.Buffer) (int) {
 
 	var byteLen int
 	if t.statistics == nil || len(t.statistics) == 0 {
-		n1, _ := buf.Write(utils.Int32ToByte(0))
+		n1, _ := buf.Write(utils.Int32ToByte(0, 0))
 		byteLen += n1
 	} else {
-		n2, _ := buf.Write(utils.Int32ToByte(int32(len(t.statistics))))
+		n2, _ := buf.Write(utils.Int32ToByte(int32(len(t.statistics)), 0))
 		byteLen += n2
 		for k, v := range t.statistics {
-			n3, _ := buf.Write(utils.Int32ToByte(int32(len(k))))
+			n3, _ := buf.Write(utils.Int32ToByte(int32(len(k)), 0))
 			byteLen += n3
 			n4, _ := buf.Write([]byte(k))
 			byteLen += n4
 
-			n5, _ := buf.Write(utils.Int32ToByte(int32(v.Len())))
+			n5, _ := buf.Write(utils.Int32ToByte(int32(v.Len()), 0))
 			byteLen += n5
 
 			timeSlice := make([]byte, v.Len())

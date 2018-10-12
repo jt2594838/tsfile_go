@@ -13,25 +13,28 @@ import (
  * @Description:
  */
 
-const(
+const (
 	MAX_STRING_LENGTH = "max_string_length"
-	MAX_POINT_NUMBER = "max_point_number"
+	MAX_POINT_NUMBER  = "max_point_number"
 )
 
 type Encoder interface {
-	Encode (value interface{}, buffer *bytes.Buffer) ()
-	Flush (buffer *bytes.Buffer) ()
+	Encode(value interface{}, buffer *bytes.Buffer) ()
+	Flush(buffer *bytes.Buffer) ()
 }
 
-func GetEncoder (et int16, tdt int16) (Encoder) {
+func GetEncoder(et int16, tdt int16) (Encoder) {
 	var encoder Encoder
 	switch {
 	case et == int16(constant.PLAIN):
-		encoder, _ = NewPlainEncoder(tdt)
+		encoder, _ = NewPlainEncoder(tdt, et)
 	case et == int16(constant.RLE):
-		encoder, _ = NewPlainEncoder(tdt)
+		encoder, _ = NewPlainEncoder(tdt, et)
+	case et == int16(constant.TS_2DIFF):
+		encoder, _ = NewPlainEncoder(tdt, et)
+	case et == int16(constant.GORILLA):
+		encoder, _ = NewPlainEncoder(tdt, et)
 	}
 
 	return encoder
 }
-

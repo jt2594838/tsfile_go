@@ -62,29 +62,29 @@ func (s *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 	case 0:
 		// bool
 		if data, ok := value.(bool); ok {
-			valueByteData = utils.BoolToByte(data)
+			valueByteData = utils.BoolToByte(data, 0)
 		}
 	case 1:
 		//int32
 		if data, ok := value.(int32); ok {
-			valueByteData = utils.Int32ToByteLittleEndian(data)
+			valueByteData = utils.Int32ToByte(data, 1)
 		}
 	case 2:
 		//int64
 		if data, ok := value.(int64); ok {
-			valueByteData = utils.Int64ToByte(data)
+			valueByteData = utils.Int64ToByte(data, 0)
 		}
 
 	case 3:
 		//float
 		//if data, ok := value.(float32); ok {
 		if data, ok := value.(float32); ok {
-			valueByteData = utils.Float32ToByte(data)
+			valueByteData = utils.Float32ToByte(data, 0)
 		}
 	case 4:
 		//double , float64 in golang as double in c
 		if data, ok := value.(float64); ok {
-			valueByteData = utils.Float64ToByte(data)
+			valueByteData = utils.Float64ToByte(data, 0)
 		}
 	case 5:
 		//text
@@ -98,7 +98,7 @@ func (s *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 		// int32
 	}
 	// write time to byteBuffer
-	timeByteData = utils.Int64ToByteLittleEndian(t)
+	timeByteData = utils.Int64ToByte(t, 1)
 	//encodeCount := s.desc.GetTimeCount()
 	if valueCount == 0 {
 		aa := []byte{24}

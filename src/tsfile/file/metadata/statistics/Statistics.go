@@ -78,23 +78,23 @@ func Serialize (s Statistics, buffer *bytes.Buffer, tsDataType int16) (int) {
 		length = s.SizeOfDaum() * 4 + 8
 	} else {
 		maxData := s.GetMaxByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(maxData))))
+		buffer.Write(utils.Int32ToByte(int32(len(maxData)), 0))
 		maxLen, _ :=buffer.Write(maxData)
 		length += maxLen
 		minData := s.GetMinByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(minData))))
+		buffer.Write(utils.Int32ToByte(int32(len(minData)), 0))
 		minLen, _ := buffer.Write(minData)
 		length += minLen
 		firstData := s.GetMinByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(firstData))))
+		buffer.Write(utils.Int32ToByte(int32(len(firstData)), 0))
 		firstLen, _ := buffer.Write(firstData)
 		length += firstLen
 		lastData := s.GetLastByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(lastData))))
+		buffer.Write(utils.Int32ToByte(int32(len(lastData)), 0))
 		lastLen, _ := buffer.Write(lastData)
 		length += lastLen
 		sumData := s.GetSumByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(sumData))))
+		buffer.Write(utils.Int32ToByte(int32(len(sumData)), 0))
 		sumLen, _ := buffer.Write(sumData)
 		length += sumLen
 		length = length + 4 * 5

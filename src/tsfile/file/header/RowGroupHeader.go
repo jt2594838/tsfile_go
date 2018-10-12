@@ -42,10 +42,10 @@ func (h *RowGroupHeader) GetSerializedSize() int32{
 
 func (r *RowGroupHeader) RowGroupHeaderToMemory (buffer *bytes.Buffer) (int32) {
 	// write header to buffer
-	buffer.Write(utils.Int32ToByte(int32(len(r.device))))
+	buffer.Write(utils.Int32ToByte(int32(len(r.device)), 0))
 	buffer.Write([]byte(r.device))
-	buffer.Write(utils.Int64ToByte(r.dataSize))
-	buffer.Write(utils.Int32ToByte(r.numberOfChunks))
+	buffer.Write(utils.Int64ToByte(r.dataSize, 0))
+	buffer.Write(utils.Int32ToByte(r.numberOfChunks, 0))
 
 	return r.serializedSize
 }

@@ -47,7 +47,7 @@ func (b *Binary) GetLastByte (tdt int16) ([]byte) {
 }
 
 func (b *Binary) GetSumByte (tdt int16) ([]byte) {
-	return utils.Float64ToByte(b.sum)
+	return utils.Float64ToByte(b.sum, 0)
 }
 
 func (b *Binary) UpdateStats (fValue interface{}) () {

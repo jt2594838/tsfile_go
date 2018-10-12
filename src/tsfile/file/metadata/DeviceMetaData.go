@@ -78,16 +78,16 @@ func (t *DeviceMetaData) SerializeTo(buf *bytes.Buffer) (int) {
 	}
 	var byteLen int
 
-	n1, _ := buf.Write(utils.Int64ToByte(t.startTime))
+	n1, _ := buf.Write(utils.Int64ToByte(t.startTime, 0))
 	byteLen += n1
-	n2, _ := buf.Write(utils.Int64ToByte(t.endTime))
+	n2, _ := buf.Write(utils.Int64ToByte(t.endTime, 0))
 	byteLen += n2
 
 	if len(t.rowGroupMetadataSli) == 0 {
-		n3, _ := buf.Write(utils.Int32ToByte(0))
+		n3, _ := buf.Write(utils.Int32ToByte(0, 0))
 		byteLen += n3
 	} else {
-		n4, _ := buf.Write(utils.Int32ToByte(int32(len(t.rowGroupMetadataSli))))
+		n4, _ := buf.Write(utils.Int32ToByte(int32(len(t.rowGroupMetadataSli)), 0))
 		byteLen += n4
 		for _, v := range t.rowGroupMetadataSli {
 			// serialize RowGroupMetaData

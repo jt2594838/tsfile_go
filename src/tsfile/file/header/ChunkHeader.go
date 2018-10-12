@@ -66,14 +66,14 @@ func (h *ChunkHeader) GetSerializedSize() int {
 
 func (c *ChunkHeader) ChunkHeaderToMemory(buffer *bytes.Buffer)(int32){
 	// write chunk header to buffer
-	buffer.Write(utils.Int32ToByte(int32(len(c.sensor))))
+	buffer.Write(utils.Int32ToByte(int32(len(c.sensor)), 0))
 	buffer.Write([]byte(c.sensor))
-	buffer.Write(utils.Int32ToByte(int32(c.dataSize)))
-	buffer.Write(utils.Int16ToByte(int16(c.dataType)))
-	buffer.Write(utils.Int32ToByte(int32(c.numberOfPages)))
-	buffer.Write(utils.Int16ToByte(int16(c.compressionType)))
-	buffer.Write(utils.Int16ToByte(int16(c.encodingType)))
-	buffer.Write(utils.Int64ToByte(c.maxTombstoneTime))
+	buffer.Write(utils.Int32ToByte(int32(c.dataSize), 0))
+	buffer.Write(utils.Int16ToByte(int16(c.dataType), 0))
+	buffer.Write(utils.Int32ToByte(int32(c.numberOfPages), 0))
+	buffer.Write(utils.Int16ToByte(int16(c.compressionType), 0))
+	buffer.Write(utils.Int16ToByte(int16(c.encodingType), 0))
+	buffer.Write(utils.Int64ToByte(c.maxTombstoneTime, 0))
 	return int32(c.serializedSize)
 }
 

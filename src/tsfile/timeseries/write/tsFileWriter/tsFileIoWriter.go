@@ -103,7 +103,7 @@ func (t *TsFileIoWriter) EndFile (fs fileSchema.FileSchema) () {
 	size := tsFileMetaData.SerializeTo(t.memBuf)
 	// log.Info("t.memBuf: %s", t.memBuf)
 	log.Info("finish flushing meta %v, file pos: %d", tsFileMetaData, t.GetPos())
-	t.memBuf.Write(utils.Int32ToByte(int32(size)))
+	t.memBuf.Write(utils.Int32ToByte(int32(size), 0))
 	t.memBuf.Write([]byte(conf.MAGIC_STRING))
 
 

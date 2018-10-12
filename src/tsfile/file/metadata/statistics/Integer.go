@@ -27,23 +27,23 @@ func (i *Integer) SizeOfDaum () (int) {
 }
 
 func (i *Integer) GetMaxByte (tdt int16) ([]byte) {
-	return utils.Int32ToByte(i.max)
+	return utils.Int32ToByte(i.max, 0)
 }
 
 func (i *Integer) GetMinByte (tdt int16) ([]byte) {
-	return utils.Int32ToByte(i.min)
+	return utils.Int32ToByte(i.min, 0)
 }
 
 func (i *Integer) GetFirstByte (tdt int16) ([]byte) {
-	return utils.Int32ToByte(i.first)
+	return utils.Int32ToByte(i.first, 0)
 }
 
 func (i *Integer) GetLastByte (tdt int16) ([]byte) {
-	return utils.Int32ToByte(i.last)
+	return utils.Int32ToByte(i.last, 0)
 }
 
 func (i *Integer) GetSumByte (tdt int16) ([]byte) {
-	return utils.Float64ToByte(i.sum)
+	return utils.Float64ToByte(i.sum, 0)
 }
 
 func (i *Integer) UpdateStats (iValue interface{}) () {
