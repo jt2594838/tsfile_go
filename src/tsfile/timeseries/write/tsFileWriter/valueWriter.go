@@ -13,28 +13,31 @@ import (
 	"tsfile/common/utils"
 	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/common/conf"
+	"tsfile/encoding/encoder"
+	"tsfile/common/constant"
 )
 
 type ValueWriter struct {
-	//// time
-	//timeEncoder		Encoder
-	//
-	//// value
-	//valueEncoder 	Encoder
-
-	// these buffer should be encoding
-	timeBuf 			*bytes.Buffer
-	valueBuf 			*bytes.Buffer
-	desc	 			*sensorDescriptor.SensorDescriptor
+	// time
+	timeEncoder  interface{}
+	valueEncoder interface{}
+	timeBuf      *bytes.Buffer
+	valueBuf     *bytes.Buffer
+	desc         *sensorDescriptor.SensorDescriptor
 	//buf := bytes.NewBuffer([]byte{})
 }
 
-func (s *ValueWriter) GetCurrentMemSize()(int){
-	return s.timeBuf.Len() + s.valueBuf.Len()
+func (v *ValueWriter) GetCurrentMemSize() (int) {
+	return v.timeBuf.Len() + v.valueBuf.Len()
 }
 
-func (s *ValueWriter) GetByteBuffer()(*bytes.Buffer){
-	timeSize := s.timeBuf.Len()
+func (v *ValueWriter) PrepareEndWriteOnePage() () {
+	return
+}
+
+func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
+	v.PrepareEndWriteOnePage()
+	timeSize := v.timeBuf.Len()
 	encodeBuffer := bytes.NewBuffer([]byte{})
 
 	//// write timeBuf size
@@ -43,25 +46,85 @@ func (s *ValueWriter) GetByteBuffer()(*bytes.Buffer){
 	//声明一个空的slice,容量为timebuf的长度
 	timeSlice := make([]byte, timeSize)
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
-	s.timeBuf.Read(timeSlice)
+	v.timeBuf.Read(timeSlice)
 	encodeBuffer.Write(timeSlice)
 
 	//声明一个空的value slice,容量为valuebuf的长度
-	valueSlice := make([]byte, s.valueBuf.Len())
+	valueSlice := make([]byte, v.valueBuf.Len())
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
-	s.valueBuf.Read(valueSlice)
+	v.valueBuf.Read(valueSlice)
 	encodeBuffer.Write(valueSlice)
 
 	return encodeBuffer
 }
 
-func (s *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
+// write with encoder
+func (v *ValueWriter) WriteWithEncoder(t int64, tdt int16, value interface{}, valueCount int) () {
+
+	if encT, ok := v.timeEncoder.(encoder.Encoder);ok {
+		encT.Encode(t, v.timeBuf)
+	}
+	if encV, ok := v.timeEncoder.(encoder.Encoder);ok {
+
+		switch tdt {
+		case 0:
+			// bool
+			if data, ok := value.(bool); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 1:
+			//int32
+			if data, ok := value.(int32); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 2:
+			//int64
+			if data, ok := value.(int64); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 3:
+			//float
+			if data, ok := value.(float32); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 4:
+			//double
+			if data, ok := value.(float64); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 5:
+			//text
+			if data, ok := value.([]byte); ok {
+				// encode
+				encV.Encode(data, v.valueBuf)
+			}
+		case 6:
+			//fixed_len_byte_array
+		case 7:
+			//enums
+		case 8:
+			//bigdecimal
+		default:
+			// int32
+		}
+	}
+	return
+}
+
+// write without encoder
+func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
 	var timeByteData []byte
 	var valueByteData []byte
 	switch tdt {
 	case 0:
 		// bool
 		if data, ok := value.(bool); ok {
+			// encode
 			valueByteData = utils.BoolToByte(data, 0)
 		}
 	case 1:
@@ -88,6 +151,9 @@ func (s *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 		}
 	case 5:
 		//text
+		if data, ok := value.([]byte); ok {
+			valueByteData = data
+		}
 	case 6:
 		//fixed_len_byte_array
 	case 7:
@@ -99,41 +165,45 @@ func (s *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 	}
 	// write time to byteBuffer
 	timeByteData = utils.Int64ToByte(t, 1)
-	//encodeCount := s.desc.GetTimeCount()
+
+	// write to byteBuffer
 	if valueCount == 0 {
 		aa := []byte{24}
-		s.timeBuf.Write(aa)
+		v.timeBuf.Write(aa)
 		//s.timeBuf.Write(utils.BoolToByte(true))
-		s.timeBuf.Write(timeByteData)
-		s.timeBuf.Write(timeByteData)
-		s.timeBuf.Write(timeByteData)
+		v.timeBuf.Write(timeByteData)
+		v.timeBuf.Write(timeByteData)
+		v.timeBuf.Write(timeByteData)
 		//s.desc.SetTimeCount(encodeCount + 1)
 	}
-	if s.desc.GetTimeCount() == conf.DeltaBlockSize {
-		s.timeBuf.Write(timeByteData)
-		s.timeBuf.Write(timeByteData)
-		s.timeBuf.Write(timeByteData)
-		s.desc.SetTimeCount(0)
+	if v.desc.GetTimeCount() == conf.DeltaBlockSize {
+		v.timeBuf.Write(timeByteData)
+		v.timeBuf.Write(timeByteData)
+		v.timeBuf.Write(timeByteData)
+		v.desc.SetTimeCount(0)
 	}
 	// log.Info("s.timeBuf size: %d", s.timeBuf.Len())
 	// write value to byteBuffer
-	s.valueBuf.Write(valueByteData)
+	v.valueBuf.Write(valueByteData)
 	// log.Info("s.valueBuf size: %d", s.valueBuf.Len())
 	return
 }
 
-func (s *ValueWriter) Reset() () {
-	s.timeBuf.Reset()
-	s.valueBuf.Reset()
+func (v *ValueWriter) Reset() () {
+	v.timeBuf.Reset()
+	v.valueBuf.Reset()
 	return
 }
 
 func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) {
-
+	tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
+	vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
 	return &ValueWriter{
 		//sensorId:sId,
-		timeBuf:bytes.NewBuffer([]byte{}),
-		valueBuf:bytes.NewBuffer([]byte{}),
-		desc:d,
-	},nil
+		timeBuf:      bytes.NewBuffer([]byte{}),
+		valueBuf:     bytes.NewBuffer([]byte{}),
+		desc:         d,
+		timeEncoder:  tEnc,
+		valueEncoder: vEnc,
+	}, nil
 }
