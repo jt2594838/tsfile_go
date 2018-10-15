@@ -212,6 +212,9 @@ func (v *ValueWriter) Reset() () {
 func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) {
 	tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
 	vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
+	tEnc.Init()
+	vEnc.Init()
+	
 	return &ValueWriter{
 		//sensorId:sId,
 		timeBuf:      bytes.NewBuffer([]byte{}),

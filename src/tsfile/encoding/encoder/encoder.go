@@ -2,6 +2,7 @@ package encoder
 
 import (
 	"bytes"
+	"strconv"
 	"tsfile/common/constant"
 )
 
@@ -19,23 +20,28 @@ const (
 )
 
 type Encoder interface {
-	Encode(value interface{}, buffer *bytes.Buffer) ()
-	Flush(buffer *bytes.Buffer) ()
-	GetOneItemMaxSize() (int)
-	GetMaxByteSize() (int64)
+	Init()
+	Encode(value interface{}, buffer *bytes.Buffer)
+	Flush(buffer *bytes.Buffer)
+	GetOneItemMaxSize() int
+	GetMaxByteSize() int64
 }
 
-func GetEncoder(et int16, tdt int16) (Encoder) {
+func GetEncoder(et int16, tdt int16) Encoder {
 	var encoder Encoder
 	switch {
 	case et == int16(constant.PLAIN):
 		encoder, _ = NewPlainEncoder(tdt, et)
 	case et == int16(constant.RLE):
 		encoder, _ = NewPlainEncoder(tdt, et)
-	case et == int16(constant.TS_2DIFF):
+	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT32):
+		encoder = &IntDeltaEncoder{dataType: constant.INT32}
+	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT64):
 		encoder, _ = NewPlainEncoder(tdt, et)
 	case et == int16(constant.GORILLA):
 		encoder, _ = NewPlainEncoder(tdt, et)
+	default:
+		panic("Encoder not found, encoding:" + strconv.Itoa(int(et)) + ", dataType:" + strconv.Itoa(int(tdt)))
 	}
 
 	return encoder
