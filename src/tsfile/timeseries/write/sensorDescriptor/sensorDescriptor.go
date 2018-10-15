@@ -60,13 +60,11 @@ func (s *SensorDescriptor) GetCompressor() (*compress.Encompress) {
 }
 
 func (s *SensorDescriptor) GetTimeEncoder() (encoder.Encoder) {
-	//return TSEncodingBuilder.getConverter(constant.TS_2DIFF).getEncoder(constant.INT64)
-	return nil
+	return encoder.GetEncoder(int16(constant.TS_2DIFF), int16(constant.INT64))
 }
 
 func (s *SensorDescriptor) GetValueEncoder() (encoder.Encoder) {
-	//return TSEncodingBuilder.getConverter(s.tsEncoding).getEncoder(s.tsDataType)
-	return nil
+	return encoder.GetEncoder(s.GetTsEncoding(), s.GetTsDataType())
 }
 
 func (s *SensorDescriptor) Close() (bool) {

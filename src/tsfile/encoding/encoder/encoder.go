@@ -37,7 +37,8 @@ func GetEncoder(et int16, tdt int16) Encoder {
 	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT32):
 		encoder = &IntDeltaEncoder{dataType: constant.INT32}
 	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT64):
-		encoder, _ = NewPlainEncoder(tdt, et)
+		encoder = &LongDeltaEncoder{dataType: constant.INT64}
+		//encoder, _ = NewPlainEncoder(tdt, et)
 	case et == int16(constant.GORILLA):
 		encoder, _ = NewPlainEncoder(tdt, et)
 	default:

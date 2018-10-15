@@ -14,7 +14,6 @@ import (
 	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/common/conf"
 	"tsfile/encoding/encoder"
-	"tsfile/common/constant"
 )
 
 type ValueWriter struct {
@@ -210,8 +209,10 @@ func (v *ValueWriter) Reset() () {
 }
 
 func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) {
-	tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
-	vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
+	//tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
+	//vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
+	tEnc := d.GetTimeEncoder();
+	vEnc := d.GetValueEncoder();
 	tEnc.Init()
 	vEnc.Init()
 	

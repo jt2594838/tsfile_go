@@ -7,9 +7,7 @@ import (
 	"tsfile/common/utils"
 )
 
-const BLOCK_DEFAULT_SIZE = 128
-
-type IntDeltaEncoder struct {
+type LongDeltaEncoder struct {
 	endianType constant.EndianType
 	dataType   constant.TSDataType
 
@@ -17,23 +15,23 @@ type IntDeltaEncoder struct {
 	width     int32
 	index     int32
 
-	baseValue     int32
-	firstValue    int32
-	previousValue int32
-	encodedValues []int32
+	baseValue     int64
+	firstValue    int64
+	previousValue int64
+	encodedValues []int64
 }
 
-func (d *IntDeltaEncoder) Init() {
+func (d *LongDeltaEncoder) Init() {
 	d.blockSize = BLOCK_DEFAULT_SIZE
 	d.index = -1
 	d.firstValue = 0
 	d.previousValue = 0
-	d.baseValue = math.MaxInt32
-	d.encodedValues = make([]int32, d.blockSize)
+	d.baseValue = math.MaxInt64
+	d.encodedValues = make([]int64, d.blockSize)
 }
 
-func (d *IntDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
-	value := v.(int32)
+func (d *LongDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
+	value := v.(int64)
 
 	if d.index == -1 {
 		d.index++
@@ -56,7 +54,7 @@ func (d *IntDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 	}
 }
 
-func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
+func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 	if d.index != -1 {
 		// since we store the min delta, the deltas will be converted to be the difference to min delta and all positive
 		for i := 0; i < int(d.index); i++ {
@@ -65,7 +63,7 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 
 		w := int32(0)
 		for i := int32(0); i < d.index; i++ {
-			valueWidth := int32(32) - utils.NumberOfLeadingZeros(d.encodedValues[i])
+			valueWidth := int32(32) - utils.NumberOfLeadingZerosLong(d.encodedValues[i])
 			if valueWidth > w {
 				w = valueWidth
 			}
@@ -76,14 +74,14 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		//write header
 		buffer.Write(utils.Int32ToByte(d.index, int16(constant.BIG_ENDIAN)))
 		buffer.Write(utils.Int32ToByte(d.width, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.baseValue, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
+		buffer.Write(utils.Int64ToByte(d.baseValue, int16(constant.BIG_ENDIAN)))
+		buffer.Write(utils.Int64ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
 
 		//write data with min width
 		if encodingLength := int(math.Ceil(float64(d.index * d.width) / 8.0)); encodingLength > 0 {
 			encodingBlockBuffer := make([]byte, encodingLength)
 			for i := int32(0); i < d.index; i++ {
-				utils.IntToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+				utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
 			}
 
 			buffer.Write(encodingBlockBuffer)
@@ -93,10 +91,10 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 	}
 }
 
-func (d *IntDeltaEncoder) GetMaxByteSize() int64 {
-	return int64(24 + d.index*4)
+func (d *LongDeltaEncoder) GetMaxByteSize() int64 {
+	return int64(24 + d.index*8)
 }
 
-func (d *IntDeltaEncoder) GetOneItemMaxSize() int {
-	return 4
+func (d *LongDeltaEncoder) GetOneItemMaxSize() int {
+	return 8
 }
