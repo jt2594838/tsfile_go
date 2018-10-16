@@ -53,11 +53,11 @@ func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
 	timeSize := v.timeBuf.Len()
 	encodeBuffer := bytes.NewBuffer([]byte{})
 
-	//// write timeBuf size
-	//encodeBuffer.Write(utils.Int32ToByte(int32(timeSize)))
+	// write timeBuf size
+	utils.WriteUnsignedVarInt(int32(timeSize), encodeBuffer)
 
 	//声明一个空的slice,容量为timebuf的长度
-	timeSlice := make([]byte, timeSize)
+ 	timeSlice := make([]byte, timeSize)
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
 	v.timeBuf.Read(timeSlice)
 	encodeBuffer.Write(timeSlice)
