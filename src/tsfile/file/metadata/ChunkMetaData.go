@@ -1,10 +1,10 @@
 package metadata
 
 import (
+	"bytes"
 	_ "log"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type ChunkMetaData struct {
@@ -52,27 +52,27 @@ func (f *ChunkMetaData) GetSerializedSize() int {
 	return constant.INT_LEN + len(f.sensor) + 5*constant.LONG_LEN + size_statistics
 }
 
-func (t *ChunkMetaData) SetDigest (tsDigest *TsDigest) () {
+func (t *ChunkMetaData) SetDigest(tsDigest *TsDigest) {
 	t.valuesStatistics = tsDigest
 }
 
-func (t *ChunkMetaData) GetStartTime () (int64) {
+func (t *ChunkMetaData) GetStartTime() int64 {
 	return t.startTime
 }
 
-func (t *ChunkMetaData) GetEndTime () (int64) {
+func (t *ChunkMetaData) GetEndTime() int64 {
 	return t.endTime
 }
 
-func (t *ChunkMetaData) SetTotalByteSizeOfPagesOnDisk (size int64) () {
+func (t *ChunkMetaData) SetTotalByteSizeOfPagesOnDisk(size int64) {
 	t.totalByteSizeOfPagesOnDisk = size
 }
 
-func (t *ChunkMetaData) SetNumOfPoints (num int64) () {
+func (t *ChunkMetaData) SetNumOfPoints(num int64) {
 	t.numOfPoints = num
 }
 
-func (t *ChunkMetaData) SerializeTo (buf *bytes.Buffer) (int) {
+func (t *ChunkMetaData) SerializeTo(buf *bytes.Buffer) int {
 	var byteLen int
 
 	n1, _ := buf.Write(utils.Int32ToByte(int32(len(t.sensor)), 0))
@@ -103,11 +103,11 @@ func (t *ChunkMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 
 func NewTimeSeriesChunkMetaData(sid string, fOffset int64, sTime int64, eTime int64) (*ChunkMetaData, error) {
 	return &ChunkMetaData{
-		sensor:sid,
-		fileOffsetOfCorrespondingData:fOffset,
-		startTime:sTime,
-		endTime:eTime,
-		totalByteSizeOfPagesOnDisk:0,
-		numOfPoints:0,
-	},nil
+		sensor: sid,
+		fileOffsetOfCorrespondingData: fOffset,
+		startTime:                     sTime,
+		endTime:                       eTime,
+		totalByteSizeOfPagesOnDisk:    0,
+		numOfPoints:                   0,
+	}, nil
 }

@@ -145,6 +145,7 @@ func (f *FileReader) ReadStringBinary() []byte {
 
 	return dst
 }
+
 // this func does not change file pointer position and buffer
 func (f *FileReader) ReadAt(length int, pos int64) []byte {
 	buf := make([]byte, length)

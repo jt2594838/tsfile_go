@@ -13,15 +13,15 @@ import (
  */
 
 type StringDataPoint struct {
-	sensorId			string
-	tsDataType			int16
-	value 				string
+	sensorId   string
+	tsDataType int16
+	value      string
 }
 
 func NewString(sId string, tdt constant.TSDataType, val string) (*DataPoint, error) {
 	return &DataPoint{
-		sensorId:sId,
-		tsDataType:int16(tdt),
-		value:val,
-	},nil
+		sensorId:   sId,
+		tsDataType: int16(tdt),
+		value:      val,
+	}, nil
 }

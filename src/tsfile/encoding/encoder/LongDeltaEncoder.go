@@ -78,7 +78,7 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		buffer.Write(utils.Int64ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
 
 		//write data with min width
-		if encodingLength := int(math.Ceil(float64(d.index * d.width) / 8.0)); encodingLength > 0 {
+		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
 			encodingBlockBuffer := make([]byte, encodingLength)
 			for i := int32(0); i < d.index; i++ {
 				utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
@@ -108,8 +108,8 @@ func (d *LongDeltaEncoder) reset() {
 	d.encodedValues = make([]int64, d.blockSize)
 }
 
-func NewLongDeltaEncoder(dataType constant.TSDataType) (*LongDeltaEncoder) {
-	d := &LongDeltaEncoder{dataType:dataType}
+func NewLongDeltaEncoder(dataType constant.TSDataType) *LongDeltaEncoder {
+	d := &LongDeltaEncoder{dataType: dataType}
 	d.reset()
 
 	return d

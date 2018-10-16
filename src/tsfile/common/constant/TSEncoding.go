@@ -11,3 +11,24 @@ const (
 	BITMAP           TSEncoding = 5
 	GORILLA          TSEncoding = 6
 )
+
+func GetEncodingByName(name string) TSEncoding {
+	switch name {
+	case "PLAIN":
+		return PLAIN
+	case "PLAIN_DICTIONARY":
+		return PLAIN_DICTIONARY
+	case "RLE":
+		return RLE
+	case "DIFF":
+		return DIFF
+	case "TS_2DIFF":
+		return TS_2DIFF
+	case "BITMAP":
+		return BITMAP
+	case "GORILLA":
+		return GORILLA
+	default:
+		panic("No encoding found: " + name)
+	}
+}

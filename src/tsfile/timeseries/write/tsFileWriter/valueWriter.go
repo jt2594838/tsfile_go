@@ -10,10 +10,10 @@ package tsFileWriter
 
 import (
 	"bytes"
-	"tsfile/common/utils"
-	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/common/conf"
+	"tsfile/common/utils"
 	"tsfile/encoding/encoder"
+	"tsfile/timeseries/write/sensorDescriptor"
 )
 
 type ValueWriter struct {
@@ -26,7 +26,7 @@ type ValueWriter struct {
 	//buf := bytes.NewBuffer([]byte{})
 }
 
-func (v *ValueWriter) GetCurrentMemSize() (int) {
+func (v *ValueWriter) GetCurrentMemSize() int {
 	var sizeT int64 = 0
 	var sizeV int64 = 0
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
@@ -38,7 +38,7 @@ func (v *ValueWriter) GetCurrentMemSize() (int) {
 	return v.timeBuf.Len() + v.valueBuf.Len() + int(sizeT) + int(sizeV)
 }
 
-func (v *ValueWriter) PrepareEndWriteOnePage() () {
+func (v *ValueWriter) PrepareEndWriteOnePage() {
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
 		encT.Flush(v.timeBuf)
 	}
@@ -48,7 +48,7 @@ func (v *ValueWriter) PrepareEndWriteOnePage() () {
 	return
 }
 
-func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
+func (v *ValueWriter) GetByteBuffer() *bytes.Buffer {
 	v.PrepareEndWriteOnePage()
 	timeSize := v.timeBuf.Len()
 	encodeBuffer := bytes.NewBuffer([]byte{})
@@ -57,7 +57,7 @@ func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
 	utils.WriteUnsignedVarInt(int32(timeSize), encodeBuffer)
 
 	//声明一个空的slice,容量为timebuf的长度
- 	timeSlice := make([]byte, timeSize)
+	timeSlice := make([]byte, timeSize)
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
 	v.timeBuf.Read(timeSlice)
 	encodeBuffer.Write(timeSlice)
@@ -72,7 +72,7 @@ func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
 }
 
 // write with encoder
-func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
+func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) {
 
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
 		if valueCount == 0 {
@@ -138,7 +138,7 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 }
 
 // write without encoder
-func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, valueCount int) () {
+func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, valueCount int) {
 	var timeByteData []byte
 	var valueByteData []byte
 	switch tdt {
@@ -209,7 +209,7 @@ func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, val
 	return
 }
 
-func (v *ValueWriter) Reset() () {
+func (v *ValueWriter) Reset() {
 	v.timeBuf.Reset()
 	v.valueBuf.Reset()
 	return
@@ -218,9 +218,9 @@ func (v *ValueWriter) Reset() () {
 func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) {
 	//tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
 	//vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
-	tEnc := d.GetTimeEncoder();
-	vEnc := d.GetValueEncoder();
-	
+	tEnc := d.GetTimeEncoder()
+	vEnc := d.GetValueEncoder()
+
 	return &ValueWriter{
 		//sensorId:sId,
 		timeBuf:      bytes.NewBuffer([]byte{}),

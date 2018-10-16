@@ -1,11 +1,11 @@
 package basic
 
 import (
+	"tsfile/common/constant"
+	"tsfile/encoding/decoder"
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
-	"tsfile/encoding/decoder"
-	"tsfile/common/constant"
 )
 
 type SeriesReader struct {
@@ -19,7 +19,6 @@ type SeriesReader struct {
 	PageReader reader.TimeValuePairReader
 	DType      constant.TSDataType
 	Encoding   constant.TSEncoding
-
 }
 
 func (r *SeriesReader) Read(data []byte) {
@@ -34,13 +33,13 @@ func (r *SeriesReader) HasNext() bool {
 	if r.PageReader != nil {
 		if r.PageReader.HasNext() {
 			return true
-		} else if r.PageIndex < r.PageLimit -1 {
+		} else if r.PageIndex < r.PageLimit-1 {
 			r.nextPageReader()
 			return r.HasNext()
 		} else {
 			return false
 		}
-	} else if r.PageIndex < r.PageLimit - 1 {
+	} else if r.PageIndex < r.PageLimit-1 {
 		r.nextPageReader()
 		return r.HasNext()
 	}
@@ -72,10 +71,9 @@ func (r *SeriesReader) hasNextPageReader() bool {
 	return r.PageIndex < r.PageLimit
 }
 
-
 func (r *SeriesReader) nextPageReader() {
-	r.PageIndex ++
-	r.PageReader = &PageDataReader{DataType:r.DType, ValueDecoder:decoder.CreateDecoder(r.Encoding, r.DType),
-									TimeDecoder:decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}
+	r.PageIndex++
+	r.PageReader = &PageDataReader{DataType: r.DType, ValueDecoder: decoder.CreateDecoder(r.Encoding, r.DType),
+		TimeDecoder: decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}
 	r.PageReader.Read(r.FileReader.ReadRaw(r.Offsets[r.PageIndex], r.Sizes[r.PageIndex]))
 }

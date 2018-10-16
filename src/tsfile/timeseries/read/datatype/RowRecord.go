@@ -2,15 +2,15 @@ package datatype
 
 type RowRecord struct {
 	timestamp int64
-	paths []string
-	values []interface{}
+	paths     []string
+	values    []interface{}
 }
 
 func (r *RowRecord) SetTimestamp(timestamp int64) {
 	r.timestamp = timestamp
 }
 
-func NewRowRecord() *RowRecord{
+func NewRowRecord() *RowRecord {
 	return &RowRecord{0, nil, nil}
 }
 
@@ -29,4 +29,3 @@ func (r *RowRecord) Paths() []string {
 func (r *RowRecord) Timestamp() int64 {
 	return r.timestamp
 }
-

@@ -9,58 +9,58 @@ package tsFileWriter
  */
 
 import (
-	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/common/conf"
 	"tsfile/common/log"
-	"tsfile/file/metadata/statistics"
 	"tsfile/file/header"
+	"tsfile/file/metadata/statistics"
+	"tsfile/timeseries/write/sensorDescriptor"
 )
 
 type SeriesWriter struct {
-	deviceId			string
-	dataSeriesWriters	map[string]SeriesWriter
+	deviceId          string
+	dataSeriesWriters map[string]SeriesWriter
 
-	desc				*sensorDescriptor.SensorDescriptor
-	tsDataType 			int16
-	pageWriter			*PageWriter
+	desc       *sensorDescriptor.SensorDescriptor
+	tsDataType int16
+	pageWriter *PageWriter
 	/* page size threshold 	*/
-	psThres				int
-	pageCountUpperBound	int
+	psThres             int
+	pageCountUpperBound int
 	/* value writer to encode data*/
-	valueWriter			ValueWriter
+	valueWriter ValueWriter
 	/* value count on a page. It will be reset agter calling */
-	valueCount 			int
-	valueCountForNextSizeCheck	int
+	valueCount                 int
+	valueCountForNextSizeCheck int
 	/*statistics on a page. It will be reset after calling */
-	pageStatistics		statistics.Statistics
-	seriesStatistics	statistics.Statistics
-	time				int64
-	minTimestamp		int64
-	sensorDescriptor	sensorDescriptor.SensorDescriptor
+	pageStatistics             statistics.Statistics
+	seriesStatistics           statistics.Statistics
+	time                       int64
+	minTimestamp               int64
+	sensorDescriptor           sensorDescriptor.SensorDescriptor
 	minimumRecordCountForCheck int
-	numOfPages			int
+	numOfPages                 int
 }
 
-func (s *SeriesWriter) GetTsDataType() (int16) {
+func (s *SeriesWriter) GetTsDataType() int16 {
 	return s.tsDataType
 }
 
-func (s *SeriesWriter) GetTsDeviceId() (string) {
+func (s *SeriesWriter) GetTsDeviceId() string {
 	return s.deviceId
 }
 
-func (s *SeriesWriter) GetNumOfPages() (int) {
+func (s *SeriesWriter) GetNumOfPages() int {
 	return s.numOfPages
 }
 
-func (s *SeriesWriter) GetCurrentChunkSize (sId string) (int) {
+func (s *SeriesWriter) GetCurrentChunkSize(sId string) int {
 	//return int64(tfiw.chunkHeader.GetChunkSerializedSize()) + s.pageWriter.GetCurrentDataSize()
 	chunkHeaderSize := header.GetChunkSerializedSize(sId)
 	size := chunkHeaderSize + s.pageWriter.GetCurrentDataSize()
-	return  size
+	return size
 }
 
-func (s *SeriesWriter) Write(t int64, value interface{}) (bool) {
+func (s *SeriesWriter) Write(t int64, value interface{}) bool {
 	s.time = t
 	//s.valueCount = s.valueCount + 1
 	s.valueWriter.Write(t, s.tsDataType, value, s.valueCount)
@@ -75,7 +75,7 @@ func (s *SeriesWriter) Write(t int64, value interface{}) (bool) {
 	return true
 }
 
-func (s *SeriesWriter) WriteToFileWriter (tsFileIoWriter *TsFileIoWriter) () {
+func (s *SeriesWriter) WriteToFileWriter(tsFileIoWriter *TsFileIoWriter) {
 	// write all pages in the same chunk to file
 	s.pageWriter.WriteAllPagesOfSeriesToTsFile(tsFileIoWriter, s.seriesStatistics, s.numOfPages)
 	// reset pageWriter
@@ -84,7 +84,7 @@ func (s *SeriesWriter) WriteToFileWriter (tsFileIoWriter *TsFileIoWriter) () {
 	s.seriesStatistics = statistics.GetStatsByType(s.tsDataType)
 }
 
-func (s *SeriesWriter)checkPageSizeAndMayOpenNewpage() () {
+func (s *SeriesWriter) checkPageSizeAndMayOpenNewpage() {
 	if s.valueCount == conf.MaxNumberOfPointsInPage {
 		log.Info("current line count reaches the upper bound, write page %s", s.sensorDescriptor)
 		// write data to buffer
@@ -102,19 +102,19 @@ func (s *SeriesWriter)checkPageSizeAndMayOpenNewpage() () {
 	}
 }
 
-func (s *SeriesWriter) PreFlush () () {
+func (s *SeriesWriter) PreFlush() {
 	if s.valueCount > 0 {
 		s.WritePage()
 	}
 }
 
-func (s *SeriesWriter) EstimateMaxSeriesMemSize () (int64) {
+func (s *SeriesWriter) EstimateMaxSeriesMemSize() int64 {
 	valueMemSize := s.valueWriter.timeBuf.Len() + s.valueWriter.valueBuf.Len()
 	pageMemSize := s.pageWriter.EstimateMaxPageMemSize()
 	return int64(valueMemSize + pageMemSize)
 }
 
-func (s *SeriesWriter) WritePage()(){
+func (s *SeriesWriter) WritePage() {
 	s.pageWriter.WritePageHeaderAndDataIntoBuff(s.valueWriter.GetByteBuffer(), s.valueCount, s.pageStatistics, s.time, s.minTimestamp)
 	// pageStatistics
 	s.numOfPages += 1
@@ -126,29 +126,28 @@ func (s *SeriesWriter) WritePage()(){
 	return
 }
 
-func (s *SeriesWriter) ResetPageStatistics()(){
+func (s *SeriesWriter) ResetPageStatistics() {
 	// s.pageStatistics = *statistics.GetStatistics(s.tsDataType)
 	s.pageStatistics = statistics.GetStatsByType(s.tsDataType)
 	return
 }
 
-
 func NewSeriesWriter(dId string, d *sensorDescriptor.SensorDescriptor, pw *PageWriter, pst int) (*SeriesWriter, error) {
 	vw, _ := NewValueWriter(d)
 	return &SeriesWriter{
-		deviceId:dId,
-		desc:d,
-		pageWriter:pw,
-		psThres:pst,
-		pageCountUpperBound:conf.MaxNumberOfPointsInPage,
-		minimumRecordCountForCheck:1,
-		valueCountForNextSizeCheck:1,
-		numOfPages:0,
-		tsDataType:d.GetTsDataType(),
-		seriesStatistics:statistics.GetStatsByType(d.GetTsDataType()),
-		pageStatistics:statistics.GetStatsByType(d.GetTsDataType()),
-		valueWriter:*vw,
-		minTimestamp:-1,
-		valueCount:0,
-	},nil
+		deviceId:                   dId,
+		desc:                       d,
+		pageWriter:                 pw,
+		psThres:                    pst,
+		pageCountUpperBound:        conf.MaxNumberOfPointsInPage,
+		minimumRecordCountForCheck: 1,
+		valueCountForNextSizeCheck: 1,
+		numOfPages:                 0,
+		tsDataType:                 d.GetTsDataType(),
+		seriesStatistics:           statistics.GetStatsByType(d.GetTsDataType()),
+		pageStatistics:             statistics.GetStatsByType(d.GetTsDataType()),
+		valueWriter:                *vw,
+		minTimestamp:               -1,
+		valueCount:                 0,
+	}, nil
 }

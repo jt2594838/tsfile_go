@@ -1,13 +1,13 @@
 package seek
 
 import (
+	"math"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
-	"math"
 )
 
 type SeekableRowReader struct {
-	paths []string
+	paths     []string
 	readerMap map[string]reader.ISeekableTimeValuePairReader
 
 	cacheList []*datatype.TimeValuePair
@@ -37,7 +37,7 @@ func (r *SeekableRowReader) Seek(timestamp int64) bool {
 
 func NewSeekableRowReader(paths []string, readerMap map[string]reader.ISeekableTimeValuePairReader) *SeekableRowReader {
 	ret := &SeekableRowReader{paths, readerMap, make([]*datatype.TimeValuePair, len(paths)),
-							datatype.NewRowRecordWithPaths(paths), math.MaxInt64}
+		datatype.NewRowRecordWithPaths(paths), math.MaxInt64}
 	return ret
 }
 
@@ -50,7 +50,7 @@ func (r *SeekableRowReader) fillCache() {
 
 		}
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp < r.currTime {
-			r.currTime =  r.cacheList[i].Timestamp
+			r.currTime = r.cacheList[i].Timestamp
 		}
 	}
 }
@@ -61,7 +61,7 @@ func (r *SeekableRowReader) fillRow() {
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp == r.currTime {
 			r.current.Values()[i] = r.cacheList[i].Value
 			r.cacheList[i] = nil
-		} else  {
+		} else {
 			r.current.Values()[i] = nil
 		}
 	}
@@ -79,7 +79,7 @@ func (r *SeekableRowReader) HasNext() bool {
 /*
 	Notice: The return value is IMMUTABLE because the RowRecord is reused through out the iteration to reduce memory
 	overhead. You can only copy the values in the RowRecord instead of copying the pointer of the return value.
- */
+*/
 func (r *SeekableRowReader) Next() *datatype.RowRecord {
 	r.fillRow()
 	r.currTime = math.MaxInt64

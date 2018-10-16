@@ -1,12 +1,12 @@
 package engine
 
 import (
-	"testing"
-	"tsfile/timeseries/read"
-	"tsfile/timeseries/query"
 	"fmt"
+	"testing"
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/filter/operator"
+	"tsfile/timeseries/query"
+	"tsfile/timeseries/read"
 )
 
 var tempFilePath = "temp_TsFile"
@@ -14,13 +14,12 @@ var series = []string{"root.d0.s0", "root.d0.s1", "root.d1.s0"}
 
 func prepareTsFile() {
 	/*
-	Assumed data layout:
-	root.d0.s0 : [1,1], [2,2], [3,3], [4,4], [5,5]
-	root.d0.s1 : [1,5], [2,4],        [4,3], [5,2], [6,1]
-	root.d1.s0 :               [3,3], [4,4], [5,5]
+		Assumed data layout:
+		root.d0.s0 : [1,1], [2,2], [3,3], [4,4], [5,5]
+		root.d0.s1 : [1,5], [2,4],        [4,3], [5,2], [6,1]
+		root.d1.s0 :               [3,3], [4,4], [5,5]
 	*/
 }
-
 
 func TestEngine(t *testing.T) {
 
@@ -51,7 +50,7 @@ func TestEngine(t *testing.T) {
 	cnt := int32(0)
 	for dataSet.HasNext() {
 		record := dataSet.Next()
-		cnt ++
+		cnt++
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt) || record.Values()[0].(int32) != cnt {
 			t.Fatal(fmt.Sprintf("Expected [%d, %d] got %v", cnt, cnt, record))
@@ -65,7 +64,7 @@ func TestEngine(t *testing.T) {
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
 	if dataSet.HasNext() {
-		t.Fatal("This timeseries should not have any value > 5" )
+		t.Fatal("This timeseries should not have any value > 5")
 	}
 
 	// test an existing series with some satisfying values
@@ -77,7 +76,7 @@ func TestEngine(t *testing.T) {
 	cnt = int32(0)
 	for dataSet.HasNext() {
 		record := dataSet.Next()
-		cnt ++
+		cnt++
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt) || record.Values()[0].(int32) != cnt {
 			t.Fatal(fmt.Sprintf("Expected [%d, %d] got %v", cnt, cnt, record))
@@ -97,12 +96,12 @@ func TestEngine(t *testing.T) {
 	for dataSet.HasNext() {
 		record := dataSet.Next()
 		checkPath(paths, record.Paths(), t)
-		if  record.Timestamp() != int64(cnt + 1) ||
+		if record.Timestamp() != int64(cnt+1) ||
 			record.Values()[0].(int32) != s0Vals[cnt] ||
-			record.Values()[1].(int32) != s1Vals[cnt]{
-			t.Fatal(fmt.Sprintf("Expected [%d, %d, %d] got %v", cnt + 1, s0Vals[cnt], s1Vals[cnt], record))
+			record.Values()[1].(int32) != s1Vals[cnt] {
+			t.Fatal(fmt.Sprintf("Expected [%d, %d, %d] got %v", cnt+1, s0Vals[cnt], s1Vals[cnt], record))
 		}
-		cnt ++
+		cnt++
 	}
 
 	// test selecting multiple series with conditions that can't be satisfied
@@ -112,7 +111,7 @@ func TestEngine(t *testing.T) {
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
 	if dataSet.HasNext() {
-		t.Fatal("This timeseries should not have any time > 10" )
+		t.Fatal("This timeseries should not have any time > 10")
 	}
 
 	// test selecting multiple series with satisfiable conditions
@@ -134,7 +133,7 @@ func TestEngine(t *testing.T) {
 			record.Values()[1].(int32) != s1Vals[cnt] {
 			t.Fatal(fmt.Sprintf("Expected [%d, %d, %d] got %v", cnt+4, s0Vals[cnt], s1Vals[cnt], record))
 		}
-		cnt ++
+		cnt++
 	}
 
 	// test selecting multiple series with satisfiable conditions
@@ -156,7 +155,7 @@ func TestEngine(t *testing.T) {
 			record.Values()[1].(int32) != s1Vals[cnt] {
 			t.Fatal(fmt.Sprintf("Expected [%d, %d, %d] got %v", cnt+4, s0Vals[cnt], s1Vals[cnt], record))
 		}
-		cnt ++
+		cnt++
 	}
 
 	// test selecting multiple series with satisfiable conditions
@@ -180,7 +179,7 @@ func TestEngine(t *testing.T) {
 			record.Values()[1].(int32) != s1Vals[cnt] {
 			t.Fatal(fmt.Sprintf("Expected [%d, %d, %d] got %v", cnt+4, s0Vals[cnt], s1Vals[cnt], record))
 		}
-		cnt ++
+		cnt++
 	}
 }
 

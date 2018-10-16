@@ -9,25 +9,24 @@ package tsFileWriter
  */
 
 import (
-	"time"
 	"sync"
+	"time"
 )
 
 type TsRecord struct {
-	time				int64
-	deviceId			string
+	time     int64
+	deviceId string
 	//dataPointMap		map[string]*DataPoint
-	DataPointSli		[]*DataPoint
-	m 					sync.Mutex
+	DataPointSli []*DataPoint
+	m            sync.Mutex
 }
 
-
-func (t *TsRecord) SetTime(time time.Time) () {
+func (t *TsRecord) SetTime(time time.Time) {
 	t.time = time.Unix()
 	return
 }
 
-func (t *TsRecord) AddTuple(tuple *DataPoint) () {
+func (t *TsRecord) AddTuple(tuple *DataPoint) {
 	//PushBack(t, tuple)
 	// t.dataPointMap[t.deviceId] = tuple
 	//t.dataPointMap[t.deviceId] = tuple
@@ -35,15 +34,15 @@ func (t *TsRecord) AddTuple(tuple *DataPoint) () {
 	return
 }
 
-func (t *TsRecord) GetTime() (int64) {
+func (t *TsRecord) GetTime() int64 {
 	return t.time
 }
 
-func (t *TsRecord) GetDeviceId() (string) {
+func (t *TsRecord) GetDeviceId() string {
 	return t.deviceId
 }
 
-func (t *TsRecord) GetDataPointSli() ([]*DataPoint) {
+func (t *TsRecord) GetDataPointSli() []*DataPoint {
 	return t.DataPointSli
 }
 
@@ -71,8 +70,6 @@ func (t *TsRecord) GetDataPointSli() ([]*DataPoint) {
 //	defer t.m.Unlock()
 //	t.DataPointList.Remove(element)
 //}
-
-
 
 // this remove has some issue, we cann't use as the follow:
 //for e := l.Front(); e != nil; e = e.Next {
@@ -103,12 +100,11 @@ func (t *TsRecord) GetDataPointSli() ([]*DataPoint) {
 //	return t.DataPointList.Len()
 //}
 
-
-func NewTsRecord (t time.Time, dId string) (*TsRecord, error) {
+func NewTsRecord(t time.Time, dId string) (*TsRecord, error) {
 	return &TsRecord{
-		time:t.Unix(),
-		deviceId:dId,
+		time:     t.Unix(),
+		deviceId: dId,
 		//dataPointMap:make(map[string]*DataPoint),
-		DataPointSli:make([]*DataPoint, 0),
-	},nil
+		DataPointSli: make([]*DataPoint, 0),
+	}, nil
 }

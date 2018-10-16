@@ -2,11 +2,11 @@ package header
 
 import (
 	_ "bufio"
+	"bytes"
 	_ "log"
 	_ "os"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type RowGroupHeader struct {
@@ -36,11 +36,11 @@ func (h *RowGroupHeader) GetNumberOfChunks() int32 {
 	return h.numberOfChunks
 }
 
-func (h *RowGroupHeader) GetSerializedSize() int32{
+func (h *RowGroupHeader) GetSerializedSize() int32 {
 	return h.serializedSize
 }
 
-func (r *RowGroupHeader) RowGroupHeaderToMemory (buffer *bytes.Buffer) (int32) {
+func (r *RowGroupHeader) RowGroupHeaderToMemory(buffer *bytes.Buffer) int32 {
 	// write header to buffer
 	buffer.Write(utils.Int32ToByte(int32(len(r.device)), 0))
 	buffer.Write([]byte(r.device))
@@ -50,16 +50,16 @@ func (r *RowGroupHeader) RowGroupHeaderToMemory (buffer *bytes.Buffer) (int32) {
 	return r.serializedSize
 }
 
-func GetRowGroupSerializedSize (deviceId string) (int) {
-	return 1 * 4 + 1 * 8 + len(deviceId) + 1 * 4
+func GetRowGroupSerializedSize(deviceId string) int {
+	return 1*4 + 1*8 + len(deviceId) + 1*4
 }
 
 func NewRowGroupHeader(dId string, rgs int64, sn int32) (*RowGroupHeader, error) {
-	ss := 1 * 4 + 1 * 8 + len(dId) + 1 * 4
+	ss := 1*4 + 1*8 + len(dId) + 1*4
 	return &RowGroupHeader{
-		device:dId,
-		dataSize:rgs,
-		numberOfChunks:sn,
-		serializedSize:int32(ss),
-	},nil
+		device:         dId,
+		dataSize:       rgs,
+		numberOfChunks: sn,
+		serializedSize: int32(ss),
+	}, nil
 }

@@ -16,7 +16,7 @@ func (r *SeekablePageDataReader) Next() *datatype.TimeValuePair {
 	return r.current
 }
 
-func (r *SeekablePageDataReader) Current() *datatype.TimeValuePair{
+func (r *SeekablePageDataReader) Current() *datatype.TimeValuePair {
 	return r.current
 }
 

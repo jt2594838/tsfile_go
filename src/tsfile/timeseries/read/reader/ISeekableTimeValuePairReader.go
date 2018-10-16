@@ -7,4 +7,3 @@ type ISeekableTimeValuePairReader interface {
 	Seek(timestamp int64) bool
 	Current() *datatype.TimeValuePair
 }
-

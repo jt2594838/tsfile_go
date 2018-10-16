@@ -1,10 +1,10 @@
 package metadata
 
 import (
+	"bytes"
 	_ "log"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type DeviceMetaData struct {
@@ -43,7 +43,7 @@ func (f *DeviceMetaData) GetSerializedSize() int {
 	return f.serializedSize
 }
 
-func (t *DeviceMetaData) AddRowGroupMetaData(rgmd *RowGroupMetaData) () {
+func (t *DeviceMetaData) AddRowGroupMetaData(rgmd *RowGroupMetaData) {
 	if len(t.rowGroupMetadataSli) == 0 {
 		t.rowGroupMetadataSli = make([]*RowGroupMetaData, 0)
 	}
@@ -52,27 +52,27 @@ func (t *DeviceMetaData) AddRowGroupMetaData(rgmd *RowGroupMetaData) () {
 	t.serializedSize += rgmd.GetserializedSize()
 }
 
-func (t *DeviceMetaData) GetRowGroups() ([]*RowGroupMetaData) {
+func (t *DeviceMetaData) GetRowGroups() []*RowGroupMetaData {
 	return t.rowGroupMetadataSli
 }
 
-func (t *DeviceMetaData) GetStartTime() (int64) {
+func (t *DeviceMetaData) GetStartTime() int64 {
 	return t.startTime
 }
 
-func (t *DeviceMetaData) SetStartTime(time int64) () {
+func (t *DeviceMetaData) SetStartTime(time int64) {
 	t.startTime = time
 }
 
-func (t *DeviceMetaData) GetEndTime() (int64) {
+func (t *DeviceMetaData) GetEndTime() int64 {
 	return t.endTime
 }
 
-func (t *DeviceMetaData) SetEndTime(time int64) () {
+func (t *DeviceMetaData) SetEndTime(time int64) {
 	t.endTime = time
 }
 
-func (t *DeviceMetaData) SerializeTo(buf *bytes.Buffer) (int) {
+func (t *DeviceMetaData) SerializeTo(buf *bytes.Buffer) int {
 	if t.sizeOfRowGroupMetaDataSli != len(t.rowGroupMetadataSli) {
 		t.ReCalculateSerializedSize()
 	}
@@ -97,7 +97,7 @@ func (t *DeviceMetaData) SerializeTo(buf *bytes.Buffer) (int) {
 	return byteLen
 }
 
-func (t *DeviceMetaData) ReCalculateSerializedSize() () {
+func (t *DeviceMetaData) ReCalculateSerializedSize() {
 	t.serializedSize = 2*8 + 1*4
 	if t.rowGroupMetadataSli != nil {
 		for _, v := range t.rowGroupMetadataSli {

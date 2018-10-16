@@ -1,10 +1,10 @@
 package metadata
 
 import (
+	"bytes"
 	_ "log"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type TimeSeriesMetaData struct {
@@ -30,7 +30,7 @@ func (f *TimeSeriesMetaData) GetSensor() string {
 	return f.sensor
 }
 
-func (t *TimeSeriesMetaData) Serialize (buf *bytes.Buffer) (int) {
+func (t *TimeSeriesMetaData) Serialize(buf *bytes.Buffer) int {
 	var byteLen int
 	if t.sensor == "" {
 		n1, _ := buf.Write(utils.BoolToByte(false, 0))
@@ -62,7 +62,7 @@ func (t *TimeSeriesMetaData) Serialize (buf *bytes.Buffer) (int) {
 func NewTimeSeriesMetaData(sid string, tdt int16) (*TimeSeriesMetaData, error) {
 
 	return &TimeSeriesMetaData{
-		sensor:sid,
-		dataType:constant.TSDataType(tdt),
-	},nil
+		sensor:   sid,
+		dataType: constant.TSDataType(tdt),
+	}, nil
 }

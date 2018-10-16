@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"tsfile/common/log"
-	"math"
-	"encoding/binary"
 	"bytes"
+	"encoding/binary"
+	"math"
+	"tsfile/common/log"
 )
 
 /**
@@ -21,7 +21,7 @@ func BoolToByte(flag bool, endianType int16) []byte {
 	var err error
 	if endianType == 0 { // BigEdian
 		err = binary.Write(&buffer, binary.BigEndian, flag)
-	}else{ // LittleEdian
+	} else { // LittleEdian
 		err = binary.Write(&buffer, binary.LittleEndian, flag)
 	}
 
@@ -32,14 +32,13 @@ func BoolToByte(flag bool, endianType int16) []byte {
 	return buffer.Bytes()
 }
 
-
 // int
 func Int64ToByte(num int64, endianType int16) []byte {
 	var buffer bytes.Buffer
 	var err error
 	if endianType == 0 {
 		err = binary.Write(&buffer, binary.BigEndian, num)
-	}else{
+	} else {
 		err = binary.Write(&buffer, binary.LittleEndian, num)
 	}
 
@@ -65,7 +64,7 @@ func Int32ToByte(num int32, endianType int16) []byte {
 	var err error
 	if endianType == 0 {
 		err = binary.Write(&buffer, binary.BigEndian, num)
-	}else{
+	} else {
 		err = binary.Write(&buffer, binary.LittleEndian, num)
 	}
 
@@ -91,7 +90,7 @@ func Int16ToByte(num int16, endianType int16) []byte {
 	var err error
 	if endianType == 0 {
 		err = binary.Write(&buffer, binary.BigEndian, num)
-	}else{
+	} else {
 		err = binary.Write(&buffer, binary.LittleEndian, num)
 	}
 
@@ -102,17 +101,15 @@ func Int16ToByte(num int16, endianType int16) []byte {
 	return buffer.Bytes()
 }
 
-
 // float
 func Float32ToByte(float float32, endianType int16) []byte {
 	bits := math.Float32bits(float)
 	bytes := make([]byte, 4)
 	if endianType == 0 {
 		binary.BigEndian.PutUint32(bytes, bits)
-	}else{
+	} else {
 		binary.LittleEndian.PutUint32(bytes, bits)
 	}
-
 
 	return bytes
 }
@@ -128,7 +125,7 @@ func Float64ToByte(float float64, endianType int16) []byte {
 	bytes := make([]byte, 8)
 	if endianType == 0 {
 		binary.BigEndian.PutUint64(bytes, bits)
-	}else{
+	} else {
 		binary.LittleEndian.PutUint64(bytes, bits)
 	}
 
@@ -140,4 +137,3 @@ func ByteToFloat64(bytes []byte) float64 {
 
 	return math.Float64frombits(bits)
 }
-

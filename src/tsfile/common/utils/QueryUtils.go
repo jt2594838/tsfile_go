@@ -18,27 +18,27 @@ func MergeStrings(strsA []string, strsB []string) []string {
 	sort.Strings(strsA)
 	sort.Strings(strsB)
 	var ret []string
-	for indexA < lenA && indexB < lenB{
+	for indexA < lenA && indexB < lenB {
 		order := strings.Compare(strsA[indexA], strsB[indexB])
 		if order == 0 {
 			ret = append(ret, strsA[indexA])
-			indexA ++
-			indexB ++
-		} else if order < 0{
+			indexA++
+			indexB++
+		} else if order < 0 {
 			ret = append(ret, strsA[indexA])
-			indexA ++
+			indexA++
 		} else {
 			ret = append(ret, strsB[indexB])
-			indexB ++
+			indexB++
 		}
 	}
 	for indexA < lenA {
 		ret = append(ret, strsA[indexA])
-		indexA ++
+		indexA++
 	}
 	for indexB < lenB {
 		ret = append(ret, strsB[indexB])
-		indexB ++
+		indexB++
 	}
 	return ret
 }
@@ -52,14 +52,14 @@ func TestCommonStrs(strsA []string, strsB []string) bool {
 	indexA, indexB := 0, 0
 	sort.Strings(strsA)
 	sort.Strings(strsB)
-	for indexA < lenA && indexB < lenB{
+	for indexA < lenA && indexB < lenB {
 		order := strings.Compare(strsA[indexA], strsB[indexB])
 		if order == 0 {
 			return true
-		} else if order < 0{
-			indexA ++
+		} else if order < 0 {
+			indexA++
 		} else {
-			indexB ++
+			indexB++
 		}
 	}
 	return false

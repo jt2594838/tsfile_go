@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"tsfile/common/log"
 	"container/list"
-	"reflect"
 	"errors"
-	"time"
 	"math"
+	"reflect"
+	"time"
+	"tsfile/common/log"
 )
 
 /**
@@ -44,7 +44,7 @@ func MapContains(target interface{}, obj interface{}) (bool, error) {
 	return false, errors.New("not in array")
 }
 
-func calculateTime(){
+func calculateTime() {
 	var d time.Duration
 	t0 := time.Now()
 	log.Info("my log.")

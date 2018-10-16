@@ -1,17 +1,17 @@
 package metadata
 
 import (
+	"bytes"
 	_ "log"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type TsDigest struct {
 	//statistics     map[string][]byte
-	statistics 			map[string]*bytes.Buffer
+	statistics     map[string]*bytes.Buffer
 	serializedSize int
-	sizeOfList			int
+	sizeOfList     int
 }
 
 func (f *TsDigest) Deserialize(reader *utils.BytesReader) {
@@ -29,13 +29,13 @@ func (f *TsDigest) Deserialize(reader *utils.BytesReader) {
 	}
 }
 
-func (t *TsDigest) SetStatistics (statistics map[string]*bytes.Buffer) () {
+func (t *TsDigest) SetStatistics(statistics map[string]*bytes.Buffer) {
 	t.statistics = statistics
 	// recalculate serialized size
 	t.ReCalculateSerializedSize()
 }
 
-func (t *TsDigest) ReCalculateSerializedSize () () {
+func (t *TsDigest) ReCalculateSerializedSize() {
 	//calculate size again
 	t.serializedSize = 4
 	if t.statistics != nil {
@@ -49,11 +49,11 @@ func (t *TsDigest) ReCalculateSerializedSize () () {
 	}
 }
 
-func (t *TsDigest) GetNullDigestSize () (int) {
+func (t *TsDigest) GetNullDigestSize() int {
 	return 4
 }
 
-func (t *TsDigest) serializeTo (buf *bytes.Buffer) (int) {
+func (t *TsDigest) serializeTo(buf *bytes.Buffer) int {
 	if (t.statistics != nil && t.sizeOfList != len(t.statistics)) || (t.statistics == nil && t.sizeOfList != 0) {
 		t.ReCalculateSerializedSize()
 	}
@@ -85,7 +85,7 @@ func (t *TsDigest) serializeTo (buf *bytes.Buffer) (int) {
 	return byteLen
 }
 
-func (t *TsDigest) GetSerializedSize () (int) {
+func (t *TsDigest) GetSerializedSize() int {
 	if t.statistics == nil || t.sizeOfList != len(t.statistics) {
 		t.ReCalculateSerializedSize()
 	}
@@ -94,8 +94,8 @@ func (t *TsDigest) GetSerializedSize () (int) {
 
 func NewTsDigest() (*TsDigest, error) {
 	return &TsDigest{
-		statistics:make(map[string]*bytes.Buffer),
-		sizeOfList:0,
-		serializedSize:4,
+		statistics:     make(map[string]*bytes.Buffer),
+		sizeOfList:     0,
+		serializedSize: 4,
 	}, nil
 }

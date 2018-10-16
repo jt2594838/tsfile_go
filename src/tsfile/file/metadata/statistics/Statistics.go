@@ -1,22 +1,22 @@
 package statistics
 
 import (
+	"bytes"
 	"strconv"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type Statistics interface {
 	Deserialize(reader *utils.FileReader)
 	GetSerializedSize() int
-	GetMaxByte (tdt int16) ([]byte)
-	GetMinByte (tdt int16) ([]byte)
-	GetFirstByte (tdt int16) ([]byte)
-	GetLastByte (tdt int16) ([]byte)
-	GetSumByte (tdt int16) ([]byte)
-	SizeOfDaum () (int)
-	UpdateStats (value interface{}) ()
+	GetMaxByte(tdt int16) []byte
+	GetMinByte(tdt int16) []byte
+	GetFirstByte(tdt int16) []byte
+	GetLastByte(tdt int16) []byte
+	GetSumByte(tdt int16) []byte
+	SizeOfDaum() int
+	UpdateStats(value interface{})
 }
 
 func Deserialize(reader *utils.FileReader, dataType constant.TSDataType) Statistics {
@@ -44,7 +44,7 @@ func Deserialize(reader *utils.FileReader, dataType constant.TSDataType) Statist
 	return statistics
 }
 
-func GetStatsByType(tsDataType int16) (Statistics) {
+func GetStatsByType(tsDataType int16) Statistics {
 	var statistics Statistics
 	switch constant.TSDataType(tsDataType) {
 	case constant.BOOLEAN:
@@ -65,7 +65,7 @@ func GetStatsByType(tsDataType int16) (Statistics) {
 	return statistics
 }
 
-func Serialize (s Statistics, buffer *bytes.Buffer, tsDataType int16) (int) {
+func Serialize(s Statistics, buffer *bytes.Buffer, tsDataType int16) int {
 	var length int
 	if s.SizeOfDaum() == 0 {
 		return 0
@@ -75,11 +75,11 @@ func Serialize (s Statistics, buffer *bytes.Buffer, tsDataType int16) (int) {
 		buffer.Write(s.GetFirstByte(tsDataType))
 		buffer.Write(s.GetLastByte(tsDataType))
 		buffer.Write(s.GetSumByte(tsDataType))
-		length = s.SizeOfDaum() * 4 + 8
+		length = s.SizeOfDaum()*4 + 8
 	} else {
 		maxData := s.GetMaxByte(tsDataType)
 		buffer.Write(utils.Int32ToByte(int32(len(maxData)), 0))
-		maxLen, _ :=buffer.Write(maxData)
+		maxLen, _ := buffer.Write(maxData)
 		length += maxLen
 		minData := s.GetMinByte(tsDataType)
 		buffer.Write(utils.Int32ToByte(int32(len(minData)), 0))
@@ -97,7 +97,7 @@ func Serialize (s Statistics, buffer *bytes.Buffer, tsDataType int16) (int) {
 		buffer.Write(utils.Int32ToByte(int32(len(sumData)), 0))
 		sumLen, _ := buffer.Write(sumData)
 		length += sumLen
-		length = length + 4 * 5
+		length = length + 4*5
 	}
 	return length
 }

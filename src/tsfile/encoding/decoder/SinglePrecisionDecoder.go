@@ -32,8 +32,8 @@ func (d *SinglePrecisionDecoder) Next() interface{} {
 
 		ch := d.reader.ReadSlice(4)
 		d.preValue = int32(ch[0]) + int32(ch[1])<<8 + int32(ch[2])<<16 + int32(ch[3])<<24
-		d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
-		d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
+		d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
+		d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
 		tmp := math.Float32frombits(uint32(d.preValue))
 		d.base.fillBuffer(d.reader)
 		d.getNextValue()
@@ -78,6 +78,6 @@ func (d *SinglePrecisionDecoder) getNextValue() {
 		tmp ^= d.preValue
 		d.preValue = tmp
 	}
-	d.base.leadingZeroNum = d.base.numberOfLeadingZeros(d.preValue)
-	d.base.tailingZeroNum = d.base.numberOfTrailingZeros(d.preValue)
+	d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
+	d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
 }

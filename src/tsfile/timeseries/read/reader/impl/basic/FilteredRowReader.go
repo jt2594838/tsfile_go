@@ -43,7 +43,7 @@ func (r *FilteredRowReader) Next() *datatype.RowRecord {
 		r.fillCache()
 	}
 	ret := r.row
-	r. row = nil
+	r.row = nil
 
 	return ret
 }
@@ -52,9 +52,8 @@ func (r *FilteredRowReader) Close() {
 	r.reader.Close()
 }
 
-func NewFilteredRowReader(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *FilteredRowReader{
+func NewFilteredRowReader(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *FilteredRowReader {
 	rowReader := NewRecordReader(paths, readerMap)
-	dataSet := &FilteredRowReader{reader:rowReader, filter:filter}
+	dataSet := &FilteredRowReader{reader: rowReader, filter: filter}
 	return dataSet
 }
-

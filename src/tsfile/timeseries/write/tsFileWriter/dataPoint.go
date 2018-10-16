@@ -17,16 +17,16 @@ type DataPointOperate interface {
 }
 
 type DataPoint struct {
-	sensorId			string
-	tsDataType			int16
-	value 				interface{}
+	sensorId   string
+	tsDataType int16
+	value      interface{}
 }
 
-func (d *DataPoint) GetSensorId() (string) {
+func (d *DataPoint) GetSensorId() string {
 	return d.sensorId
 }
 
-func (d *DataPoint) Write(t int64, sw *SeriesWriter) (bool) {
+func (d *DataPoint) Write(t int64, sw *SeriesWriter) bool {
 	if sw.GetTsDeviceId() == "" {
 		log.Info("give seriesWriter is null, do nothing and return.")
 		return false
@@ -34,7 +34,6 @@ func (d *DataPoint) Write(t int64, sw *SeriesWriter) (bool) {
 	sw.Write(t, d.value)
 	return true
 }
-
 
 //func New(sId string, tdt int, te int) (*DataPoint, error) {
 //	return &DataPoint{

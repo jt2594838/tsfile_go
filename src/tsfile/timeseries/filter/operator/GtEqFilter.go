@@ -60,4 +60,3 @@ func (f *DoubleGtEqFilter) Satisfy(val interface{}) bool {
 	}
 	return false
 }
-

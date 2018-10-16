@@ -10,12 +10,12 @@ import (
 
 type FloatEncoder struct {
 	encoding constant.TSEncoding
-	dataType   constant.TSDataType
+	dataType constant.TSDataType
 
-	baseDecoder   Encoder
-	maxPointNumber int
+	baseDecoder             Encoder
+	maxPointNumber          int
 	maxPointNumberSavedFlag bool
-	maxPointValue float64
+	maxPointValue           float64
 }
 
 func (d *FloatEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
@@ -27,12 +27,12 @@ func (d *FloatEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 	}
 
 	if d.dataType == constant.FLOAT {
-		valueInt := int32(utils.Round(float64(value) * d.maxPointValue, 0))
+		valueInt := int32(utils.Round(float64(value)*d.maxPointValue, 0))
 		d.baseDecoder.Encode(valueInt, buffer)
 	} else if d.dataType == constant.DOUBLE {
-		valueLong := int64(utils.Round(float64(value) * d.maxPointValue, 0))
+		valueLong := int64(utils.Round(float64(value)*d.maxPointValue, 0))
 		d.baseDecoder.Encode(valueLong, buffer)
-	}		
+	}
 }
 
 func (d *FloatEncoder) Flush(buffer *bytes.Buffer) {
@@ -47,8 +47,8 @@ func (d *FloatEncoder) GetOneItemMaxSize() int {
 	return d.baseDecoder.GetOneItemMaxSize()
 }
 
-func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType constant.TSDataType) (*FloatEncoder) {
-	d := &FloatEncoder{dataType:dataType}
+func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType constant.TSDataType) *FloatEncoder {
+	d := &FloatEncoder{dataType: dataType}
 
 	if encoding == constant.RLE {
 		if dataType == constant.FLOAT {

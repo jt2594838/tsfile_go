@@ -1,26 +1,25 @@
 package impl
 
 import (
-	"tsfile/timeseries/read/reader"
+	"tsfile/common/utils"
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/read/datatype"
-	"tsfile/common/utils"
+	"tsfile/timeseries/read/reader"
 	"tsfile/timeseries/read/reader/impl/basic"
 )
-
 
 // MergeDataSet merges paths in the select clause and where clause together and constructs rows using all the paths
 // and applies the filter on each row.
 type MergeQueryDataSet struct {
 	reader reader.IRowRecordReader
 
-	row *datatype.RowRecord
+	row         *datatype.RowRecord
 	selectPaths []string
-	pathIndex map[string]int
+	pathIndex   map[string]int
 }
 
 func NewMergeQueryDataSet(selectPaths []string, conditionPaths []string, readerMap map[string]reader.TimeValuePairReader,
-							filter filter.Filter) *MergeQueryDataSet {
+	filter filter.Filter) *MergeQueryDataSet {
 	allPaths := utils.MergeStrings(selectPaths, conditionPaths)
 	rowReader := basic.NewFilteredRowReader(allPaths, readerMap, filter)
 	dataSet := &MergeQueryDataSet{reader: rowReader}
@@ -51,6 +50,6 @@ func (set *MergeQueryDataSet) Next() *datatype.RowRecord {
 	return set.row
 }
 
-func (set *MergeQueryDataSet) Close()  {
+func (set *MergeQueryDataSet) Close() {
 	set.reader.Close()
 }

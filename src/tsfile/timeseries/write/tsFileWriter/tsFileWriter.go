@@ -9,31 +9,30 @@ package tsFileWriter
  */
 
 import (
-	"tsfile/common/log"
-	"tsfile/timeseries/write/sensorDescriptor"
-	"tsfile/timeseries/write/fileSchema"
-	"tsfile/common/utils"
 	"tsfile/common/conf"
+	"tsfile/common/log"
+	"tsfile/common/utils"
+	"tsfile/timeseries/write/fileSchema"
+	"tsfile/timeseries/write/sensorDescriptor"
 )
 
 type TsFileWriter struct {
-	tsFileIoWriter				*TsFileIoWriter
-	schema 						*fileSchema.FileSchema
-	recordCount					int64
-	recordCountForNextMemCheck 	int64
-	rowGroupSizeThreshold		int64
-	primaryRowGroupSize			int64
-	pageSize					int64
-	oneRowMaxSize				int
-	groupDevices				map[string]*RowGroupWriter
+	tsFileIoWriter             *TsFileIoWriter
+	schema                     *fileSchema.FileSchema
+	recordCount                int64
+	recordCountForNextMemCheck int64
+	rowGroupSizeThreshold      int64
+	primaryRowGroupSize        int64
+	pageSize                   int64
+	oneRowMaxSize              int
+	groupDevices               map[string]*RowGroupWriter
 }
 
-
-func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) ([]byte) {
- 	log.Info("tsFileWriter->AddSensor()")
- 	if _, ok := t.schema.GetSensorDescriptiorMap()[sd.GetSensorId()]; !ok {
+func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) []byte {
+	log.Info("tsFileWriter->AddSensor()")
+	if _, ok := t.schema.GetSensorDescriptiorMap()[sd.GetSensorId()]; !ok {
 		t.schema.GetSensorDescriptiorMap()[sd.GetSensorId()] = sd
-	}else{
+	} else {
 		log.Info("the given sensor has exist!")
 	}
 	t.schema.Registermeasurement(sd)
@@ -45,7 +44,7 @@ func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) ([]byte)
 
 	// flush rowgroup
 	t.checkMemorySizeAndMayFlushGroup()
- 	return nil
+	return nil
 }
 
 //func (t *TsFileWriter)checkMemorySize()(bool){
@@ -65,12 +64,12 @@ func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) ([]byte)
 //}
 
 /**
-   * flush the data in all series writers and their page writers to outputStream.
-   * @param isFillRowGroup whether to fill RowGroup
-   * @return true - size of tsfile or metadata reaches the threshold.
-   * 		 false - otherwise. But this function just return false, the Override of IoTDB may return true.
-   */
-func (t *TsFileWriter)flushAllRowGroups(isFillRowGroup bool)(bool){
+ * flush the data in all series writers and their page writers to outputStream.
+ * @param isFillRowGroup whether to fill RowGroup
+ * @return true - size of tsfile or metadata reaches the threshold.
+ * 		 false - otherwise. But this function just return false, the Override of IoTDB may return true.
+ */
+func (t *TsFileWriter) flushAllRowGroups(isFillRowGroup bool) bool {
 	// flush data to disk
 	if t.recordCount > 0 {
 		totalMemStart := t.tsFileIoWriter.GetPos()
@@ -97,13 +96,13 @@ func (t *TsFileWriter)flushAllRowGroups(isFillRowGroup bool)(bool){
 	return true
 }
 
-func (t *TsFileWriter) reset () () {
+func (t *TsFileWriter) reset() {
 	for k, _ := range t.groupDevices {
 		delete(t.groupDevices, k)
 	}
 }
 
-func (t *TsFileWriter) Write(tr TsRecord) (bool) {
+func (t *TsFileWriter) Write(tr TsRecord) bool {
 	log.Info("tsFileWriter->Write()")
 	// write data here
 	if t.checkIsDeviceExist(tr, *t.schema) {
@@ -117,13 +116,11 @@ func (t *TsFileWriter) Write(tr TsRecord) (bool) {
 	return false
 }
 
-
-func (t *TsFileWriter) Close() (bool) {
+func (t *TsFileWriter) Close() bool {
 	// finished write file, and write magic string at file tail
 	//t.tsFileIoWriter.WriteMagic()
 	//t.tsFileIoWriter.tsIoFile.Write([]byte("\n"))
 	//t.tsFileIoWriter.tsIoFile.Close()
-
 
 	t.CalculateMemSizeForAllGroup()
 	t.flushAllRowGroups(false)
@@ -131,21 +128,21 @@ func (t *TsFileWriter) Close() (bool) {
 	return true
 }
 
-func (t *TsFileWriter)checkMemorySizeAndMayFlushGroup() (bool) {
+func (t *TsFileWriter) checkMemorySizeAndMayFlushGroup() bool {
 	if t.recordCount >= t.recordCountForNextMemCheck {
 		memSize := t.CalculateMemSizeForAllGroup()
 		if memSize >= t.rowGroupSizeThreshold {
 			log.Info("start write rowGroup, memory space occupy: %v", memSize)
 			if t.oneRowMaxSize != 0 {
 				t.recordCountForNextMemCheck = t.rowGroupSizeThreshold / int64(t.oneRowMaxSize)
-			}//else{
+			} //else{
 			//	log.Info("tsFileWriter oneRowMaxSize is not correct.")
 			//}
 
 			return t.flushAllRowGroups(false)
 		} else {
 			if t.oneRowMaxSize != 0 {
-				t.recordCountForNextMemCheck = t.recordCount + (t.rowGroupSizeThreshold - memSize) / int64(t.oneRowMaxSize)
+				t.recordCountForNextMemCheck = t.recordCount + (t.rowGroupSizeThreshold-memSize)/int64(t.oneRowMaxSize)
 			}
 			return false
 		}
@@ -153,7 +150,7 @@ func (t *TsFileWriter)checkMemorySizeAndMayFlushGroup() (bool) {
 	return false
 }
 
-func (t *TsFileWriter) CalculateMemSizeForAllGroup()(int64){
+func (t *TsFileWriter) CalculateMemSizeForAllGroup() int64 {
 	// calculate all group memory size
 	var memTotalSize int64 = 0
 	for _, v := range t.groupDevices {
@@ -191,7 +188,6 @@ func (t *TsFileWriter) checkIsDeviceExist(tr TsRecord, schema fileSchema.FileSch
 	return true
 }
 
-
 func NewTsFileWriter(file string) (*TsFileWriter, error) {
 	// file schema
 	fs, fsErr := fileSchema.New()
@@ -212,13 +208,13 @@ func NewTsFileWriter(file string) (*TsFileWriter, error) {
 	var prgs int64 = int64(conf.GroupSizeInByte)
 	rgst := int64(conf.GroupSizeInByte) - prgs
 
- return &TsFileWriter{
- 	tsFileIoWriter:tfiWriter,
- 	schema:fs,
- 	recordCount:0,
- 	recordCountForNextMemCheck:1,
- 	primaryRowGroupSize:prgs,
- 	rowGroupSizeThreshold:rgst,
- 	groupDevices:make(map[string]*RowGroupWriter),
- 	},nil
+	return &TsFileWriter{
+		tsFileIoWriter:             tfiWriter,
+		schema:                     fs,
+		recordCount:                0,
+		recordCountForNextMemCheck: 1,
+		primaryRowGroupSize:        prgs,
+		rowGroupSizeThreshold:      rgst,
+		groupDevices:               make(map[string]*RowGroupWriter),
+	}, nil
 }

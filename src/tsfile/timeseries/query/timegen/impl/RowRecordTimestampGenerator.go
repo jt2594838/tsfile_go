@@ -1,9 +1,9 @@
 package impl
 
 import (
-	"tsfile/timeseries/read/reader"
-	"tsfile/timeseries/filter"
 	"tsfile/common/constant"
+	"tsfile/timeseries/filter"
+	"tsfile/timeseries/read/reader"
 	"tsfile/timeseries/read/reader/impl/basic"
 )
 
@@ -18,9 +18,9 @@ func (gen *RowRecordTimestampGenerator) Close() {
 	gen.reader.Close()
 }
 
-func NewRowRecordTimestampGenerator(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *RowRecordTimestampGenerator{
+func NewRowRecordTimestampGenerator(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *RowRecordTimestampGenerator {
 	reader := basic.NewRecordReader(paths, readerMap)
-	return &RowRecordTimestampGenerator{reader:reader, filter:filter, currTime:constant.INVALID_TIMESTAMP}
+	return &RowRecordTimestampGenerator{reader: reader, filter: filter, currTime: constant.INVALID_TIMESTAMP}
 }
 
 func (gen *RowRecordTimestampGenerator) fetch() {
@@ -47,5 +47,3 @@ func (gen *RowRecordTimestampGenerator) Next() int64 {
 	gen.fetch()
 	return ret
 }
-
-

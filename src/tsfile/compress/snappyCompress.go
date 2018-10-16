@@ -6,12 +6,10 @@ import (
 
 type SnappyEncompressor struct{}
 
-func (s *SnappyEncompressor) GetEncompressedLength(srcLen int) (int) {
+func (s *SnappyEncompressor) GetEncompressedLength(srcLen int) int {
 	return snappy.MaxEncodedLen(srcLen)
 }
 
-func (s *SnappyEncompressor) Encompress (dst []byte, src []byte) ([]byte) {
+func (s *SnappyEncompressor) Encompress(dst []byte, src []byte) []byte {
 	return snappy.Encode(dst, src)
 }
-
-

@@ -11,5 +11,3 @@ type NotFilter struct {
 func (f *NotFilter) Satisfy(val interface{}) bool {
 	return !f.inner.Satisfy(val)
 }
-
-

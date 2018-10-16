@@ -2,12 +2,12 @@ package header
 
 import (
 	_ "bufio"
+	"bytes"
 	_ "log"
 	_ "os"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
 	"tsfile/file/metadata/statistics"
-	"bytes"
 )
 
 type PageHeader struct {
@@ -55,7 +55,7 @@ func (h *PageHeader) GetSerializedSize() int32 {
 	return h.serializedSize
 }
 
-func (p *PageHeader)PageHeaderToMemory(buffer *bytes.Buffer, tsDataType int16)(int32){
+func (p *PageHeader) PageHeaderToMemory(buffer *bytes.Buffer, tsDataType int16) int32 {
 	// write header to buffer
 	buffer.Write(utils.Int32ToByte(p.uncompressedSize, 0))
 	buffer.Write(utils.Int32ToByte(p.compressedSize, 0))
@@ -66,22 +66,22 @@ func (p *PageHeader)PageHeaderToMemory(buffer *bytes.Buffer, tsDataType int16)(i
 	return p.serializedSize
 }
 
-func CalculatePageHeaderSize (tsDataType int16) (int) {
-	pHeaderSize := 3 * 4 + 2 * 8
+func CalculatePageHeaderSize(tsDataType int16) int {
+	pHeaderSize := 3*4 + 2*8
 	// statisticsSize := statistics.GetStatistics(tsDataType).GetserializedSize(tsDataType)
 	statisticsSize := statistics.GetStatsByType(tsDataType).GetSerializedSize()
 	return pHeaderSize + statisticsSize
 }
 
 func NewPageHeader(ucs int32, cs int32, nov int32, sts statistics.Statistics, max_t int64, min_t int64, tsDataType int16) (*PageHeader, error) {
-	ss := 3 * 4 + 2 * 8 + sts.GetSerializedSize()
+	ss := 3*4 + 2*8 + sts.GetSerializedSize()
 	return &PageHeader{
-		uncompressedSize:ucs,
-		compressedSize:cs,
-		numberOfValues:nov,
-		max_timestamp:max_t,
-		min_timestamp:min_t,
-		statistics:sts,
-		serializedSize:int32(ss),
-	},nil
+		uncompressedSize: ucs,
+		compressedSize:   cs,
+		numberOfValues:   nov,
+		max_timestamp:    max_t,
+		min_timestamp:    min_t,
+		statistics:       sts,
+		serializedSize:   int32(ss),
+	}, nil
 }

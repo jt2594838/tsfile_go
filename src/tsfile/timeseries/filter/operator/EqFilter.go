@@ -60,4 +60,3 @@ func (f *DoubleEqFilter) Satisfy(val interface{}) bool {
 	}
 	return false
 }
-

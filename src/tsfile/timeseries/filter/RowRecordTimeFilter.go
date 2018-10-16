@@ -10,7 +10,7 @@ type RowRecordTimeFilter struct {
 }
 
 func NewRowRecordTimeFilter(filter Filter) *RowRecordTimeFilter {
-	return &RowRecordTimeFilter{filter:filter}
+	return &RowRecordTimeFilter{filter: filter}
 }
 
 func (s *RowRecordTimeFilter) Satisfy(val interface{}) bool {

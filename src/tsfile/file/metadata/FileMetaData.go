@@ -1,10 +1,10 @@
 package metadata
 
 import (
+	"bytes"
 	_ "encoding/binary"
 	_ "log"
 	"tsfile/common/utils"
-	"bytes"
 )
 
 type FileMetaData struct {
@@ -66,7 +66,7 @@ func (f *FileMetaData) GetCurrentVersion() int {
 	return f.currentVersion
 }
 
-func (t *FileMetaData) SerializeTo (buf *bytes.Buffer) (int) {
+func (t *FileMetaData) SerializeTo(buf *bytes.Buffer) int {
 	var byteLen int
 	if t.deviceMap == nil {
 		n, _ := buf.Write(utils.Int32ToByte(0, 0))
@@ -128,14 +128,12 @@ func (t *FileMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 	return byteLen
 }
 
-
-
 func NewTsFileMetaData(tdmd map[string]*DeviceMetaData, tss map[string]*TimeSeriesMetaData, version int) (*FileMetaData, error) {
 
 	return &FileMetaData{
-		deviceMap:tdmd,
-		timeSeriesMetadataMap:tss,
-		currentVersion:version,
-		createdBy:"",
-	},nil
+		deviceMap:             tdmd,
+		timeSeriesMetadataMap: tss,
+		currentVersion:        version,
+		createdBy:             "",
+	}, nil
 }

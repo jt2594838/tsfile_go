@@ -10,24 +10,24 @@ package tsFileWriter
 
 import (
 	"bytes"
-	"tsfile/file/metadata/statistics"
-	"tsfile/file/header"
+	"tsfile/common/constant"
 	"tsfile/common/log"
 	"tsfile/compress"
+	"tsfile/file/header"
+	"tsfile/file/metadata/statistics"
 	"tsfile/timeseries/write/sensorDescriptor"
-	"tsfile/common/constant"
 )
 
 type PageWriter struct {
-	compressor 			*compress.Encompress
-	desc 				*sensorDescriptor.SensorDescriptor
-	pageBuf 			*bytes.Buffer
-	totalValueCount		int64
-	maxTimestamp		int64
-	minTimestamp		int64
+	compressor      *compress.Encompress
+	desc            *sensorDescriptor.SensorDescriptor
+	pageBuf         *bytes.Buffer
+	totalValueCount int64
+	maxTimestamp    int64
+	minTimestamp    int64
 }
 
-func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, valueCount int, sts statistics.Statistics, maxTimestamp int64, minTimestamp int64) (int) {
+func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, valueCount int, sts statistics.Statistics, maxTimestamp int64, minTimestamp int64) int {
 	//this uncompressedSize should be calculate from timeBuf and valueBuf
 	uncompressedSize := dataBuffer.Len()
 
@@ -46,7 +46,6 @@ func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, va
 		enc = p.compressor.GetEncompressor(p.desc.GetCompresstionType()).Encompress(aSlice, dataSlice)
 		compressedSize = len(enc)
 	}
-
 
 	pageHeader, pageHeaderErr := header.NewPageHeader(int32(uncompressedSize), int32(compressedSize), int32(valueCount), sts, maxTimestamp, minTimestamp, p.desc.GetTsDataType())
 	if pageHeaderErr != nil {
@@ -74,12 +73,12 @@ func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, va
 	return 0
 }
 
-func (p *PageWriter) WriteAllPagesOfSeriesToTsFile (tsFileIoWriter *TsFileIoWriter, seriesStatistics statistics.Statistics, numOfPage int) (int64) {
+func (p *PageWriter) WriteAllPagesOfSeriesToTsFile(tsFileIoWriter *TsFileIoWriter, seriesStatistics statistics.Statistics, numOfPage int) int64 {
 	if p.minTimestamp == -1 {
 		log.Error("Write page error, minTime: %s, maxTime: %s")
 	}
 	// write trunk header to file
-	chunkHeaderSize :=  tsFileIoWriter.StartFlushChunk(p.desc, int16(constant.UNCOMPRESSED), p.desc.GetTsDataType(), p.desc.GetTsEncoding(), seriesStatistics, p.maxTimestamp, p.minTimestamp, p.pageBuf.Len(), numOfPage)
+	chunkHeaderSize := tsFileIoWriter.StartFlushChunk(p.desc, int16(constant.UNCOMPRESSED), p.desc.GetTsDataType(), p.desc.GetTsEncoding(), seriesStatistics, p.maxTimestamp, p.minTimestamp, p.pageBuf.Len(), numOfPage)
 	preSize := tsFileIoWriter.GetPos()
 	// write all pages to file
 	tsFileIoWriter.WriteBytesToFile(p.pageBuf)
@@ -91,29 +90,28 @@ func (p *PageWriter) WriteAllPagesOfSeriesToTsFile (tsFileIoWriter *TsFileIoWrit
 	return chunkSize
 }
 
-func (p *PageWriter) Reset () () {
+func (p *PageWriter) Reset() {
 	p.minTimestamp = -1
 	p.pageBuf.Reset()
 	p.totalValueCount = 0
 	return
 }
 
-func (p *PageWriter) EstimateMaxPageMemSize () (int) {
+func (p *PageWriter) EstimateMaxPageMemSize() int {
 	pageSize := p.pageBuf.Len()
 	pageHeaderSize := header.CalculatePageHeaderSize(p.desc.GetTsDataType())
 	return pageSize + pageHeaderSize
 }
 
-func (p *PageWriter) GetCurrentDataSize () (int) {
+func (p *PageWriter) GetCurrentDataSize() int {
 	size := p.pageBuf.Len()
 	return size
 }
 
-
 func NewPageWriter(sd *sensorDescriptor.SensorDescriptor) (*PageWriter, error) {
 	return &PageWriter{
-		desc:sd,
-		compressor:sd.GetCompressor(),
-		pageBuf:bytes.NewBuffer([]byte{}),
-	},nil
+		desc:       sd,
+		compressor: sd.GetCompressor(),
+		pageBuf:    bytes.NewBuffer([]byte{}),
+	}, nil
 }

@@ -10,10 +10,10 @@ package compress
 
 type NoEncompressor struct{}
 
-func (n *NoEncompressor) GetEncompressedLength(srcLen int) (int) {
+func (n *NoEncompressor) GetEncompressedLength(srcLen int) int {
 	return srcLen
 }
 
-func (n *NoEncompressor) Encompress(dst []byte, src []byte) ([]byte) {
+func (n *NoEncompressor) Encompress(dst []byte, src []byte) []byte {
 	return src
 }

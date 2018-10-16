@@ -37,8 +37,8 @@ func (d *DoublePrecisionDecoder) Next() interface{} {
 		}
 		d.preValue = res
 
-		d.base.leadingZeroNum = d.base.numberOfLeadingZerosLong(d.preValue)
-		d.base.tailingZeroNum = d.base.numberOfTrailingZerosLong(d.preValue)
+		d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+		d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 		tmp := math.Float64frombits(uint64(d.preValue))
 		d.base.fillBuffer(d.reader)
 		d.getNextValue()
@@ -83,6 +83,6 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 		tmp ^= d.preValue
 		d.preValue = tmp
 	}
-	d.base.leadingZeroNum = d.base.numberOfLeadingZerosLong(d.preValue)
-	d.base.tailingZeroNum = d.base.numberOfTrailingZerosLong(d.preValue)
+	d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+	d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 }

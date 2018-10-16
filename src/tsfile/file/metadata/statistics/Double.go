@@ -6,11 +6,11 @@ import (
 )
 
 type Double struct {
-	max   float64
-	min   float64
-	first float64
-	last  float64
-	sum   float64
+	max     float64
+	min     float64
+	first   float64
+	last    float64
+	sum     float64
 	isEmpty bool
 }
 
@@ -22,31 +22,31 @@ func (s *Double) Deserialize(reader *utils.FileReader) {
 	s.sum = reader.ReadDouble()
 }
 
-func (d *Double) SizeOfDaum () (int) {
+func (d *Double) SizeOfDaum() int {
 	return 4
 }
 
-func (d *Double) GetMaxByte (tdt int16) ([]byte) {
+func (d *Double) GetMaxByte(tdt int16) []byte {
 	return utils.Float64ToByte(d.max, 0)
 }
 
-func (d *Double) GetMinByte (tdt int16) ([]byte) {
+func (d *Double) GetMinByte(tdt int16) []byte {
 	return utils.Float64ToByte(d.min, 0)
 }
 
-func (d *Double) GetFirstByte (tdt int16) ([]byte) {
+func (d *Double) GetFirstByte(tdt int16) []byte {
 	return utils.Float64ToByte(d.first, 0)
 }
 
-func (d *Double) GetLastByte (tdt int16) ([]byte) {
+func (d *Double) GetLastByte(tdt int16) []byte {
 	return utils.Float64ToByte(d.last, 0)
 }
 
-func (d *Double) GetSumByte (tdt int16) ([]byte) {
+func (d *Double) GetSumByte(tdt int16) []byte {
 	return utils.Float64ToByte(d.sum, 0)
 }
 
-func (d *Double) UpdateStats (dValue interface{}) () {
+func (d *Double) UpdateStats(dValue interface{}) {
 	value := dValue.(float64)
 	if d.isEmpty {
 		d.InitializeStats(value, value, value, value, value)
@@ -56,7 +56,7 @@ func (d *Double) UpdateStats (dValue interface{}) () {
 	}
 }
 
-func (d *Double) UpdateValue (max float64, min float64, first float64, last float64, sum float64) () {
+func (d *Double) UpdateValue(max float64, min float64, first float64, last float64, sum float64) {
 	if max > d.max {
 		d.max = max
 	}
@@ -67,7 +67,7 @@ func (d *Double) UpdateValue (max float64, min float64, first float64, last floa
 	d.last = last
 }
 
-func (d *Double) InitializeStats (max float64, min float64, first float64, last float64, sum float64) () {
+func (d *Double) InitializeStats(max float64, min float64, first float64, last float64, sum float64) {
 	d.max = max
 	d.min = min
 	d.first = first

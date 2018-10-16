@@ -3,9 +3,9 @@ package query
 import "tsfile/timeseries/filter"
 
 type QueryExpression struct {
-	selectPaths []string
+	selectPaths    []string
 	conditionPaths []string
-	filter      filter.Filter
+	filter         filter.Filter
 }
 
 func (q *QueryExpression) ConditionPaths() []string {
@@ -31,4 +31,3 @@ func (q *QueryExpression) Filter() filter.Filter {
 func (q *QueryExpression) SelectPaths() []string {
 	return q.selectPaths
 }
-

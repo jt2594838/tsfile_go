@@ -1,8 +1,8 @@
 package filter
 
 import (
-	"tsfile/timeseries/read/datatype"
 	"tsfile/common/constant"
+	"tsfile/timeseries/read/datatype"
 )
 
 // RowRecordTimeFilter receives a RowRecord and tests whether a certain column in the RowRecord specified by its name
@@ -13,13 +13,13 @@ import (
 // it in future tests.
 type RowRecordValFilter struct {
 	seriesName string
-	filter Filter
+	filter     Filter
 
 	seriesIndex int
 }
 
 func NewRowRecordValFilter(seriesName string, filter Filter) *RowRecordValFilter {
-	return &RowRecordValFilter{seriesName:seriesName, filter:filter, seriesIndex:constant.INDEX_NOT_SET}
+	return &RowRecordValFilter{seriesName: seriesName, filter: filter, seriesIndex: constant.INDEX_NOT_SET}
 }
 
 func (s *RowRecordValFilter) Satisfy(val interface{}) bool {
@@ -37,4 +37,3 @@ func (s *RowRecordValFilter) Satisfy(val interface{}) bool {
 	}
 	return false
 }
-

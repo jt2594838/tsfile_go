@@ -1,22 +1,22 @@
 package basic
 
 import (
+	"math"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
-	"math"
 )
 
 type RowRecordReader struct {
-	paths []string
+	paths     []string
 	readerMap map[string]reader.TimeValuePairReader
 
 	cacheList []*datatype.TimeValuePair
 	row       *datatype.RowRecord
-	currTime int64
+	currTime  int64
 }
 
-func NewRecordReader(paths []string, readerMap map[string]reader.TimeValuePairReader) *RowRecordReader{
-	ret := &RowRecordReader{paths:paths, readerMap:readerMap}
+func NewRecordReader(paths []string, readerMap map[string]reader.TimeValuePairReader) *RowRecordReader {
+	ret := &RowRecordReader{paths: paths, readerMap: readerMap}
 	ret.row = datatype.NewRowRecordWithPaths(paths)
 	ret.cacheList = make([]*datatype.TimeValuePair, len(paths))
 	ret.currTime = math.MaxInt64
@@ -33,7 +33,7 @@ func (r *RowRecordReader) fillCache() {
 
 		}
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp < r.currTime {
-			r.currTime =  r.cacheList[i].Timestamp
+			r.currTime = r.cacheList[i].Timestamp
 		}
 	}
 }
@@ -44,7 +44,7 @@ func (r *RowRecordReader) fillRow() {
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp == r.currTime {
 			r.row.Values()[i] = r.cacheList[i].Value
 			r.cacheList[i] = nil
-		} else  {
+		} else {
 			r.row.Values()[i] = nil
 		}
 	}
@@ -62,7 +62,7 @@ func (r *RowRecordReader) HasNext() bool {
 /*
 	Notice: The return value is IMMUTABLE because the RowRecord is reused through out the iteration to reduce memory
 	overhead. You can only copy the values in the RowRecord instead of copying the pointer of the return value.
- */
+*/
 func (r *RowRecordReader) Next() *datatype.RowRecord {
 	r.fillRow()
 	r.currTime = math.MaxInt64

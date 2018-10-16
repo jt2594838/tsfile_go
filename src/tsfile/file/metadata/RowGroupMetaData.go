@@ -2,10 +2,10 @@ package metadata
 
 import (
 	//_ "log"
-	"tsfile/common/constant"
-	"tsfile/common/utils"
-	"tsfile/common/log"
 	"bytes"
+	"tsfile/common/constant"
+	"tsfile/common/log"
+	"tsfile/common/utils"
 )
 
 type RowGroupMetaData struct {
@@ -13,7 +13,7 @@ type RowGroupMetaData struct {
 	totalByteSize                 int64
 	fileOffsetOfCorrespondingData int64
 	serializedSize                int
-	ChunkMetaDataSli   []*ChunkMetaData
+	ChunkMetaDataSli              []*ChunkMetaData
 	sizeOfChunkSli                int
 }
 
@@ -38,7 +38,7 @@ func (f *RowGroupMetaData) GetSerializedSize() int {
 	return f.serializedSize
 }
 
-func (r *RowGroupMetaData) AddChunkMetaData (md *ChunkMetaData) () {
+func (r *RowGroupMetaData) AddChunkMetaData(md *ChunkMetaData) {
 	if len(r.ChunkMetaDataSli) == 0 {
 		r.ChunkMetaDataSli = make([]*ChunkMetaData, 0)
 	}
@@ -47,15 +47,15 @@ func (r *RowGroupMetaData) AddChunkMetaData (md *ChunkMetaData) () {
 	r.sizeOfChunkSli += 1
 }
 
-func (r *RowGroupMetaData) SetTotalByteSize (ms int64) () {
+func (r *RowGroupMetaData) SetTotalByteSize(ms int64) {
 	r.totalByteSize = ms
 }
 
-func (r *RowGroupMetaData) GetDeviceId () (string) {
+func (r *RowGroupMetaData) GetDeviceId() string {
 	return r.device
 }
 
-func (r *RowGroupMetaData) SerializeTo (buf *bytes.Buffer) (int) {
+func (r *RowGroupMetaData) SerializeTo(buf *bytes.Buffer) int {
 	if r.sizeOfChunkSli != len(r.ChunkMetaDataSli) {
 		r.RecalculateSerializedSize()
 	}
@@ -80,22 +80,22 @@ func (r *RowGroupMetaData) SerializeTo (buf *bytes.Buffer) (int) {
 	return byteLen
 }
 
-func (r *RowGroupMetaData) GetChunkMetaDataSli () ([]*ChunkMetaData) {
+func (r *RowGroupMetaData) GetChunkMetaDataSli() []*ChunkMetaData {
 	//if r.ChunkMetaDataSli == nil {
 	//	return nil
 	//}
 	return r.ChunkMetaDataSli
 }
 
-func (r *RowGroupMetaData) GetserializedSize () (int) {
+func (r *RowGroupMetaData) GetserializedSize() int {
 	if r.sizeOfChunkSli != len(r.ChunkMetaDataSli) {
 		r.RecalculateSerializedSize()
 	}
 	return r.serializedSize
 }
 
-func (r *RowGroupMetaData) RecalculateSerializedSize () () {
-	r.serializedSize = 1 *4 + len(r.device) + 2 * 8 + 1 * 4
+func (r *RowGroupMetaData) RecalculateSerializedSize() {
+	r.serializedSize = 1*4 + len(r.device) + 2*8 + 1*4
 	for _, v := range r.ChunkMetaDataSli {
 		if &v != nil {
 			r.serializedSize += v.GetSerializedSize()
@@ -108,9 +108,9 @@ func (r *RowGroupMetaData) RecalculateSerializedSize () () {
 
 func NewRowGroupMetaData(dId string, tbs int64, foocd int64, tscmds []*ChunkMetaData) (*RowGroupMetaData, error) {
 	return &RowGroupMetaData{
-		device:dId,
-		totalByteSize:tbs,
-		fileOffsetOfCorrespondingData:foocd,
-		ChunkMetaDataSli:tscmds,
-	},nil
+		device:                        dId,
+		totalByteSize:                 tbs,
+		fileOffsetOfCorrespondingData: foocd,
+		ChunkMetaDataSli:              tscmds,
+	}, nil
 }

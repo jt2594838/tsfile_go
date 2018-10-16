@@ -1,20 +1,20 @@
 package impl
 
 import (
-	"tsfile/timeseries/read/datatype"
-	"tsfile/timeseries/query/timegen"
-	"tsfile/timeseries/read/reader/impl/seek"
-	"tsfile/timeseries/read/reader"
-	"tsfile/timeseries/filter"
-	"tsfile/timeseries/query/timegen/impl"
 	"tsfile/common/constant"
+	"tsfile/timeseries/filter"
+	"tsfile/timeseries/query/timegen"
+	"tsfile/timeseries/query/timegen/impl"
+	"tsfile/timeseries/read/datatype"
+	"tsfile/timeseries/read/reader"
 	"tsfile/timeseries/read/reader/impl/basic"
+	"tsfile/timeseries/read/reader/impl/seek"
 )
 
 type TimestampQueryDataSet struct {
 	tGen timegen.ITimestampGenerator
 	rGen *basic.FilteredRowReader
-	r reader.ISeekableRowReader
+	r    reader.ISeekableRowReader
 
 	currTime int64
 	current  *datatype.RowRecord
@@ -25,7 +25,7 @@ func NewTimestampQueryDataSet(selectPaths []string, conditionPaths []string,
 	tGen := impl.NewRowRecordTimestampGenerator(conditionPaths, conditionReaderMap, filter)
 	rGen := basic.NewFilteredRowReader(conditionPaths, conditionReaderMap, filter)
 	r := seek.NewSeekableRowReader(selectPaths, selectReaderMap)
-	return &TimestampQueryDataSet{tGen:tGen, rGen:rGen, r:r, currTime:constant.INVALID_TIMESTAMP}
+	return &TimestampQueryDataSet{tGen: tGen, rGen: rGen, r: r, currTime: constant.INVALID_TIMESTAMP}
 }
 
 func (set *TimestampQueryDataSet) fetch() {
@@ -61,4 +61,3 @@ func (set *TimestampQueryDataSet) Next() *datatype.RowRecord {
 func (set *TimestampQueryDataSet) Close() {
 	set.r.Close()
 }
-

@@ -7,8 +7,8 @@ import (
 type Encompress struct{}
 
 type Encompressor interface {
-	GetEncompressedLength(srcLen int) (int)
-	Encompress(dst []byte, src []byte) ([]byte)
+	GetEncompressedLength(srcLen int) int
+	Encompress(dst []byte, src []byte) []byte
 }
 
 func (e *Encompress) DeCompress(compressed []byte) ([]byte, error) {

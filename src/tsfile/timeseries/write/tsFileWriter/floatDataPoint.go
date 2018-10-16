@@ -21,15 +21,15 @@ import (
  */
 
 type FloatDataPoint struct {
-	sensorId			string
-	tsDataType			int
-	value 				float32
+	sensorId   string
+	tsDataType int
+	value      float32
 }
 
 func NewFloat(sId string, tdt constant.TSDataType, val float32) (*DataPoint, error) {
 	return &DataPoint{
-		sensorId:sId,
-		tsDataType:int16(tdt),
-		value:val,
-	},nil
+		sensorId:   sId,
+		tsDataType: int16(tdt),
+		value:      val,
+	}, nil
 }

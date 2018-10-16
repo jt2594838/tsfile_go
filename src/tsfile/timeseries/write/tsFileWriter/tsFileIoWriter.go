@@ -9,46 +9,46 @@ package tsFileWriter
  */
 
 import (
-	"tsfile/common/log"
+	"bytes"
 	"os"
 	"tsfile/common/conf"
-	"tsfile/timeseries/write/sensorDescriptor"
-	"bytes"
-	"tsfile/file/metadata/statistics"
-	"tsfile/file/metadata"
-	"tsfile/file/header"
-	"tsfile/timeseries/write/fileSchema"
+	"tsfile/common/log"
 	"tsfile/common/utils"
+	"tsfile/file/header"
+	"tsfile/file/metadata"
+	"tsfile/file/metadata/statistics"
+	"tsfile/timeseries/write/fileSchema"
+	"tsfile/timeseries/write/sensorDescriptor"
 )
 
 type TsFileIoWriter struct {
-	tsIoFile 						*os.File
-	memBuf					 		*bytes.Buffer
-	currentRowGroupMetaData			*metadata.RowGroupMetaData
-	currentChunkMetaData			*metadata.ChunkMetaData
-	rowGroupMetaDataSli				[]*metadata.RowGroupMetaData
-	rowGroupHeader					*header.RowGroupHeader
-	chunkHeader						*header.ChunkHeader
+	tsIoFile                *os.File
+	memBuf                  *bytes.Buffer
+	currentRowGroupMetaData *metadata.RowGroupMetaData
+	currentChunkMetaData    *metadata.ChunkMetaData
+	rowGroupMetaDataSli     []*metadata.RowGroupMetaData
+	rowGroupHeader          *header.RowGroupHeader
+	chunkHeader             *header.ChunkHeader
 }
 
-const(
-	MAXVALUE="max_value"
-	MINVALUE="min_value"
-	FIRST="first"
-	SUM="sum"
-	LAST="last"
+const (
+	MAXVALUE = "max_value"
+	MINVALUE = "min_value"
+	FIRST    = "first"
+	SUM      = "sum"
+	LAST     = "last"
 )
 
-func (t *TsFileIoWriter) GetTsIoFile () (*os.File) {
+func (t *TsFileIoWriter) GetTsIoFile() *os.File {
 	return t.tsIoFile
 }
 
-func (t *TsFileIoWriter) GetPos () (int64) {
+func (t *TsFileIoWriter) GetPos() int64 {
 	currentPos, _ := t.tsIoFile.Seek(0, os.SEEK_CUR)
 	return currentPos
 }
 
-func (t *TsFileIoWriter) EndChunk (size int64, totalValueCount int64) () {
+func (t *TsFileIoWriter) EndChunk(size int64, totalValueCount int64) {
 	// set currentChunkMetaData
 	t.currentChunkMetaData.SetTotalByteSizeOfPagesOnDisk(size)
 	t.currentChunkMetaData.SetNumOfPoints(totalValueCount)
@@ -59,14 +59,14 @@ func (t *TsFileIoWriter) EndChunk (size int64, totalValueCount int64) () {
 	return
 }
 
-func (t *TsFileIoWriter) EndRowGroup (memSize int64) () {
+func (t *TsFileIoWriter) EndRowGroup(memSize int64) {
 	t.currentRowGroupMetaData.SetTotalByteSize(memSize)
 	t.rowGroupMetaDataSli = append(t.rowGroupMetaDataSli, t.currentRowGroupMetaData)
 	log.Info("end row group: %v", t.currentRowGroupMetaData)
 	//t.currentRowGroupMetaData = nil
 }
 
-func (t *TsFileIoWriter) EndFile (fs fileSchema.FileSchema) () {
+func (t *TsFileIoWriter) EndFile(fs fileSchema.FileSchema) {
 	timeSeriesMap := fs.GetTimeSeriesMetaDatas()
 	// log.Info("get time series map: %v", timeSeriesMap)
 	tsDeviceMetaDataMap := make(map[string]*metadata.DeviceMetaData)
@@ -106,7 +106,6 @@ func (t *TsFileIoWriter) EndFile (fs fileSchema.FileSchema) () {
 	t.memBuf.Write(utils.Int32ToByte(int32(size), 0))
 	t.memBuf.Write([]byte(conf.MAGIC_STRING))
 
-
 	// flush mem-filemeta to file
 	t.WriteBytesToFile(t.memBuf)
 	log.Info("file pos: %d", t.GetPos())
@@ -126,8 +125,7 @@ func min(x, y int64) int64 {
 	return y
 }
 
-
-func (t *TsFileIoWriter) WriteMagic()(int){
+func (t *TsFileIoWriter) WriteMagic() int {
 	n, err := t.tsIoFile.Write([]byte(conf.MAGIC_STRING))
 	if err != nil {
 		log.Error("write start magic to file err: ", err)
@@ -135,7 +133,7 @@ func (t *TsFileIoWriter) WriteMagic()(int){
 	return n
 }
 
-func (t *TsFileIoWriter) StartFlushRowGroup(deviceId string, rowGroupSize int64, seriesNumber int32)(int){
+func (t *TsFileIoWriter) StartFlushRowGroup(deviceId string, rowGroupSize int64, seriesNumber int32) int {
 	log.Info("start flush rowgroup.")
 	// timeSeriesChunkMetaDataMap := make(map[string]metaData.TimeSeriesChunkMetaData)
 	timeSeriesChunkMetaDataSli := make([]*metadata.ChunkMetaData, 0)
@@ -154,8 +152,8 @@ func (t *TsFileIoWriter) StartFlushRowGroup(deviceId string, rowGroupSize int64,
 }
 
 func (t *TsFileIoWriter) StartFlushChunk(sd *sensorDescriptor.SensorDescriptor, compressionType int16,
-								tsDataType int16, encodingType int16, statistics statistics.Statistics,
-								maxTimestamp int64, minTimestamp int64, pageBufSize int, numOfPages int)(int){
+	tsDataType int16, encodingType int16, statistics statistics.Statistics,
+	maxTimestamp int64, minTimestamp int64, pageBufSize int, numOfPages int) int {
 	t.currentChunkMetaData, _ = metadata.NewTimeSeriesChunkMetaData(sd.GetSensorId(), t.GetPos(), minTimestamp, maxTimestamp)
 	chunkHeader, _ := header.NewChunkHeader(sd.GetSensorId(), pageBufSize, tsDataType, compressionType, encodingType, numOfPages, 0)
 	chunkHeader.ChunkHeaderToMemory(t.memBuf)
@@ -204,7 +202,7 @@ func (t *TsFileIoWriter) StartFlushChunk(sd *sensorDescriptor.SensorDescriptor, 
 	return header.GetChunkSerializedSize(sd.GetSensorId())
 }
 
-func (t *TsFileIoWriter) WriteBytesToFile (buf *bytes.Buffer) () {
+func (t *TsFileIoWriter) WriteBytesToFile(buf *bytes.Buffer) {
 	//声明一个空的slice,容量为timebuf的长度
 	timeSlice := make([]byte, buf.Len())
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
@@ -220,8 +218,8 @@ func NewTsFileIoWriter(file string) (*TsFileIoWriter, error) {
 	}
 
 	return &TsFileIoWriter{
-		tsIoFile:newFile,
-		memBuf:bytes.NewBuffer([]byte{}),
-		rowGroupMetaDataSli:make([]*metadata.RowGroupMetaData, 0),
-	},nil
+		tsIoFile:            newFile,
+		memBuf:              bytes.NewBuffer([]byte{}),
+		rowGroupMetaDataSli: make([]*metadata.RowGroupMetaData, 0),
+	}, nil
 }

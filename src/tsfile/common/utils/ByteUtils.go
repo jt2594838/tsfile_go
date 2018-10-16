@@ -1,8 +1,8 @@
 package utils
 
 import (
-	_ "log"
 	"bytes"
+	_ "log"
 )
 
 // get one bit in input byte. the offset is from low to high and start with 0
@@ -297,13 +297,13 @@ func NumberOfTrailingZerosLong(i int64) int32 {
 }
 
 /**
-	* write a value to stream using unsigned var int format.
-	* for example,
-	* int 123456789 has its binary format 111010-1101111-0011010-0010101, 
-	* function WriteUnsignedVarInt() will split every seven bits and write them to stream from low bit to high bit like:
-	* 1-0010101 1-0011010 1-1101111 0-0111010
-	* 1 represents has next byte to write, 0 represents number end.
-	*/
+* write a value to stream using unsigned var int format.
+* for example,
+* int 123456789 has its binary format 111010-1101111-0011010-0010101,
+* function WriteUnsignedVarInt() will split every seven bits and write them to stream from low bit to high bit like:
+* 1-0010101 1-0011010 1-1101111 0-0111010
+* 1 represents has next byte to write, 0 represents number end.
+ */
 func WriteUnsignedVarInt(value int32, buffer *bytes.Buffer) {
 	var position int32 = 1
 
