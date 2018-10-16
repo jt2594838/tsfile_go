@@ -75,6 +75,13 @@ func (v *ValueWriter) GetByteBuffer() (*bytes.Buffer) {
 func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) () {
 
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
+		if valueCount == 0 {
+			encT.Encode(t, v.timeBuf)
+		}
+		if v.desc.GetTimeCount() == conf.DeltaBlockSize {
+			encT.Encode(t, v.timeBuf)
+			v.desc.SetTimeCount(0)
+		}
 		encT.Encode(t, v.timeBuf)
 	}
 

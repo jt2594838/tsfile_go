@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"errors"
 	"time"
+	"math"
 )
 
 /**
@@ -50,4 +51,9 @@ func calculateTime(){
 	t1 := time.Now()
 	d = t1.Sub(t0)
 	log.Info("cost time = %v\n", d)
+}
+
+func Round(f float64, n int) float64 {
+	pow10_n := math.Pow10(n)
+	return math.Trunc((f+0.5/pow10_n)*pow10_n) / pow10_n
 }

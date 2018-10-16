@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	fileName = "D:/test.ts"
+	fileName = "test.ts"
 )
 
 func main() {
@@ -33,11 +33,11 @@ func main() {
 	}
 
 	// init sensorDescriptor
-	sd, sdErr := sensorDescriptor.New("sensor_1", constant.FLOAT, constant.TS_2DIFF)
+	sd, sdErr := sensorDescriptor.New("sensor_1", constant.FLOAT, constant.PLAIN)
 	if sdErr != nil {
 		log.Info("init sensorDescriptor error = %s", sdErr)
 	}
-	sd2, sdErr2 := sensorDescriptor.New("sensor_2", constant.INT32, constant.TS_2DIFF)
+	sd2, sdErr2 := sensorDescriptor.New("sensor_2", constant.INT32, constant.PLAIN)
 	if sdErr2 != nil {
 		log.Info("init sensorDescriptor error = %s", sdErr2)
 	}

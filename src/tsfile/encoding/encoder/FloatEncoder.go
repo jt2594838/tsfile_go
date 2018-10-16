@@ -27,10 +27,10 @@ func (d *FloatEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 	}
 
 	if d.dataType == constant.FLOAT {
-		valueInt := int32(math.Round(float64(value) * d.maxPointValue))
+		valueInt := int32(utils.Round(float64(value) * d.maxPointValue, 0))
 		d.baseDecoder.Encode(valueInt, buffer)
 	} else if d.dataType == constant.DOUBLE {
-		valueLong := int64(math.Round(float64(value) * d.maxPointValue))
+		valueLong := int64(utils.Round(float64(value) * d.maxPointValue, 0))
 		d.baseDecoder.Encode(valueLong, buffer)
 	}		
 }

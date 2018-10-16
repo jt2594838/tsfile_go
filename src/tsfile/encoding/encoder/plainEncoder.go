@@ -35,23 +35,7 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 		}
 	case p.tsDataType == constant.INT64:
 		if data, ok := value.(int64); ok {
-			if p.valueCount == -1 {
-				aa := []byte{24}
-				buffer.Write(aa)
-				p.EncInt64(data, buffer)
-				p.EncInt64(data, buffer)
-				p.EncInt64(data, buffer)
-				p.valueCount += 1
-			}
-			if p.valueCount == conf.DeltaBlockSize {
-				p.EncInt64(data, buffer)
-				p.EncInt64(data, buffer)
-				p.EncInt64(data, buffer)
-				p.valueCount = 0
-			} else {
-				p.valueCount += 1
-			}
-
+			p.EncInt64(data, buffer)
 		}
 	case p.tsDataType == constant.FLOAT:
 		if data, ok := value.(float32); ok {
