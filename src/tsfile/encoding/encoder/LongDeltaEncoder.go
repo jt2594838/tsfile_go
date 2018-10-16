@@ -87,7 +87,7 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 			buffer.Write(encodingBlockBuffer)
 		}
 
-		d.Init()
+		d.reset()
 	}
 }
 
@@ -97,4 +97,20 @@ func (d *LongDeltaEncoder) GetMaxByteSize() int64 {
 
 func (d *LongDeltaEncoder) GetOneItemMaxSize() int {
 	return 8
+}
+
+func (d *LongDeltaEncoder) reset() {
+	d.blockSize = BLOCK_DEFAULT_SIZE
+	d.index = -1
+	d.firstValue = 0
+	d.previousValue = 0
+	d.baseValue = math.MaxInt64
+	d.encodedValues = make([]int64, d.blockSize)
+}
+
+func NewLongDeltaEncoder(dataType constant.TSDataType) (*LongDeltaEncoder) {
+	d := &LongDeltaEncoder{dataType:dataType}
+	d.reset()
+
+	return d
 }

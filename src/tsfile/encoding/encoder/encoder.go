@@ -3,6 +3,7 @@ package encoder
 import (
 	"bytes"
 	"strconv"
+	"tsfile/common/conf"
 	"tsfile/common/constant"
 )
 
@@ -20,7 +21,6 @@ const (
 )
 
 type Encoder interface {
-	Init()
 	Encode(value interface{}, buffer *bytes.Buffer)
 	Flush(buffer *bytes.Buffer)
 	GetOneItemMaxSize() int
@@ -28,20 +28,33 @@ type Encoder interface {
 }
 
 func GetEncoder(et int16, tdt int16) Encoder {
+	encoding := constant.TSEncoding(et)
+	dataType := constant.TSDataType(tdt)
+
 	var encoder Encoder
 	switch {
-	case et == int16(constant.PLAIN):
-		encoder, _ = NewPlainEncoder(tdt, et)
-	case et == int16(constant.RLE):
-		encoder, _ = NewPlainEncoder(tdt, et)
-	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT32):
-		encoder = &IntDeltaEncoder{dataType: constant.INT32}
-	case et == int16(constant.TS_2DIFF) && tdt == int16(constant.INT64):
-		encoder = &LongDeltaEncoder{dataType: constant.INT64}
-	case et == int16(constant.GORILLA):
-		encoder, _ = NewPlainEncoder(tdt, et)
+	case encoding == constant.PLAIN:
+		encoder, _ = NewPlainEncoder(dataType)
+	case encoding == constant.RLE:
+		// if dataType == constant.INT32 {
+		// 	encoder = NewIntRleEncoder(constant.INT32)
+		// } else if dataType == constant.INT64 {
+		// 	encoder = NewIntRleEncoder(constant.INT32)
+		// } else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
+		// 	encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+		// }
+	case encoding == constant.TS_2DIFF:
+		if dataType == constant.INT32 {
+			encoder = NewIntDeltaEncoder(constant.INT32)
+		} else if dataType == constant.INT64 {
+			encoder = NewLongDeltaEncoder(constant.INT32)
+		} else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
+			encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+		}
+	case encoding == constant.GORILLA:
+		encoder, _ = NewPlainEncoder(dataType)
 	default:
-		panic("Encoder not found, encoding:" + strconv.Itoa(int(et)) + ", dataType:" + strconv.Itoa(int(tdt)))
+		panic("Encoder not found, encoding:" + strconv.Itoa(int(encoding)) + ", dataType:" + strconv.Itoa(int(dataType)))
 	}
 
 	return encoder

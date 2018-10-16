@@ -23,15 +23,6 @@ type IntDeltaEncoder struct {
 	encodedValues []int32
 }
 
-func (d *IntDeltaEncoder) Init() {
-	d.blockSize = BLOCK_DEFAULT_SIZE
-	d.index = -1
-	d.firstValue = 0
-	d.previousValue = 0
-	d.baseValue = math.MaxInt32
-	d.encodedValues = make([]int32, d.blockSize)
-}
-
 func (d *IntDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 	value := v.(int32)
 
@@ -89,7 +80,7 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 			buffer.Write(encodingBlockBuffer)
 		}
 
-		d.Init()
+		d.reset()
 	}
 }
 
@@ -99,4 +90,20 @@ func (d *IntDeltaEncoder) GetMaxByteSize() int64 {
 
 func (d *IntDeltaEncoder) GetOneItemMaxSize() int {
 	return 4
+}
+
+func (d *IntDeltaEncoder) reset() {
+	d.blockSize = BLOCK_DEFAULT_SIZE
+	d.index = -1
+	d.firstValue = 0
+	d.previousValue = 0
+	d.baseValue = math.MaxInt32
+	d.encodedValues = make([]int32, d.blockSize)
+}
+
+func NewIntDeltaEncoder(dataType constant.TSDataType) (*IntDeltaEncoder) {
+	d := &IntDeltaEncoder{dataType:dataType}
+	d.reset()
+
+	return d
 }

@@ -213,8 +213,6 @@ func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) 
 	//vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
 	tEnc := d.GetTimeEncoder();
 	vEnc := d.GetValueEncoder();
-	tEnc.Init()
-	vEnc.Init()
 	
 	return &ValueWriter{
 		//sensorId:sId,

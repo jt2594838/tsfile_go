@@ -17,27 +17,23 @@ import (
  */
 
 type PlainEncoder struct {
-	tsDataType   int16
-	endianType   int16
+	tsDataType   constant.TSDataType
 	encodeEndian int16
 	valueCount   int
-}
-
-func (p *PlainEncoder) Init() {
 }
 
 func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 	log.Info("enter PlainEncoder!!")
 	switch {
-	case p.tsDataType == int16(constant.BOOLEAN):
+	case p.tsDataType == constant.BOOLEAN:
 		if data, ok := value.(bool); ok {
 			p.EncBool(data, buffer)
 		}
-	case p.tsDataType == int16(constant.INT32):
+	case p.tsDataType == constant.INT32:
 		if data, ok := value.(int32); ok {
 			p.EncInt32(data, buffer)
 		}
-	case p.tsDataType == int16(constant.INT64):
+	case p.tsDataType == constant.INT64:
 		if data, ok := value.(int64); ok {
 			if p.valueCount == -1 {
 				aa := []byte{24}
@@ -57,15 +53,15 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 			}
 
 		}
-	case p.tsDataType == int16(constant.FLOAT):
+	case p.tsDataType == constant.FLOAT:
 		if data, ok := value.(float32); ok {
 			p.EncFloat32(data, buffer)
 		}
-	case p.tsDataType == int16(constant.DOUBLE):
+	case p.tsDataType == constant.DOUBLE:
 		if data, ok := value.(float64); ok {
 			p.EncFloat64(data, buffer)
 		}
-	case p.tsDataType == int16(constant.TEXT):
+	case p.tsDataType == constant.TEXT:
 		if data, ok := value.([]byte); ok {
 			p.EncBinary(data, buffer)
 		}
@@ -127,17 +123,17 @@ func (p *PlainEncoder) GetMaxByteSize() int64 {
 
 func (p *PlainEncoder) GetOneItemMaxSize() int {
 	switch p.tsDataType {
-	case int16(constant.BOOLEAN):
+	case constant.BOOLEAN:
 		return 1
-	case int16(constant.INT32):
+	case constant.INT32:
 		return 4
-	case int16(constant.INT64):
+	case constant.INT64:
 		return 8
-	case int16(constant.FLOAT):
+	case constant.FLOAT:
 		return 4
-	case int16(constant.DOUBLE):
+	case constant.DOUBLE:
 		return 8
-	case int16(constant.TEXT):
+	case constant.TEXT:
 		return 4 + conf.BYTE_SIZE_PER_CHAR*conf.MaxStringLength
 	default:
 		log.Error("invalid input dataType in plainEncoder. tsDataType: %d", p.tsDataType)
@@ -146,10 +142,9 @@ func (p *PlainEncoder) GetOneItemMaxSize() int {
 	return 0
 }
 
-func NewPlainEncoder(tdt int16, endianType int16) (*PlainEncoder, error) {
+func NewPlainEncoder(dataType constant.TSDataType) (*PlainEncoder, error) {
 	return &PlainEncoder{
-		tsDataType:   tdt,
-		endianType:   endianType,
+		tsDataType:   dataType,
 		encodeEndian: 1,
 		valueCount:   -1,
 	}, nil
