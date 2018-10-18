@@ -315,3 +315,24 @@ func WriteUnsignedVarInt(value int32, buffer *bytes.Buffer) {
 
 	buffer.WriteByte(byte(value & 0x7F))
 }
+
+
+func WriteIntLittleEndianPaddedOnBitWidth(value int32, out *bytes.Buffer, bitWidth int) {
+        paddedByteNum := (bitWidth + 7) / 8;
+        var offset uint8 = 0;
+	for {
+	    if(paddedByteNum <= 0) {
+		break;
+		}
+            out.WriteByte(byte(value >> offset) & 0xFF);
+            offset += 8;
+            paddedByteNum--;
+        }
+}
+
+
+func WriteLongLittleEndianPaddedOnBitWidth(value int64, out *bytes.Buffer, bitWidth int){
+        //paddedByteNum := (bitWidth + 7) / 8;
+        out.Write(Int64ToByte(value, 0));
+    }
+
