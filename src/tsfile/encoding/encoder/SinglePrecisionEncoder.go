@@ -62,7 +62,7 @@ func (d *SinglePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 }
 
 func (d *SinglePrecisionEncoder) Flush(buffer *bytes.Buffer) {
-	d.Encode(math.Float32frombits(0x11), buffer)
+	d.Encode(math.Float32frombits(0x7fc00000), buffer)
 	d.base.CleanBuffer(buffer)
 	d.base.Reset()
 }
