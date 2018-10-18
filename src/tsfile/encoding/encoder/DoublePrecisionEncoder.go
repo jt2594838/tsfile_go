@@ -6,6 +6,7 @@ import (
 	"tsfile/common/constant"
 	"tsfile/common/utils"
 	"github.com/go_sample/src/tsfile/common/tsFileConf"
+	"tsfile/common/log"
 )
 
 type DoublePrecisionEncoder struct {
@@ -88,6 +89,7 @@ func (d *DoublePrecisionEncoder) writeBits(num int64, buffer *bytes.Buffer, star
 }
 
 func NewDoublePrecisionEncoder(dataType constant.TSDataType) (*DoublePrecisionEncoder) {
+	log.Info("double using Gorilla")
 	d := &DoublePrecisionEncoder{dataType: dataType}
 	d.base.flag = false
 	return d

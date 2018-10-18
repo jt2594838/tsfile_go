@@ -6,6 +6,7 @@ import (
 	"tsfile/common/constant"
 	"tsfile/common/utils"
 	"github.com/go_sample/src/tsfile/common/tsFileConf"
+	"tsfile/common/log"
 )
 
 type SinglePrecisionEncoder struct {
@@ -88,6 +89,7 @@ func (d *SinglePrecisionEncoder) writeBits(num int32, buffer *bytes.Buffer, star
 
 
 func NewSinglePrecisionEncoder(dataType constant.TSDataType) (*SinglePrecisionEncoder) {
+	log.Info("float using Gorilla")
 	d := &SinglePrecisionEncoder{dataType:dataType}
 	d.base.flag = false
 	return d
