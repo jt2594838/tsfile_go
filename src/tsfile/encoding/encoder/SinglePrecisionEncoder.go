@@ -22,12 +22,12 @@ func (d *SinglePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 		d.preValue = int32(math.Float32bits(v.(float32)))
 		d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
 		d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
-		//buffer.Write(utils.Int32ToByte(d.preValue,1))
+		buffer.Write(utils.Int32ToByte(d.preValue,1))
 
-		buffer.WriteByte(byte((d.preValue >> 0) & 0xFF))
-		buffer.WriteByte(byte((d.preValue >> 8) & 0xFF))
-		buffer.WriteByte(byte((d.preValue >> 16) & 0xFF))
-		buffer.WriteByte(byte((d.preValue >> 24) & 0xFF))
+		//buffer.WriteByte(byte((d.preValue >> 0) & 0xFF))
+		//buffer.WriteByte(byte((d.preValue >> 8) & 0xFF))
+		//buffer.WriteByte(byte((d.preValue >> 16) & 0xFF))
+		//buffer.WriteByte(byte((d.preValue >> 24) & 0xFF))
 	}else {
 		var nextValue int32;
 		var tmp int32;

@@ -51,7 +51,7 @@ func (b *Binary) GetSumByte(tdt int16) []byte {
 }
 
 func (b *Binary) UpdateStats(fValue interface{}) {
-	value := fValue.([]byte)
+	value := []byte(fValue.(string))
 	if b.isEmpty {
 		b.InitializeStats(value, value, value, value, 0)
 		b.isEmpty = true

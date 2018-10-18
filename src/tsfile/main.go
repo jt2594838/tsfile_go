@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	fileName = "d:/test.ts"
+	fileName = "test.ts"
 )
 
 func main() {
@@ -33,11 +33,11 @@ func main() {
 	}
 
 	// init sensorDescriptor
-	sd, sdErr := sensorDescriptor.New("sensor_1", constant.FLOAT, constant.TS_2DIFF)
+	sd, sdErr := sensorDescriptor.New("sensor_1", constant.FLOAT, constant.GORILLA)
 	if sdErr != nil {
 		log.Info("init sensorDescriptor error = %s", sdErr)
 	}
-	sd2, sdErr2 := sensorDescriptor.New("sensor_2", constant.INT32, constant.TS_2DIFF)
+	sd2, sdErr2 := sensorDescriptor.New("sensor_2", constant.TEXT, constant.PLAIN)
 	if sdErr2 != nil {
 		log.Info("init sensorDescriptor error = %s", sdErr2)
 	}
@@ -58,10 +58,11 @@ func main() {
 
 	// create two data points
 	fdp, fDpErr := tsFileWriter.NewFloat("sensor_1", constant.FLOAT, 1.2)
+	//fdp, fDpErr := tsFileWriter.NewDouble("sensor_1", constant.DOUBLE, 1.2)
 	if fDpErr != nil {
 		log.Info("init float data point error.")
 	}
-	idp, iDpErr := tsFileWriter.NewInt("sensor_2", constant.INT32, 20)
+	idp, iDpErr := tsFileWriter.NewString("sensor_2", constant.TEXT, "hello moto!")
 	if iDpErr != nil {
 		log.Info("init int data point error.")
 	}
@@ -85,7 +86,7 @@ func main() {
 	if fDpErr1 != nil {
 		log.Info("init float data point error.")
 	}
-	idp1, iDpErr1 := tsFileWriter.NewInt("sensor_2", constant.INT32, 30)
+	idp1, iDpErr1 := tsFileWriter.NewString("sensor_2", constant.TEXT, "hello lenovo!")
 	if iDpErr1 != nil {
 		log.Info("init int data point error.")
 	}
@@ -111,7 +112,7 @@ func main() {
 	if fDpErr2 != nil {
 		log.Info("init float data point error.")
 	}
-	idp2, iDpErr2 := tsFileWriter.NewInt("sensor_2", constant.INT32, 20)
+	idp2, iDpErr2 := tsFileWriter.NewString("sensor_2", constant.TEXT, "hello juzi!")
 	if iDpErr2 != nil {
 		log.Info("init int data point error.")
 	}

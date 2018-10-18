@@ -10,52 +10,47 @@ import (
 
 type DoublePrecisionEncoder struct {
 	encoding constant.TSEncoding
-	dataType   constant.TSDataType
+	dataType constant.TSDataType
 
-	base GorillaEncoder
+	base     GorillaEncoder
 	preValue int64
 }
 
 func (d *DoublePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
-	if (!d.base.flag){
+	if (!d.base.flag) {
 		// case: write first 8 byte value without any encoding
 		d.base.flag = true
 		d.preValue = int64(math.Float64bits(v.(float64)))
 		d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
 		d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
-		var bufferBig []byte
 		var bufferLittle []byte
-		for i := 0; i < 8; i++{
-			bufferLittle[i] = (byte) (((d.preValue) >> uint32((i * 8))) & 0xFF);
-			bufferBig[8 - i - 1] = (byte) (((d.preValue) >> uint32((i * 8))) & 0xFF);
-		}
+		bufferLittle = utils.Int64ToByte(d.preValue, 1)
 		buffer.Write(bufferLittle)
-
-	}else{
+	} else {
 		var nextValue int64;
 		var tmp int64;
 		nextValue = int64(math.Float64bits(v.(float64)))
 		tmp = nextValue ^ d.preValue
-		if (tmp == 0){
+		if (tmp == 0) {
 			// case: write '0'
-			d.base.writeBit(false,buffer)
-		}else{
+			d.base.writeBit(false, buffer)
+		} else {
 			var leadingZeroNumTmp int32
-			var tailingZeroNumTmp  int32
+			var tailingZeroNumTmp int32
 			leadingZeroNumTmp = utils.NumberOfLeadingZerosLong(tmp)
 			tailingZeroNumTmp = utils.NumberOfTrailingZerosLong(tmp)
-			if (leadingZeroNumTmp >= d.base.leadingZeroNum && tailingZeroNumTmp >= d.base.tailingZeroNum){
+			if (leadingZeroNumTmp >= d.base.leadingZeroNum && tailingZeroNumTmp >= d.base.tailingZeroNum) {
 				// case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
 				d.base.writeBit(true, buffer)
 				d.base.writeBit(false, buffer)
-				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH -  1 - d.base.leadingZeroNum, d.base.tailingZeroNum)
-			}else{
+				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH-1-d.base.leadingZeroNum, d.base.tailingZeroNum)
+			} else {
 				// case: write '11', leading zero num of value, effective bits len and effective bit value
 				d.base.writeBit(true, buffer);
 				d.base.writeBit(true, buffer);
-				d.writeBits(int64(leadingZeroNumTmp), buffer, tsFileConf.DOUBLE_LEADING_ZERO_LENGTH - 1, 0)
-				d.writeBits(int64(tsFileConf.DOUBLE_LENGTH - leadingZeroNumTmp - tailingZeroNumTmp), buffer, tsFileConf.DOUBLE_VALUE_LENGTH - 1, 0)
-				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH - 1 - leadingZeroNumTmp, tailingZeroNumTmp)
+				d.writeBits(int64(leadingZeroNumTmp), buffer, tsFileConf.DOUBLE_LEADING_ZERO_LENGTH-1, 0)
+				d.writeBits(int64(tsFileConf.DOUBLE_LENGTH-leadingZeroNumTmp-tailingZeroNumTmp), buffer, tsFileConf.DOUBLE_VALUE_LENGTH-1, 0)
+				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH-1-leadingZeroNumTmp, tailingZeroNumTmp)
 
 			}
 			d.preValue = nextValue
@@ -83,18 +78,17 @@ func (d *DoublePrecisionEncoder) GetOneItemMaxSize() int {
 	return 10;
 }
 
-func (d *DoublePrecisionEncoder) writeBits(num int64, buffer *bytes.Buffer, start int32, end int32){
+func (d *DoublePrecisionEncoder) writeBits(num int64, buffer *bytes.Buffer, start int32, end int32) {
 	var bit int64 = 0;
 	var i int32 = 0
-	for i = start; i >= end; i--{
+	for i = start; i >= end; i-- {
 		bit = num & ( 1 << uint32(i))
 		d.base.writeLongBit(bit, buffer)
 	}
 }
 
-
 func NewDoublePrecisionEncoder(dataType constant.TSDataType) (*DoublePrecisionEncoder) {
-	d := &DoublePrecisionEncoder{dataType:dataType}
+	d := &DoublePrecisionEncoder{dataType: dataType}
 	d.base.flag = false
 	return d
 }

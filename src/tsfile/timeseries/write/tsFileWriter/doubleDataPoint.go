@@ -15,10 +15,10 @@ import (
 type DoubleDataPoint struct {
 	sensorId   string
 	tsDataType int16
-	value      int64
+	value      float64
 }
 
-func NewDouble(sId string, tdt constant.TSDataType, val int64) (*DataPoint, error) {
+func NewDouble(sId string, tdt constant.TSDataType, val float64) (*DataPoint, error) {
 	return &DataPoint{
 		sensorId:   sId,
 		tsDataType: int16(tdt),
