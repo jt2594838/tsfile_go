@@ -52,7 +52,12 @@ func GetEncoder(et int16, tdt int16) Encoder {
 			encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
 		}
 	case encoding == constant.GORILLA:
-		encoder, _ = NewPlainEncoder(dataType)
+		if dataType == constant.FLOAT {
+			encoder = NewSinglePrecisionEncoder(dataType)
+		}else if dataType == constant.DOUBLE{
+			encoder = NewDoublePrecisionEncoder(dataType)
+		}
+
 	default:
 		panic("Encoder not found, encoding:" + strconv.Itoa(int(encoding)) + ", dataType:" + strconv.Itoa(int(dataType)))
 	}
