@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"tsfile/common/utils"
+	"bytes"
 )
 
 type Binary struct {
@@ -52,7 +53,7 @@ func (b *Binary) GetSumByte(tdt int16) []byte {
 
 func (b *Binary) UpdateStats(fValue interface{}) {
 	value := []byte(fValue.(string))
-	if b.isEmpty {
+	if !b.isEmpty {
 		b.InitializeStats(value, value, value, value, 0)
 		b.isEmpty = true
 	} else {
@@ -62,12 +63,15 @@ func (b *Binary) UpdateStats(fValue interface{}) {
 
 func (b *Binary) UpdateValue(max []byte, min []byte, first []byte, last []byte, sum float64) {
 	// todo compare two []byte
-	//if max > b.max {
-	//	b.max = max
-	//}
-	//if min < b.min {
-	//	b.min = min
-	//}
+	retMax := bytes.Compare(max, b.max)
+	if retMax > 0 {
+		b.max = max
+	}
+	retMin := bytes.Compare(min, b.min)
+	if retMin < 0 {
+		b.min = min
+	}
+
 	b.last = last
 }
 

@@ -46,8 +46,8 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 			p.EncFloat64(data, buffer)
 		}
 	case p.tsDataType == constant.TEXT:
-		if data, ok := value.([]byte); ok {
-			p.EncBinary(data, buffer)
+		if data, ok := value.(string); ok {
+			p.EncBinary([]byte(data), buffer)
 		}
 	default:
 		log.Error("invalid input encode type: %d", p.tsDataType)
@@ -93,6 +93,7 @@ func (p *PlainEncoder) EncFloat64(value float64, buffer *bytes.Buffer) {
 
 func (p *PlainEncoder) EncBinary(value []byte, buffer *bytes.Buffer) {
 	log.Info("final enc ok! input binary value: %d", value)
+	p.EncInt32(int32(len(value)), buffer)
 	buffer.Write(value)
 	return
 }

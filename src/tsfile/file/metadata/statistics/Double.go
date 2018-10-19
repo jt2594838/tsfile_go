@@ -48,7 +48,7 @@ func (d *Double) GetSumByte(tdt int16) []byte {
 
 func (d *Double) UpdateStats(dValue interface{}) {
 	value := dValue.(float64)
-	if d.isEmpty {
+	if !d.isEmpty {
 		d.InitializeStats(value, value, value, value, value)
 		d.isEmpty = true
 	} else {

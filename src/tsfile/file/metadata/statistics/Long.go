@@ -48,7 +48,7 @@ func (l *Long) GetSumByte(tdt int16) []byte {
 
 func (l *Long) UpdateStats(lValue interface{}) {
 	value := lValue.(int64)
-	if l.isEmpty {
+	if !l.isEmpty {
 		l.InitializeStats(value, value, value, value, float64(value))
 		l.isEmpty = true
 	} else {

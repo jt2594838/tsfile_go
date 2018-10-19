@@ -85,7 +85,7 @@ func Serialize(s Statistics, buffer *bytes.Buffer, tsDataType int16) int {
 		buffer.Write(utils.Int32ToByte(int32(len(minData)), 0))
 		minLen, _ := buffer.Write(minData)
 		length += minLen
-		firstData := s.GetMinByte(tsDataType)
+		firstData := s.GetFirstByte(tsDataType)
 		buffer.Write(utils.Int32ToByte(int32(len(firstData)), 0))
 		firstLen, _ := buffer.Write(firstData)
 		length += firstLen
@@ -94,10 +94,10 @@ func Serialize(s Statistics, buffer *bytes.Buffer, tsDataType int16) int {
 		lastLen, _ := buffer.Write(lastData)
 		length += lastLen
 		sumData := s.GetSumByte(tsDataType)
-		buffer.Write(utils.Int32ToByte(int32(len(sumData)), 0))
+		//buffer.Write(utils.Int32ToByte(int32(len(sumData)), 0))
 		sumLen, _ := buffer.Write(sumData)
 		length += sumLen
-		length = length + 4*5
+		length = length + 4*4 + 8
 	}
 	return length
 }

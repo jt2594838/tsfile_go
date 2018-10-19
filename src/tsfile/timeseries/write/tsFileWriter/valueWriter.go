@@ -77,12 +77,17 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
 		if valueCount == 0 {
 			encT.Encode(t, v.timeBuf)
+			//encT.Encode(t, v.timeBuf)
+			//encT.Encode(t, v.timeBuf)
 		}
 		if v.desc.GetTimeCount() == conf.DeltaBlockSize {
 			encT.Encode(t, v.timeBuf)
+			//encT.Encode(t, v.timeBuf)
+			//encT.Encode(t, v.timeBuf)
+
 			v.desc.SetTimeCount(0)
 		}
-		encT.Encode(t, v.timeBuf)
+		//encT.Encode(t, v.timeBuf)
 	}
 
 	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
@@ -120,7 +125,7 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 			}
 		case 5:
 			//text
-			if data, ok := value.([]byte); ok {
+			if data, ok := value.(string); ok {
 				// encode
 				encV.Encode(data, v.valueBuf)
 			}
