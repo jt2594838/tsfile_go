@@ -70,3 +70,7 @@ func (d *LongDeltaDecoder) loadPack() int64 {
 
 	return d.firstValue
 }
+
+func NewLongDeltaDecoder(dataType constant.TSDataType) *LongDeltaDecoder {
+	return &LongDeltaDecoder{dataType: dataType}
+}

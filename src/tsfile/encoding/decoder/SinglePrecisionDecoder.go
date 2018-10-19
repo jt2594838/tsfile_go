@@ -81,3 +81,7 @@ func (d *SinglePrecisionDecoder) getNextValue() {
 	d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
 	d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
 }
+
+func NewSinglePrecisionDecoder(dataType constant.TSDataType) *SinglePrecisionDecoder {
+	return &SinglePrecisionDecoder{dataType: dataType}
+}

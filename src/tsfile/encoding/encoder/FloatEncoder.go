@@ -12,7 +12,7 @@ type FloatEncoder struct {
 	encoding constant.TSEncoding
 	dataType constant.TSDataType
 
-	baseDecoder             Encoder
+	baseEncoder             Encoder
 	maxPointNumber          int
 	maxPointNumberSavedFlag bool
 	maxPointValue           float64
@@ -28,23 +28,23 @@ func (d *FloatEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 
 	if d.dataType == constant.FLOAT {
 		valueInt := int32(utils.Round(float64(value)*d.maxPointValue, 0))
-		d.baseDecoder.Encode(valueInt, buffer)
+		d.baseEncoder.Encode(valueInt, buffer)
 	} else if d.dataType == constant.DOUBLE {
 		valueLong := int64(utils.Round(float64(value)*d.maxPointValue, 0))
-		d.baseDecoder.Encode(valueLong, buffer)
+		d.baseEncoder.Encode(valueLong, buffer)
 	}
 }
 
 func (d *FloatEncoder) Flush(buffer *bytes.Buffer) {
-	d.baseDecoder.Flush(buffer)
+	d.baseEncoder.Flush(buffer)
 }
 
 func (d *FloatEncoder) GetMaxByteSize() int64 {
-	return d.baseDecoder.GetMaxByteSize()
+	return d.baseEncoder.GetMaxByteSize()
 }
 
 func (d *FloatEncoder) GetOneItemMaxSize() int {
-	return d.baseDecoder.GetOneItemMaxSize()
+	return d.baseEncoder.GetOneItemMaxSize()
 }
 
 func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType constant.TSDataType) *FloatEncoder {
@@ -52,17 +52,17 @@ func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType 
 
 	if encoding == constant.RLE {
 		if dataType == constant.FLOAT {
-			//d.baseDecoder = NewIntRleEncoder(dataType)
+			//d.baseEncoder = NewIntRleEncoder(dataType)
 		} else if dataType == constant.DOUBLE {
-			//d.baseDecoder = NewLongRleEncoder(dataType)
+			//d.baseEncoder = NewLongRleEncoder(dataType)
 		} else {
 			panic("data type is not supported by FloatEncoder: " + strconv.Itoa(int(d.dataType)))
 		}
 	} else if encoding == constant.TS_2DIFF {
 		if dataType == constant.FLOAT {
-			d.baseDecoder = NewIntDeltaEncoder(dataType)
+			d.baseEncoder = NewIntDeltaEncoder(dataType)
 		} else if dataType == constant.DOUBLE {
-			d.baseDecoder = NewLongDeltaEncoder(dataType)
+			d.baseEncoder = NewLongDeltaEncoder(dataType)
 		} else {
 			panic("data type is not supported by FloatEncoder: " + strconv.Itoa(int(d.dataType)))
 		}
