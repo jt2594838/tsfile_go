@@ -51,3 +51,7 @@ func (d *FloatDecoder) Next() interface{} {
 
 	return float32(result)
 }
+
+func NewFloatDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) *FloatDecoder {
+	return &FloatDecoder{encoding: encoding, dataType: dataType}
+}

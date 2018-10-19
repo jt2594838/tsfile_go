@@ -51,3 +51,7 @@ func (d *DoubleDecoder) Next() interface{} {
 
 	return result
 }
+
+func NewDoubleDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) *DoubleDecoder {
+	return &DoubleDecoder{encoding: encoding, dataType: dataType}
+}

@@ -141,7 +141,7 @@ func (d *IntRleDecoder) readBitPackingBuffer(bitPackedGroupCount int, lastBitPac
 	d.packer.UnpackAllValues(bytes, bytesToRead, d.decodedValues)
 }
 
-func (r *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int32 {
+func (d *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int32 {
 	paddedByteNum := (bitWidth + 7) / 8
 	if paddedByteNum > 4 {
 		panic("readIntLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
@@ -157,4 +157,8 @@ func (r *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesR
 	}
 
 	return result
+}
+
+func NewIntRleDecoder(dataType constant.TSDataType) *IntRleDecoder {
+	return &IntRleDecoder{dataType: dataType}
 }

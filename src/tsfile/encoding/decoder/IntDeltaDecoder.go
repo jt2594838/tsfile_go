@@ -70,3 +70,7 @@ func (d *IntDeltaDecoder) loadPack() int32 {
 
 	return d.firstValue
 }
+
+func NewIntDeltaDecoder(dataType constant.TSDataType) *IntDeltaDecoder {
+	return &IntDeltaDecoder{dataType: dataType}
+}

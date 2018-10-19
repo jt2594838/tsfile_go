@@ -155,3 +155,7 @@ func (r *LongRleDecoder) readLongLittleEndianPaddedOnBitWidth(reader *utils.Byte
 	}
 	return result
 }
+
+func NewLongRleDecoder(dataType constant.TSDataType) *LongRleDecoder {
+	return &LongRleDecoder{dataType: dataType}
+}

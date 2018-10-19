@@ -86,3 +86,7 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 	d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
 	d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 }
+
+func NewDoublePrecisionDecoder(dataType constant.TSDataType) *DoublePrecisionDecoder {
+	return &DoublePrecisionDecoder{dataType: dataType}
+}

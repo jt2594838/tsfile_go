@@ -172,19 +172,19 @@ func NumberOfLeadingZeros(i int32) int32 {
 	}
 
 	var n int32 = 1
-	if i>>16 == 0 {
+	if uint32(i)>>16 == 0 {
 		n += 16
 		i <<= 16
 	}
-	if i>>24 == 0 {
+	if uint32(i)>>24 == 0 {
 		n += 8
 		i <<= 8
 	}
-	if i>>28 == 0 {
+	if uint32(i)>>28 == 0 {
 		n += 4
 		i <<= 4
 	}
-	if i>>30 == 0 {
+	if uint32(i)>>30 == 0 {
 		n += 2
 		i <<= 2
 	}
@@ -316,23 +316,20 @@ func WriteUnsignedVarInt(value int32, buffer *bytes.Buffer) {
 	buffer.WriteByte(byte(value & 0x7F))
 }
 
-
 func WriteIntLittleEndianPaddedOnBitWidth(value int32, out *bytes.Buffer, bitWidth int) {
-        paddedByteNum := (bitWidth + 7) / 8;
-        var offset uint8 = 0;
+	paddedByteNum := (bitWidth + 7) / 8
+	var offset uint8 = 0
 	for {
-	    if(paddedByteNum <= 0) {
-		break;
+		if paddedByteNum <= 0 {
+			break
 		}
-            out.WriteByte(byte(value >> offset) & 0xFF);
-            offset += 8;
-            paddedByteNum--;
-        }
+		out.WriteByte(byte(value>>offset) & 0xFF)
+		offset += 8
+		paddedByteNum--
+	}
 }
 
-
-func WriteLongLittleEndianPaddedOnBitWidth(value int64, out *bytes.Buffer, bitWidth int){
-        //paddedByteNum := (bitWidth + 7) / 8;
-        out.Write(Int64ToByte(value, 0));
-    }
-
+func WriteLongLittleEndianPaddedOnBitWidth(value int64, out *bytes.Buffer, bitWidth int) {
+	//paddedByteNum := (bitWidth + 7) / 8;
+	out.Write(Int64ToByte(value, 0))
+}

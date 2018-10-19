@@ -15,11 +15,6 @@ import (
  * @Description:
  */
 
-const (
-	MAX_STRING_LENGTH = "max_string_length"
-	MAX_POINT_NUMBER  = "max_point_number"
-)
-
 type Encoder interface {
 	Encode(value interface{}, buffer *bytes.Buffer)
 	Flush(buffer *bytes.Buffer)
@@ -36,13 +31,13 @@ func GetEncoder(et int16, tdt int16) Encoder {
 	case encoding == constant.PLAIN:
 		encoder, _ = NewPlainEncoder(dataType)
 	case encoding == constant.RLE:
-		// if dataType == constant.INT32 {
-		// 	encoder = NewIntRleEncoder(constant.INT32)
-		// } else if dataType == constant.INT64 {
-		// 	encoder = NewIntRleEncoder(constant.INT32)
-		// } else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
-		// 	encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
-		// }
+		if dataType == constant.INT32 {
+			encoder = NewRleEncoder(constant.INT32)
+		} else if dataType == constant.INT64 {
+			encoder = NewRleEncoder(constant.INT64)
+		} else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
+			encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+		}
 	case encoding == constant.TS_2DIFF:
 		if dataType == constant.INT32 {
 			encoder = NewIntDeltaEncoder(constant.INT32)
@@ -54,7 +49,7 @@ func GetEncoder(et int16, tdt int16) Encoder {
 	case encoding == constant.GORILLA:
 		if dataType == constant.FLOAT {
 			encoder = NewSinglePrecisionEncoder(dataType)
-		}else if dataType == constant.DOUBLE{
+		} else if dataType == constant.DOUBLE {
 			encoder = NewDoublePrecisionEncoder(dataType)
 		}
 

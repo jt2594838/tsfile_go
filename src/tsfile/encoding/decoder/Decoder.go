@@ -25,28 +25,34 @@ func CreateDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) D
 	switch {
 	case encoding == constant.PLAIN:
 		decoder = &PlainDecoder{dataType: dataType}
-	case (encoding == constant.RLE && dataType == constant.BOOLEAN):
-		decoder = &IntRleDecoder{dataType: dataType}
-	case (encoding == constant.RLE && dataType == constant.INT32):
-		decoder = &IntRleDecoder{dataType: dataType}
-	case (encoding == constant.RLE && dataType == constant.INT64):
-		decoder = &LongRleDecoder{dataType: dataType}
-	case (encoding == constant.RLE && dataType == constant.FLOAT):
-		decoder = &FloatDecoder{encoding: encoding, dataType: dataType}
-	case (encoding == constant.RLE && dataType == constant.DOUBLE):
-		decoder = &DoubleDecoder{encoding: encoding, dataType: dataType}
-	case (encoding == constant.TS_2DIFF && dataType == constant.INT32):
-		decoder = &IntDeltaDecoder{dataType: dataType}
-	case (encoding == constant.TS_2DIFF && dataType == constant.INT64):
-		decoder = &LongDeltaDecoder{dataType: dataType}
-	case (encoding == constant.TS_2DIFF && dataType == constant.FLOAT):
-		decoder = &FloatDecoder{encoding: encoding, dataType: dataType}
-	case (encoding == constant.TS_2DIFF && dataType == constant.DOUBLE):
-		decoder = &DoubleDecoder{encoding: encoding, dataType: dataType}
-	case (encoding == constant.GORILLA && dataType == constant.FLOAT):
-		decoder = &SinglePrecisionDecoder{dataType: dataType}
-	case (encoding == constant.GORILLA && dataType == constant.DOUBLE):
-		decoder = &DoublePrecisionDecoder{dataType: dataType}
+	case encoding == constant.RLE:
+		if dataType == constant.BOOLEAN {
+			decoder = NewIntRleDecoder(dataType)
+		} else if dataType == constant.INT32 {
+			decoder = NewIntRleDecoder(dataType)
+		} else if dataType == constant.INT64 {
+			decoder = NewLongRleDecoder(dataType)
+		} else if dataType == constant.FLOAT {
+			decoder = NewFloatDecoder(encoding, dataType)
+		} else if dataType == constant.DOUBLE {
+			decoder = NewDoubleDecoder(encoding, dataType)
+		}
+	case encoding == constant.TS_2DIFF:
+		if dataType == constant.INT32 {
+			decoder = NewIntDeltaDecoder(dataType)
+		} else if dataType == constant.INT64 {
+			decoder = NewLongDeltaDecoder(dataType)
+		} else if dataType == constant.FLOAT {
+			decoder = NewFloatDecoder(encoding, dataType)
+		} else if dataType == constant.DOUBLE {
+			decoder = NewDoubleDecoder(encoding, dataType)
+		}
+	case encoding == constant.GORILLA:
+		if dataType == constant.FLOAT {
+			decoder = NewSinglePrecisionDecoder(dataType)
+		} else if dataType == constant.DOUBLE {
+			decoder = NewDoublePrecisionDecoder(dataType)
+		}
 	default:
 		panic("Decoder not found, encoding:" + strconv.Itoa(int(encoding)) + ", dataType:" + strconv.Itoa(int(dataType)))
 	}

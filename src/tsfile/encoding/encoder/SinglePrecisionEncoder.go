@@ -5,7 +5,7 @@ import (
 	"math"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"github.com/go_sample/src/tsfile/common/tsFileConf"
+	"tsfile/common/conf"
 	"tsfile/common/log"
 )
 
@@ -45,14 +45,14 @@ func (d *SinglePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 			    // case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
 			    d.base.writeBit(true,buffer)
 			    d.base.writeBit(false,buffer)
-			    d.writeBits(tmp, buffer, tsFileConf.FLOAT_LENGTH  -1 - d.base.leadingZeroNum, d.base.tailingZeroNum)
+			    d.writeBits(tmp, buffer, int32(conf.FLOAT_LENGTH)  -1 - d.base.leadingZeroNum, d.base.tailingZeroNum)
 		    }else{
 			    // case: write '11', leading zero num of value, effective bits len and effective bit value
 			    d.base.writeBit(true, buffer)
 			    d.base.writeBit(true, buffer)
-			    d.writeBits(leadingZeroNumTmp, buffer, tsFileConf.FLAOT_LEADING_ZERO_LENGTH - 1, 0)
-			    d.writeBits(tsFileConf.FLOAT_LENGTH - leadingZeroNumTmp - tailingZeroNumTmp, buffer, tsFileConf.FLOAT_VALUE_LENGTH - 1, 0)
-			    d.writeBits(tmp, buffer, tsFileConf.FLOAT_LENGTH - 1 - leadingZeroNumTmp, tailingZeroNumTmp)
+			    d.writeBits(leadingZeroNumTmp, buffer, int32(conf.FLAOT_LEADING_ZERO_LENGTH) - 1, 0)
+			    d.writeBits(int32(conf.FLOAT_LENGTH) - leadingZeroNumTmp - tailingZeroNumTmp, buffer, int32(conf.FLOAT_VALUE_LENGTH) - 1, 0)
+			    d.writeBits(tmp, buffer, int32(conf.FLOAT_LENGTH) - 1 - leadingZeroNumTmp, tailingZeroNumTmp)
 		    }
 			d.preValue = nextValue
 			d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
