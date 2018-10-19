@@ -5,7 +5,7 @@ import (
 	"math"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"github.com/go_sample/src/tsfile/common/tsFileConf"
+	"tsfile/common/conf"
 	"tsfile/common/log"
 )
 
@@ -44,14 +44,14 @@ func (d *DoublePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 				// case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
 				d.base.writeBit(true, buffer)
 				d.base.writeBit(false, buffer)
-				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH-1-d.base.leadingZeroNum, d.base.tailingZeroNum)
+				d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-d.base.leadingZeroNum, d.base.tailingZeroNum)
 			} else {
 				// case: write '11', leading zero num of value, effective bits len and effective bit value
 				d.base.writeBit(true, buffer);
 				d.base.writeBit(true, buffer);
-				d.writeBits(int64(leadingZeroNumTmp), buffer, tsFileConf.DOUBLE_LEADING_ZERO_LENGTH-1, 0)
-				d.writeBits(int64(tsFileConf.DOUBLE_LENGTH-leadingZeroNumTmp-tailingZeroNumTmp), buffer, tsFileConf.DOUBLE_VALUE_LENGTH-1, 0)
-				d.writeBits(tmp, buffer, tsFileConf.DOUBLE_LENGTH-1-leadingZeroNumTmp, tailingZeroNumTmp)
+				d.writeBits(int64(leadingZeroNumTmp), buffer, int32(conf.DOUBLE_LEADING_ZERO_LENGTH)-1, 0)
+				d.writeBits(int64(int32(conf.DOUBLE_LENGTH)-leadingZeroNumTmp-tailingZeroNumTmp), buffer, int32(conf.DOUBLE_VALUE_LENGTH)-1, 0)
+				d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-leadingZeroNumTmp, tailingZeroNumTmp)
 
 			}
 			d.preValue = nextValue
