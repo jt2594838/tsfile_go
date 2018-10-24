@@ -14,6 +14,7 @@ import (
 	"tsfile/common/utils"
 	"tsfile/encoding/encoder"
 	"tsfile/timeseries/write/sensorDescriptor"
+	"tsfile/common/log"
 )
 
 type ValueWriter struct {
@@ -75,19 +76,19 @@ func (v *ValueWriter) GetByteBuffer() *bytes.Buffer {
 func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) {
 
 	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
-		if valueCount == 0 {
-			encT.Encode(t, v.timeBuf)
-			//encT.Encode(t, v.timeBuf)
-			//encT.Encode(t, v.timeBuf)
-		}
-		if v.desc.GetTimeCount() == conf.DeltaBlockSize {
-			encT.Encode(t, v.timeBuf)
-			//encT.Encode(t, v.timeBuf)
-			//encT.Encode(t, v.timeBuf)
-
-			v.desc.SetTimeCount(0)
-		}
-		//encT.Encode(t, v.timeBuf)
+		//if valueCount == 0 {
+		//	encT.Encode(t, v.timeBuf)
+		//	encT.Encode(t, v.timeBuf)
+		//	encT.Encode(t, v.timeBuf)
+		//}
+		//if v.desc.GetTimeCount() == conf.DeltaBlockSize {
+		//	encT.Encode(t, v.timeBuf)
+		//	encT.Encode(t, v.timeBuf)
+		//	encT.Encode(t, v.timeBuf)
+		//
+		//	v.desc.SetTimeCount(0)
+		//}
+		encT.Encode(t, v.timeBuf)
 	}
 
 	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
@@ -139,6 +140,7 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 			// int32
 		}
 	}
+	log.Info("askdfjalskdfffffffffffffffffffffffffffffffff")
 	return
 }
 
@@ -176,8 +178,8 @@ func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, val
 		}
 	case 5:
 		//text
-		if data, ok := value.([]byte); ok {
-			valueByteData = data
+		if data, ok := value.(string); ok {
+			valueByteData = []byte(data)
 		}
 	case 6:
 		//fixed_len_byte_array
@@ -196,11 +198,12 @@ func (v *ValueWriter) WriteWithoutEnc(t int64, tdt int16, value interface{}, val
 		aa := []byte{24}
 		v.timeBuf.Write(aa)
 		//s.timeBuf.Write(utils.BoolToByte(true))
-		v.timeBuf.Write(timeByteData)
-		v.timeBuf.Write(timeByteData)
-		v.timeBuf.Write(timeByteData)
+		//v.timeBuf.Write(timeByteData)
+		//v.timeBuf.Write(timeByteData)
+		//v.timeBuf.Write(timeByteData)
 		//s.desc.SetTimeCount(encodeCount + 1)
 	}
+	v.timeBuf.Write(timeByteData)
 	if v.desc.GetTimeCount() == conf.DeltaBlockSize {
 		v.timeBuf.Write(timeByteData)
 		v.timeBuf.Write(timeByteData)
