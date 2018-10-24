@@ -19,19 +19,21 @@ type FloatEncoder struct {
 }
 
 func (d *FloatEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
-	value := v.(float32)
-
 	if !d.maxPointNumberSavedFlag {
 		utils.WriteUnsignedVarInt(int32(d.maxPointNumber), buffer)
 		d.maxPointNumberSavedFlag = true
 	}
 
 	if d.dataType == constant.FLOAT {
+		value := v.(float32)
 		valueInt := int32(utils.Round(float64(value)*d.maxPointValue, 0))
 		d.baseEncoder.Encode(valueInt, buffer)
 	} else if d.dataType == constant.DOUBLE {
+		value := v.(float64)
 		valueLong := int64(utils.Round(float64(value)*d.maxPointValue, 0))
 		d.baseEncoder.Encode(valueLong, buffer)
+	} else {
+		panic("invalid data type in FloatEncoder")
 	}
 }
 
@@ -52,9 +54,9 @@ func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType 
 
 	if encoding == constant.RLE {
 		if dataType == constant.FLOAT {
-			//d.baseEncoder = NewIntRleEncoder(dataType)
+			d.baseEncoder = NewRleEncoder(dataType)
 		} else if dataType == constant.DOUBLE {
-			//d.baseEncoder = NewLongRleEncoder(dataType)
+			d.baseEncoder = NewRleEncoder(dataType)
 		} else {
 			panic("data type is not supported by FloatEncoder: " + strconv.Itoa(int(d.dataType)))
 		}

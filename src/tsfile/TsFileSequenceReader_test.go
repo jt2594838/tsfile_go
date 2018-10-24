@@ -49,7 +49,7 @@ func TestRead(t *testing.T) {
 				reader1 := &basic.PageDataReader{DataType: chunkHeader.GetDataType(), ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
 				reader1.Read(pageData)
 				for reader1.HasNext() {
-					pair := reader1.Next()
+					pair, _ := reader1.Next()
 					log.Println("      (time,value): " + strconv.FormatInt(pair.Timestamp, 10) + ", " + fmt.Sprintf("%v", pair.Value))
 				}
 			}
