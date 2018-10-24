@@ -7,23 +7,70 @@ import (
 	"tsfile/timeseries/filter/operator"
 	"tsfile/timeseries/query"
 	"tsfile/timeseries/read"
+	"tsfile/timeseries/write/tsFileWriter"
+	"tsfile/timeseries/write/sensorDescriptor"
+	"tsfile/common/constant"
+	"errors"
 )
 
 var tempFilePath = "temp_TsFile"
 var series = []string{"root.d0.s0", "root.d0.s1", "root.d1.s0"}
 
-func prepareTsFile() {
+func prepareTsFile() (err error) {
 	/*
 		Assumed data layout:
 		root.d0.s0 : [1,1], [2,2], [3,3], [4,4], [5,5]
 		root.d0.s1 : [1,5], [2,4],        [4,3], [5,2], [6,1]
 		root.d1.s0 :               [3,3], [4,4], [5,5]
 	*/
+	d0s0_time := []int64{1,2,3,4,5}
+	d0s0_val := []int32{1,2,3,4,5}
+	d0s1_time := []int64{1,2,4,5,6}
+	d0s1_val := []int32{5,4,3,2,1}
+	d1s0_time := []int64{3,4,5}
+	d1s0_val := []int32{3,4,5}
+
+	writer, err := tsFileWriter.NewTsFileWriter(tempFilePath)
+	if err != nil {
+		return err
+	}
+
+	des, _ := sensorDescriptor.New("s0", constant.INT32, constant.RLE)
+	writer.AddSensor(des);
+	des, _ = sensorDescriptor.New("s1", constant.INT32, constant.RLE)
+	writer.AddSensor(des);
+
+	for i, t := range d0s0_time {
+		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d0")
+		pt, _ := tsFileWriter.NewInt("s0", constant.INT32, d0s0_val[i])
+		record.AddTuple(pt)
+		writer.Write(*record)
+	}
+	for i, t := range d0s1_time {
+		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d0")
+		pt, _ := tsFileWriter.NewInt("s1", constant.INT32, d0s1_val[i])
+		record.AddTuple(pt)
+		writer.Write(*record)
+	}
+	for i, t := range d1s0_time {
+		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d1")
+		pt, _ := tsFileWriter.NewInt("s0", constant.INT32, d1s0_val[i])
+		record.AddTuple(pt)
+		writer.Write(*record)
+	}
+
+	if !writer.Close() {
+		return errors.New("Cannot close the the TsFile")
+	}
+	return nil
 }
 
 func TestEngine(t *testing.T) {
 
-	prepareTsFile()
+	err := prepareTsFile()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	f := new(read.TsFileSequenceReader)
 	f.Open(tempFilePath)
@@ -49,7 +96,10 @@ func TestEngine(t *testing.T) {
 	dataSet = engine.Query(exp)
 	cnt := int32(0)
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		cnt++
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt) || record.Values()[0].(int32) != cnt {
@@ -75,7 +125,10 @@ func TestEngine(t *testing.T) {
 	dataSet = engine.Query(exp)
 	cnt = int32(0)
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		cnt++
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt) || record.Values()[0].(int32) != cnt {
@@ -91,10 +144,15 @@ func TestEngine(t *testing.T) {
 	exp.SetSelectPaths(paths)
 	dataSet = engine.Query(exp)
 	cnt = int32(0)
-	s0Vals := []int32{1, 2, 3, 4, 5, nil}
-	s1Vals := []int32{5, 4, nil, 3, 2, 1}
+	var s0Vals []interface{}
+	s0Vals = append(s0Vals, 1, 2, 3, 4, 5, nil)
+	var s1Vals []interface{}
+	s1Vals = append(s1Vals,5, 4, nil, 3, 2, 1 )
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt+1) ||
 			record.Values()[0].(int32) != s0Vals[cnt] ||
@@ -123,10 +181,15 @@ func TestEngine(t *testing.T) {
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
 	cnt = int32(0)
-	s0Vals = []int32{4, 5}
-	s1Vals = []int32{3, 2}
+	s0Vals = nil
+	s0Vals = append(s0Vals, 4, 5)
+	s1Vals = nil
+	s1Vals = append(s1Vals, 3, 2)
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt+4) ||
 			record.Values()[0].(int32) != s0Vals[cnt] ||
@@ -145,10 +208,15 @@ func TestEngine(t *testing.T) {
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
 	cnt = int32(0)
-	s0Vals = []int32{4, 5}
-	s1Vals = []int32{3, 2}
+	s0Vals = nil
+	s0Vals = append(s0Vals, 4, 5)
+	s1Vals = nil
+	s1Vals = append(s1Vals, 3, 2)
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt+4) ||
 			record.Values()[0].(int32) != s0Vals[cnt] ||
@@ -169,10 +237,15 @@ func TestEngine(t *testing.T) {
 	exp.SetFilter(filt)
 	dataSet = engine.Query(exp)
 	cnt = int32(0)
-	s0Vals = []int32{4}
-	s1Vals = []int32{3}
+	s0Vals = nil
+	s0Vals = append(s0Vals, 4)
+	s1Vals = nil
+	s1Vals = append(s1Vals, 3)
 	for dataSet.HasNext() {
-		record := dataSet.Next()
+		record, err := dataSet.Next()
+		if err != nil {
+			t.Fatal(err)
+		}
 		checkPath(paths, record.Paths(), t)
 		if record.Timestamp() != int64(cnt+4) ||
 			record.Values()[0].(int32) != s0Vals[cnt] ||

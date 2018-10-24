@@ -11,9 +11,10 @@ type SeekablePageDataReader struct {
 	current *datatype.TimeValuePair
 }
 
-func (r *SeekablePageDataReader) Next() *datatype.TimeValuePair {
-	r.current = r.PageDataReader.Next()
-	return r.current
+func (r *SeekablePageDataReader) Next() (*datatype.TimeValuePair, error) {
+	row, err := r.PageDataReader.Next()
+	r.current = row
+	return r.current, err
 }
 
 func (r *SeekablePageDataReader) Current() *datatype.TimeValuePair {

@@ -9,7 +9,7 @@ type TimeValuePairReader interface {
 
 	HasNext() bool
 
-	Next() *datatype.TimeValuePair
+	Next() (*datatype.TimeValuePair, error)
 
 	Skip()
 

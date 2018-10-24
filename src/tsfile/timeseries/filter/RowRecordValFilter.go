@@ -5,7 +5,7 @@ import (
 	"tsfile/timeseries/read/datatype"
 )
 
-// RowRecordTimeFilter receives a RowRecord and tests whether a certain column in the RowRecord specified by its name
+// RowRecordValFilter receives a RowRecord and tests whether a certain column in the RowRecord specified by its name
 // satisfies the inner filter.
 // NOTICE：The schema of the input (number of columns and each's name) should remain the same for the same filter.
 // E.g: If you use the filter (seriesName is "s2") on a RowRecord with three cols [s0, s1, s2], then you cannot use this

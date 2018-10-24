@@ -5,7 +5,7 @@ import "tsfile/timeseries/read/datatype"
 type IRowRecordReader interface {
 	HasNext() bool
 
-	Next() *datatype.RowRecord
+	Next() (*datatype.RowRecord, error)
 
 	Close()
 }
