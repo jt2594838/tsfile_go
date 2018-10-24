@@ -5,7 +5,6 @@ import "strings"
 // EqFilters compare the input value to the Reference value, and return true iff they are equal.
 // Type mismatch will set the return value to false.
 // Supported types: int32(int) int64(long) float32(float) float64(double) string.
-
 type IntEqFilter struct {
 	Ref int32
 }

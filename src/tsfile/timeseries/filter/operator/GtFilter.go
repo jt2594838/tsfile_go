@@ -5,7 +5,6 @@ import "strings"
 // GtFilters compare the input value to the Reference value, and return true iff the input > the Reference.
 // Type mismatch will set the return value to false. Use lexicographical order for strings.
 // Supported types: int32(int) int64(long) float32(float) float64(double) string.
-
 type IntGtFilter struct {
 	Ref int32
 }

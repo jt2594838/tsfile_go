@@ -41,13 +41,16 @@ func (set *MergeQueryDataSet) HasNext() bool {
 	return set.reader.HasNext()
 }
 
-func (set *MergeQueryDataSet) Next() *datatype.RowRecord {
-	row := set.reader.Next()
+func (set *MergeQueryDataSet) Next() (*datatype.RowRecord, error) {
+	row, err := set.reader.Next()
+	if err != nil {
+		return nil, err
+	}
 	for i, path := range set.selectPaths {
 		set.row.Values()[i] = row.Values()[set.pathIndex[path]]
 	}
 	set.row.SetTimestamp(row.Timestamp())
-	return set.row
+	return set.row, nil
 }
 
 func (set *MergeQueryDataSet) Close() {

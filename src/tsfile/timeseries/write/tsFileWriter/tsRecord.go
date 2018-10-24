@@ -108,3 +108,12 @@ func NewTsRecord(t time.Time, dId string) (*TsRecord, error) {
 		DataPointSli: make([]*DataPoint, 0),
 	}, nil
 }
+
+func NewTsRecordUseTimestamp(t int64, dId string) (*TsRecord, error) {
+	return &TsRecord{
+		time:     t,
+		deviceId: dId,
+		//dataPointMap:make(map[string]*DataPoint),
+		DataPointSli: make([]*DataPoint, 0),
+	}, nil
+}

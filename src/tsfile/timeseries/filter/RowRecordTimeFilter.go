@@ -6,16 +6,16 @@ import (
 
 // RowRecordTimeFilter receives a RowRecord and tests if the timestamp of the RowRecord satisfies the inner filter.
 type RowRecordTimeFilter struct {
-	filter Filter
+	Filter Filter
 }
 
 func NewRowRecordTimeFilter(filter Filter) *RowRecordTimeFilter {
-	return &RowRecordTimeFilter{filter: filter}
+	return &RowRecordTimeFilter{Filter: filter}
 }
 
 func (s *RowRecordTimeFilter) Satisfy(val interface{}) bool {
 	if m, ok := val.(*datatype.RowRecord); ok {
-		return s.filter.Satisfy(m.Timestamp())
+		return s.Filter.Satisfy(m.Timestamp())
 	}
 	return false
 }

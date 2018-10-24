@@ -6,6 +6,7 @@ import (
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
+	"errors"
 )
 
 type SeriesReader struct {
@@ -46,12 +47,18 @@ func (r *SeriesReader) HasNext() bool {
 	return false
 }
 
-func (r *SeriesReader) Next() *datatype.TimeValuePair {
+func (r *SeriesReader) Next() (*datatype.TimeValuePair, error) {
 	if r.PageReader.HasNext() {
-		ret := r.PageReader.Next()
-		return ret
+		ret, err := r.PageReader.Next()
+		if err != nil {
+			return nil, err
+		}
+		return ret, nil
 	} else {
-		r.nextPageReader()
+		err := r.nextPageReader()
+		if err != nil {
+			return nil, err
+		}
 		return r.Next()
 	}
 }
@@ -71,9 +78,13 @@ func (r *SeriesReader) hasNextPageReader() bool {
 	return r.PageIndex < r.PageLimit
 }
 
-func (r *SeriesReader) nextPageReader() {
+func (r *SeriesReader) nextPageReader() error{
 	r.PageIndex++
+	if r.PageIndex >= r.PageLimit {
+		return errors.New("page exhausted")
+	}
 	r.PageReader = &PageDataReader{DataType: r.DType, ValueDecoder: decoder.CreateDecoder(r.Encoding, r.DType),
 		TimeDecoder: decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}
 	r.PageReader.Read(r.FileReader.ReadRaw(r.Offsets[r.PageIndex], r.Sizes[r.PageIndex]))
+	return nil
 }

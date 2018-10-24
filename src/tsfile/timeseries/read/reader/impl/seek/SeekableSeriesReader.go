@@ -7,6 +7,8 @@ import (
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader/impl/basic"
+	"errors"
+	"tsfile/common/log"
 )
 
 type SeekableSeriesReader struct {
@@ -14,6 +16,7 @@ type SeekableSeriesReader struct {
 
 	pageHeaders []*header.PageHeader
 	current     *datatype.TimeValuePair
+	exhausted bool
 }
 
 func (r *SeekableSeriesReader) Seek(timestamp int64) bool {
@@ -68,26 +71,37 @@ func (r *SeekableSeriesReader) Current() *datatype.TimeValuePair {
 
 func NewSeekableSeriesReader(offsets []int64, sizes []int, reader *read.TsFileSequenceReader, pageHeaders []*header.PageHeader, dType constant.TSDataType, encoding constant.TSEncoding) *SeekableSeriesReader {
 	return &SeekableSeriesReader{&basic.SeriesReader{-1, len(offsets),
-		offsets, sizes, reader, nil, dType, encoding}, pageHeaders, nil}
+		offsets, sizes, reader, nil, dType, encoding}, pageHeaders, nil, false}
 }
 
 func (r *SeekableSeriesReader) hasNextPageReader() bool {
 	return r.PageIndex < r.PageLimit
 }
 
-func (r *SeekableSeriesReader) nextPageReader() {
+func (r *SeekableSeriesReader) nextPageReader() error {
 	r.PageIndex++
+	if r.PageIndex >= r.PageLimit {
+		return errors.New("page exhausted")
+	}
 	r.PageReader = &SeekablePageDataReader{&basic.PageDataReader{DataType: r.DType, ValueDecoder: decoder.CreateDecoder(r.Encoding, r.DType),
 		TimeDecoder: decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}, nil}
 	r.PageReader.Read(r.FileReader.ReadRaw(r.Offsets[r.PageIndex], r.Sizes[r.PageIndex]))
+	return nil
 }
 
 func (r *SeekableSeriesReader) HasNext() bool {
+	if r.exhausted {
+		return false
+	}
 	if r.PageReader != nil {
 		if r.PageReader.HasNext() {
 			return true
 		} else if r.PageIndex < r.PageLimit-1 {
-			r.nextPageReader()
+			if err := r.nextPageReader(); err != nil {
+				log.Error("cannot read next page", err)
+				r.exhausted = true
+				return false
+			}
 			return r.HasNext()
 		} else {
 			return false
@@ -99,10 +113,17 @@ func (r *SeekableSeriesReader) HasNext() bool {
 	return false
 }
 
-func (r *SeekableSeriesReader) Next() *datatype.TimeValuePair {
+func (r *SeekableSeriesReader) Next() (*datatype.TimeValuePair, error) {
+	if r.exhausted {
+		return nil, errors.New("series exhausted")
+	}
 	if r.PageReader.HasNext() {
-		r.current = r.PageReader.Next()
-		return r.current
+		tv, err := r.PageReader.Next()
+		if err != nil {
+			return nil, err
+		}
+		r.current = tv
+		return r.current, nil
 	} else {
 		r.nextPageReader()
 		return r.Next()

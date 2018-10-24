@@ -4,6 +4,7 @@ import (
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader"
+	"errors"
 )
 
 type FilteredRowReader struct {
@@ -11,6 +12,7 @@ type FilteredRowReader struct {
 	filter filter.Filter
 
 	row *datatype.RowRecord
+	exhausted bool
 }
 
 func (r *FilteredRowReader) fillCache() {
@@ -18,9 +20,10 @@ func (r *FilteredRowReader) fillCache() {
 		if !r.reader.HasNext() {
 			return
 		} else {
-			row := r.reader.Next()
-			if row.Timestamp() > 200000 {
-				//print("here")
+			row, err := r.reader.Next()
+			if err != nil {
+				r.row = nil
+				return
 			}
 			if r.filter == nil || r.filter.Satisfy(row) {
 				r.row = row
@@ -32,20 +35,31 @@ func (r *FilteredRowReader) fillCache() {
 }
 
 func (r *FilteredRowReader) HasNext() bool {
+	if r.exhausted {
+		return false
+	}
 	if r.row == nil {
 		r.fillCache()
+		if r.row == nil {
+			r.exhausted = true
+			return false
+		}
 	}
 	return r.row != nil
 }
 
-func (r *FilteredRowReader) Next() *datatype.RowRecord {
+func (r *FilteredRowReader) Next() (*datatype.RowRecord, error) {
 	if r.row == nil {
 		r.fillCache()
+		if r.row == nil {
+			r.exhausted = true
+			return nil, errors.New("RowReader exhausted")
+		}
 	}
 	ret := r.row
 	r.row = nil
 
-	return ret
+	return ret, nil
 }
 
 func (r *FilteredRowReader) Close() {
@@ -54,6 +68,6 @@ func (r *FilteredRowReader) Close() {
 
 func NewFilteredRowReader(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *FilteredRowReader {
 	rowReader := NewRecordReader(paths, readerMap)
-	dataSet := &FilteredRowReader{reader: rowReader, filter: filter}
+	dataSet := &FilteredRowReader{reader: rowReader, filter: filter, exhausted:false}
 	return dataSet
 }
