@@ -10,7 +10,6 @@ package tsFileWriter
 
 import (
 	"tsfile/common/conf"
-	"tsfile/common/log"
 	"tsfile/file/header"
 	"tsfile/file/metadata/statistics"
 	"tsfile/timeseries/write/sensorDescriptor"
@@ -86,7 +85,7 @@ func (s *SeriesWriter) WriteToFileWriter(tsFileIoWriter *TsFileIoWriter) {
 
 func (s *SeriesWriter) checkPageSizeAndMayOpenNewpage() {
 	if s.valueCount == conf.MaxNumberOfPointsInPage {
-		log.Info("current line count reaches the upper bound, write page %s", s.sensorDescriptor)
+		//log.Info("current line count reaches the upper bound, write page %s", s.sensorDescriptor)
 		// write data to buffer
 		s.WritePage()
 	} else if s.valueCount >= s.valueCountForNextSizeCheck {
@@ -94,9 +93,9 @@ func (s *SeriesWriter) checkPageSizeAndMayOpenNewpage() {
 		if currentColumnSize > s.psThres {
 			// write data to buffer
 			s.WritePage()
-		} else {
-			log.Info("not enough size to write disk now.")
-		}
+		} //else {
+		//	log.Info("not enough size to write disk now.")
+		//}
 		// int * 1.0 / int 为float， 再乘以valueCount，得到下次检查的count
 		s.valueCountForNextSizeCheck = s.psThres * 1.0 / currentColumnSize * s.valueCount
 	}
@@ -127,7 +126,6 @@ func (s *SeriesWriter) WritePage() {
 }
 
 func (s *SeriesWriter) ResetPageStatistics() {
-	// s.pageStatistics = *statistics.GetStatistics(s.tsDataType)
 	s.pageStatistics = statistics.GetStatsByType(s.tsDataType)
 	return
 }

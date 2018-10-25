@@ -14,7 +14,6 @@ import (
 	"tsfile/common/utils"
 	"tsfile/encoding/encoder"
 	"tsfile/timeseries/write/sensorDescriptor"
-	"tsfile/common/log"
 )
 
 type ValueWriter struct {
@@ -140,7 +139,6 @@ func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount in
 			// int32
 		}
 	}
-	log.Info("askdfjalskdfffffffffffffffffffffffffffffffff")
 	return
 }
 

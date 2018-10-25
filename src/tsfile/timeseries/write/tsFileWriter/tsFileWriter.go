@@ -29,7 +29,6 @@ type TsFileWriter struct {
 }
 
 func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) []byte {
-	log.Info("tsFileWriter->AddSensor()")
 	if _, ok := t.schema.GetSensorDescriptiorMap()[sd.GetSensorId()]; !ok {
 		t.schema.GetSensorDescriptiorMap()[sd.GetSensorId()] = sd
 	} else {
@@ -89,7 +88,7 @@ func (t *TsFileWriter) flushAllRowGroups(isFillRowGroup bool) bool {
 				t.tsFileIoWriter.EndRowGroup(t.tsFileIoWriter.GetPos() - totalMemStart)
 			}
 		}
-		log.Info("write to rowGroup end!")
+		//log.Info("write to rowGroup end!")
 		t.recordCount = 0
 		t.reset()
 	}
@@ -103,7 +102,6 @@ func (t *TsFileWriter) reset() {
 }
 
 func (t *TsFileWriter) Write(tr TsRecord) bool {
-	log.Info("tsFileWriter->Write()")
 	// write data here
 	if t.checkIsDeviceExist(tr, *t.schema) {
 		//var r RowGroupWriter;
@@ -132,7 +130,7 @@ func (t *TsFileWriter) checkMemorySizeAndMayFlushGroup() bool {
 	if t.recordCount >= t.recordCountForNextMemCheck {
 		memSize := t.CalculateMemSizeForAllGroup()
 		if memSize >= t.rowGroupSizeThreshold {
-			log.Info("start write rowGroup, memory space occupy: %v", memSize)
+			//log.Info("start write rowGroup, memory space occupy: %v", memSize)
 			if t.oneRowMaxSize != 0 {
 				t.recordCountForNextMemCheck = t.rowGroupSizeThreshold / int64(t.oneRowMaxSize)
 			} //else{
@@ -176,14 +174,14 @@ func (t *TsFileWriter) checkIsDeviceExist(tr TsRecord, schema fileSchema.FileSch
 		groupDevice = t.groupDevices[tr.GetDeviceId()]
 	}
 	schemaSensorDescriptorMap := schema.GetSensorDescriptiorMap()
-	for k, v := range tr.GetDataPointSli() {
+	for _, v := range tr.GetDataPointSli() {
 		if contain, _ := utils.MapContains(schemaSensorDescriptorMap, v.GetSensorId()); contain {
 			//groupDevice.AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], tsFileConf.PageSizeInByte)
 			t.groupDevices[tr.GetDeviceId()].AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], conf.PageSizeInByte)
 		} else {
 			log.Error("input sensor is invalid: ", v.GetSensorId())
 		}
-		log.Info("k=%v, v=%v\n", k, v)
+		//log.Info("k=%v, v=%v\n", k, v)
 	}
 	return true
 }

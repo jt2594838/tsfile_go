@@ -25,7 +25,6 @@ func main() {
 		os.Remove(fileName)
 	}
 
-	//////////////////////////////////////////////////
 	// init tsFileWriter
 	tfWriter, tfwErr := tsFileWriter.NewTsFileWriter(fileName)
 	if tfwErr != nil {
@@ -50,7 +49,6 @@ func main() {
 	ts := time.Now()
 	//timestamp := strconv.FormatInt(ts.UTC().UnixNano(), 10)
 	//fmt.Println(timestamp)
-	log.Info("init tsRecord device_1.")
 	tr, trErr := tsFileWriter.NewTsRecord(ts, "device_1")
 	if trErr != nil {
 		log.Info("init tsRecord error.")
@@ -126,6 +124,4 @@ func main() {
 
 	// close file descriptor
 	tfWriter.Close()
-	///////////////////////////////////////////////////
-	log.Info("Program exit.")
 }

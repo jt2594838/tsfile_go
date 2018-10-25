@@ -23,7 +23,6 @@ type PlainEncoder struct {
 }
 
 func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
-	log.Info("enter PlainEncoder!!")
 	switch {
 	case p.tsDataType == constant.BOOLEAN:
 		if data, ok := value.(bool); ok {
@@ -56,43 +55,36 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 }
 
 func (p *PlainEncoder) EncBool(value bool, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input bool value: %d", value)
 	buffer.Write(utils.BoolToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncShort(value int16, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input int16 value: %d", value)
 	buffer.Write(utils.Int16ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncInt32(value int32, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input int32 value: %d", value)
 	buffer.Write(utils.Int32ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncInt64(value int64, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input int64 value: %d", value)
 	buffer.Write(utils.Int64ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncFloat32(value float32, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input float32 value: %d", value)
 	buffer.Write(utils.Float32ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncFloat64(value float64, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input float64 value: %d", value)
 	buffer.Write(utils.Float64ToByte(value, p.encodeEndian))
 	return
 }
 
 func (p *PlainEncoder) EncBinary(value []byte, buffer *bytes.Buffer) {
-	log.Info("final enc ok! input binary value: %d", value)
 	p.EncInt32(int32(len(value)), buffer)
 	buffer.Write(value)
 	return

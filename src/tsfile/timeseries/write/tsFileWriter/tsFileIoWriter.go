@@ -62,7 +62,7 @@ func (t *TsFileIoWriter) EndChunk(size int64, totalValueCount int64) {
 func (t *TsFileIoWriter) EndRowGroup(memSize int64) {
 	t.currentRowGroupMetaData.SetTotalByteSize(memSize)
 	t.rowGroupMetaDataSli = append(t.rowGroupMetaDataSli, t.currentRowGroupMetaData)
-	log.Info("end row group: %v", t.currentRowGroupMetaData)
+	//log.Info("end row group: %v", t.currentRowGroupMetaData)
 	//t.currentRowGroupMetaData = nil
 }
 
@@ -98,11 +98,11 @@ func (t *TsFileIoWriter) EndFile(fs fileSchema.FileSchema) {
 		tsDeviceMetaData.SetEndTime(endTime)
 	}
 	tsFileMetaData, _ := metadata.NewTsFileMetaData(tsDeviceMetaDataMap, timeSeriesMap, conf.CurrentVersion)
-	footerIndex := t.GetPos()
-	log.Info("start to flush meta, file pos: %d", footerIndex)
+	//footerIndex := t.GetPos()
+	//log.Info("start to flush meta, file pos: %d", footerIndex)
 	size := tsFileMetaData.SerializeTo(t.memBuf)
 	// log.Info("t.memBuf: %s", t.memBuf)
-	log.Info("finish flushing meta %v, file pos: %d", tsFileMetaData, t.GetPos())
+	//log.Info("finish flushing meta %v, file pos: %d", tsFileMetaData, t.GetPos())
 	t.memBuf.Write(utils.Int32ToByte(int32(size), 0))
 	t.memBuf.Write([]byte(conf.MAGIC_STRING))
 
@@ -134,13 +134,12 @@ func (t *TsFileIoWriter) WriteMagic() int {
 }
 
 func (t *TsFileIoWriter) StartFlushRowGroup(deviceId string, rowGroupSize int64, seriesNumber int32) int {
-	log.Info("start flush rowgroup.")
 	// timeSeriesChunkMetaDataMap := make(map[string]metaData.TimeSeriesChunkMetaData)
 	timeSeriesChunkMetaDataSli := make([]*metadata.ChunkMetaData, 0)
 	t.currentRowGroupMetaData, _ = metadata.NewRowGroupMetaData(deviceId, 0, t.GetPos(), timeSeriesChunkMetaDataSli)
 	t.currentRowGroupMetaData.RecalculateSerializedSize()
 	rowGroupHeader, _ := header.NewRowGroupHeader(deviceId, rowGroupSize, seriesNumber)
-	log.Info("rowGroupHeader: %v", rowGroupHeader)
+	//log.Info("rowGroupHeader: %v", rowGroupHeader)
 	rowGroupHeader.RowGroupHeaderToMemory(t.memBuf)
 	t.rowGroupHeader = rowGroupHeader
 	// rowgroup header bytebuffer write to file

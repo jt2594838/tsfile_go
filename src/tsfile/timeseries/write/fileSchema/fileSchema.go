@@ -9,7 +9,6 @@ package fileSchema
  */
 
 import (
-	"tsfile/common/log"
 	"tsfile/file/metadata"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -24,7 +23,6 @@ type FileSchema struct {
 
 func (f *FileSchema) AddTimeSeriesMetaData(sensorId string, tsDataType int16) {
 	ts, _ := metadata.NewTimeSeriesMetaData(sensorId, tsDataType)
-	log.Info("add time series: %v", ts)
 	f.tsMetaData[sensorId] = ts
 }
 

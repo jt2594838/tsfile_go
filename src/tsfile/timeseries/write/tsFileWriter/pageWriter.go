@@ -52,23 +52,23 @@ func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, va
 		log.Error("init pageHeader error: ", pageHeaderErr)
 	}
 	// write pageheader to pageBuf
-	log.Info("start to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
+	//log.Info("start to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
 	pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
-	log.Info("pageHeader: %v", pageHeader)
-	log.Info("finished to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
+	//log.Info("pageHeader: %v", pageHeader)
+	//log.Info("finished to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
 
 	//// write pageData to pageBuf
 	////声明一个空的slice,容量为dataBuffer的长度
 	//dataSlice := make([]byte, dataBuffer.Len())
 	////把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
 	//dataBuffer.Read(dataSlice)
-	log.Info("start to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
+	//log.Info("start to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
 	if p.desc.GetCompresstionType() == int16(constant.UNCOMPRESSED) {
 		p.pageBuf.Write(dataSlice)
 	} else {
 		p.pageBuf.Write(enc)
 	}
-	log.Info("finished to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
+	//log.Info("finished to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
 	p.totalValueCount += int64(valueCount)
 	return 0
 }
