@@ -2,6 +2,7 @@ package encoder
 
 import (
 	"bytes"
+	"encoding/binary"
 	"math"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
@@ -72,19 +73,17 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		d.width = w
 
 		//write header
-		buffer.Write(utils.Int32ToByte(d.index, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.width, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int64ToByte(d.baseValue, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int64ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
+		binary.Write(buffer, binary.BigEndian, d.index)
+		binary.Write(buffer, binary.BigEndian, d.width)
+		binary.Write(buffer, binary.BigEndian, d.baseValue)
+		binary.Write(buffer, binary.BigEndian, d.firstValue)
 
 		//write data with min width
 		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
-			encodingBlockBuffer := make([]byte, encodingLength)
+			//encodingBlockBuffer := make([]byte, encodingLength)
 			for i := int32(0); i < d.index; i++ {
-				utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+				binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
 			}
-
-			buffer.Write(encodingBlockBuffer)
 		}
 
 		d.reset()

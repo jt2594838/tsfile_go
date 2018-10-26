@@ -10,7 +10,7 @@ package tsFileWriter
 
 import (
 	"tsfile/common/log"
-	"tsfile/common/utils"
+	_ "tsfile/common/utils"
 	"tsfile/file/header"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -21,23 +21,35 @@ type RowGroupWriter struct {
 }
 
 func (r *RowGroupWriter) AddSeriesWriter(sd *sensorDescriptor.SensorDescriptor, pageSize int) {
-	if contain, _ := utils.MapContains(r.dataSeriesWriters, sd.GetSensorId()); !contain {
+	//start_edit wangcan 2018-10-15
+	//if contain, _ := utils.MapContains(r.dataSeriesWriters, sd.GetSensorId()); !contain {
+	_, contain := r.dataSeriesWriters[sd.GetSensorId()]
+	if !contain {
+		//end_edit
 		// new pagewriter
 		pw, _ := NewPageWriter(sd)
 
 		// new serieswrite
-		sw, _ := NewSeriesWriter(r.deviceId, sd, pw, pageSize)
-		r.dataSeriesWriters[sd.GetSensorId()] = sw
-	} else {
-		log.Info("given sensor has exist, need not add to series writer again.")
+		r.dataSeriesWriters[sd.GetSensorId()], _ = NewSeriesWriter(r.deviceId, sd, pw, pageSize)
+		//sw, _ := NewSeriesWriter(r.deviceId, sd, pw, pageSize)
+		//r.dataSeriesWriters[sd.GetSensorId()] = sw
+		//start_edit wangcan 2018-10-15
+		//if input same sessor id and log again, comment it
+		//} else {
+		//	log.Info("given sensor has exist, need not add to series writer again.")
+		//end_edit
 	}
 	return
 }
 
 func (r *RowGroupWriter) Write(t int64, data []*DataPoint) {
 	for _, v := range data {
-		if ok, _ := utils.MapContains(r.dataSeriesWriters, v.GetSensorId()); ok {
-			v.Write(t, r.dataSeriesWriters[v.GetSensorId()])
+		//start_edit wangcan 2018-10-15
+		//if ok, _ := utils.MapContains(r.dataSeriesWriters, v.GetSensorId()); ok {
+		//	v.Write(t, r.dataSeriesWriters[v.GetSensorId()])
+		dataSeriesWriter, ok := r.dataSeriesWriters[v.GetSensorId()]
+		if ok {
+			v.Write(t, dataSeriesWriter)
 		} else {
 			log.Error("time: %d, sensor id %s not found! ", t, v.GetSensorId())
 		}

@@ -2,8 +2,12 @@ package encoder
 
 import (
 	"bytes"
+	"encoding/binary"
+	_ "fmt"
 	"math"
+	_ "time"
 	"tsfile/common/constant"
+	_ "tsfile/common/logcost"
 	"tsfile/common/utils"
 )
 
@@ -52,6 +56,7 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		// since we store the min delta, the deltas will be converted to be the difference to min delta and all positive
 		for i := 0; i < int(d.index); i++ {
 			d.encodedValues[i] = d.encodedValues[i] - d.baseValue
+			//d.encodedValues[i] -= d.baseValue
 		}
 
 		w := int32(0)
@@ -65,19 +70,30 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		d.width = w
 
 		//write header
-		buffer.Write(utils.Int32ToByte(d.index, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.width, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.baseValue, int16(constant.BIG_ENDIAN)))
-		buffer.Write(utils.Int32ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
+		binary.Write(buffer, binary.BigEndian, d.index)
+		binary.Write(buffer, binary.BigEndian, d.width)
+		binary.Write(buffer, binary.BigEndian, d.baseValue)
+		binary.Write(buffer, binary.BigEndian, d.firstValue)
+		//buffer.Write(utils.Int32ToByte(d.index, int16(constant.BIG_ENDIAN)))
+		//buffer.Write(utils.Int32ToByte(d.width, int16(constant.BIG_ENDIAN)))
+		//buffer.Write(utils.Int32ToByte(d.baseValue, int16(constant.BIG_ENDIAN)))
+		//buffer.Write(utils.Int32ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
 
 		//write data with min width
 		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
-			encodingBlockBuffer := make([]byte, encodingLength)
+			//encodingBlockBuffer := make([]byte, encodingLength)
+			//s1 := make([]byte, 0)
+			//buf := bytes.NewBuffer(s1)
+			//tsCurWrite1 := time.Now()
 			for i := int32(0); i < d.index; i++ {
-				utils.IntToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+				//utils.IntToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+				//fmt.Printf("value:%d pos:%d  width:%d d.index=%d\n", d.encodedValues[i], d.width*i, d.width, d.index)
+				binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
 			}
-
-			buffer.Write(encodingBlockBuffer)
+			//fmt.Println(encodingBlockBuffer)
+			//fmt.Println(buf.Bytes())
+			//logcost.CostWriteTimesTest6 += int64(time.Since(tsCurWrite1))
+			//buffer.Write(encodingBlockBuffer)
 		}
 
 		d.reset()

@@ -11,7 +11,7 @@ package tsFileWriter
 import (
 	"tsfile/common/conf"
 	"tsfile/common/log"
-	"tsfile/common/utils"
+	_ "tsfile/common/utils"
 	"tsfile/timeseries/write/fileSchema"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -163,21 +163,27 @@ func (t *TsFileWriter) checkIsDeviceExist(tr TsRecord, schema fileSchema.FileSch
 	var groupDevice *RowGroupWriter
 	var err error
 	// check device
-	if _, ok := t.groupDevices[tr.GetDeviceId()]; !ok {
+	//if _, ok := t.groupDevices[tr.GetDeviceId()]; !ok {
+	var ok bool
+	groupDevice, ok = t.groupDevices[tr.GetDeviceId()]
+	if !ok {
 		// if not exist
 		groupDevice, err = NewRowGroupWriter(tr.GetDeviceId())
 		if err != nil {
 			log.Info("rowGroupWriter init ok!")
 		}
 		t.groupDevices[tr.GetDeviceId()] = groupDevice
-	} else { // if exist
-		groupDevice = t.groupDevices[tr.GetDeviceId()]
+		//} else { // if exist
+		//	groupDevice = t.groupDevices[tr.GetDeviceId()]
 	}
 	schemaSensorDescriptorMap := schema.GetSensorDescriptiorMap()
 	for _, v := range tr.GetDataPointSli() {
-		if contain, _ := utils.MapContains(schemaSensorDescriptorMap, v.GetSensorId()); contain {
-			//groupDevice.AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], tsFileConf.PageSizeInByte)
-			t.groupDevices[tr.GetDeviceId()].AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], conf.PageSizeInByte)
+		//if contain, _ := utils.MapContains(schemaSensorDescriptorMap, v.GetSensorId()); contain {
+		//	//groupDevice.AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], tsFileConf.PageSizeInByte)
+		//	t.groupDevices[tr.GetDeviceId()].AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], conf.PageSizeInByte)
+		sensorDescriptor, bExistSensorDesc := schemaSensorDescriptorMap[v.GetSensorId()]
+		if bExistSensorDesc {
+			groupDevice.AddSeriesWriter(sensorDescriptor, conf.PageSizeInByte)
 		} else {
 			log.Error("input sensor is invalid: ", v.GetSensorId())
 		}
