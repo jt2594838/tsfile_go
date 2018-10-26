@@ -7,7 +7,6 @@ import (
 	"math"
 	_ "time"
 	"tsfile/common/constant"
-	_ "tsfile/common/logcost"
 	"tsfile/common/utils"
 )
 

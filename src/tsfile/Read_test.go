@@ -19,7 +19,7 @@ func TestRead(t *testing.T) {
 		}
 	}()
 
-	file := "/home/steven/code/go/src/github.com/tsfile_golang/test.ts"
+	file := "D:/test.ts"
 	f := new(read.TsFileSequenceReader)
 	f.Open(file)
 	defer f.Close()
