@@ -63,7 +63,7 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 
 		w := int32(0)
 		for i := int32(0); i < d.index; i++ {
-			valueWidth := int32(32) - utils.NumberOfLeadingZerosLong(d.encodedValues[i])
+			valueWidth := int32(64) - utils.NumberOfLeadingZerosLong(d.encodedValues[i])
 			if valueWidth > w {
 				w = valueWidth
 			}
