@@ -80,10 +80,12 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 
 		//write data with min width
 		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
-			//encodingBlockBuffer := make([]byte, encodingLength)
+			encodingBlockBuffer := make([]byte, encodingLength)
 			for i := int32(0); i < d.index; i++ {
-				binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
+				utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+				//binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
 			}
+			buffer.Write(encodingBlockBuffer)
 		}
 
 		d.reset()
