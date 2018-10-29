@@ -18,8 +18,8 @@ import (
 
 type ValueWriter struct {
 	// time
-	timeEncoder  interface{}
-	valueEncoder interface{}
+	timeEncoder  encoder.Encoder //interface{}
+	valueEncoder encoder.Encoder //interface{}
 	timeBuf      *bytes.Buffer
 	valueBuf     *bytes.Buffer
 	desc         *sensorDescriptor.SensorDescriptor
@@ -27,37 +27,25 @@ type ValueWriter struct {
 }
 
 func (v *ValueWriter) GetCurrentMemSize() int {
-	var sizeT int64 = 0
-	var sizeV int64 = 0
-	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
-		sizeT = encT.GetMaxByteSize()
-	}
-	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
-		sizeV = encV.GetMaxByteSize()
-	}
-	return v.timeBuf.Len() + v.valueBuf.Len() + int(sizeT) + int(sizeV)
+	return v.timeBuf.Len() + v.valueBuf.Len() +
+		int(v.timeEncoder.GetMaxByteSize()) + int(v.valueEncoder.GetMaxByteSize())
 }
 
 func (v *ValueWriter) PrepareEndWriteOnePage() {
-	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
-		encT.Flush(v.timeBuf)
-	}
-	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
-		encV.Flush(v.valueBuf)
-	}
-	return
+	v.timeEncoder.Flush(v.timeBuf)
+	v.valueEncoder.Flush(v.valueBuf)
 }
 
 func (v *ValueWriter) GetByteBuffer() *bytes.Buffer {
 	v.PrepareEndWriteOnePage()
-	timeSize := v.timeBuf.Len()
 	encodeBuffer := bytes.NewBuffer([]byte{})
+	var timeLen int32 = int32(v.timeBuf.Len())
 
 	// write timeBuf size
-	utils.WriteUnsignedVarInt(int32(timeSize), encodeBuffer)
+	utils.WriteUnsignedVarInt(timeLen, encodeBuffer)
 
 	//声明一个空的slice,容量为timebuf的长度
-	timeSlice := make([]byte, timeSize)
+	timeSlice := make([]byte, timeLen)
 	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
 	v.timeBuf.Read(timeSlice)
 	encodeBuffer.Write(timeSlice)
@@ -73,73 +61,19 @@ func (v *ValueWriter) GetByteBuffer() *bytes.Buffer {
 
 // write with encoder
 func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) {
-
-	if encT, ok := v.timeEncoder.(encoder.Encoder); ok {
-		//if valueCount == 0 {
-		//	encT.Encode(t, v.timeBuf)
-		//	encT.Encode(t, v.timeBuf)
-		//	encT.Encode(t, v.timeBuf)
-		//}
-		//if v.desc.GetTimeCount() == conf.DeltaBlockSize {
-		//	encT.Encode(t, v.timeBuf)
-		//	encT.Encode(t, v.timeBuf)
-		//	encT.Encode(t, v.timeBuf)
-		//
-		//	v.desc.SetTimeCount(0)
-		//}
-		encT.Encode(t, v.timeBuf)
+	v.timeEncoder.Encode(t, v.timeBuf)
+	switch tdt {
+	case 0, 1, 2, 3, 4, 5:
+		v.valueEncoder.Encode(value, v.valueBuf)
+	case 6:
+		//fixed_len_byte_array
+	case 7:
+		//enums
+	case 8:
+		//bigdecimal
+	default:
+		// int32
 	}
-
-	if encV, ok := v.valueEncoder.(encoder.Encoder); ok {
-
-		switch tdt {
-		case 0:
-			// bool
-			if data, ok := value.(bool); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 1:
-			//int32
-			if data, ok := value.(int32); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 2:
-			//int64
-			if data, ok := value.(int64); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 3:
-			//float
-			if data, ok := value.(float32); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 4:
-			//double
-			if data, ok := value.(float64); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 5:
-			//text
-			if data, ok := value.(string); ok {
-				// encode
-				encV.Encode(data, v.valueBuf)
-			}
-		case 6:
-			//fixed_len_byte_array
-		case 7:
-			//enums
-		case 8:
-			//bigdecimal
-		default:
-			// int32
-		}
-	}
-	return
 }
 
 // write without encoder
@@ -222,17 +156,12 @@ func (v *ValueWriter) Reset() {
 }
 
 func NewValueWriter(d *sensorDescriptor.SensorDescriptor) (*ValueWriter, error) {
-	//tEnc := encoder.GetEncoder(d.GetTsEncoding(), int16(constant.INT64))
-	//vEnc := encoder.GetEncoder(d.GetTsEncoding(), d.GetTsDataType())
-	tEnc := d.GetTimeEncoder()
-	vEnc := d.GetValueEncoder()
-
 	return &ValueWriter{
 		//sensorId:sId,
 		timeBuf:      bytes.NewBuffer([]byte{}),
 		valueBuf:     bytes.NewBuffer([]byte{}),
 		desc:         d,
-		timeEncoder:  tEnc,
-		valueEncoder: vEnc,
+		timeEncoder:  d.GetTimeEncoder(),
+		valueEncoder: d.GetValueEncoder(),
 	}, nil
 }
