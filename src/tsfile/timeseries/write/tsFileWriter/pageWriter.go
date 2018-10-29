@@ -78,7 +78,7 @@ func (p *PageWriter) WriteAllPagesOfSeriesToTsFile(tsFileIoWriter *TsFileIoWrite
 		log.Error("Write page error, minTime: %s, maxTime: %s")
 	}
 	// write trunk header to file
-	chunkHeaderSize := tsFileIoWriter.StartFlushChunk(p.desc, int16(constant.UNCOMPRESSED), p.desc.GetTsDataType(), p.desc.GetTsEncoding(), seriesStatistics, p.maxTimestamp, p.minTimestamp, p.pageBuf.Len(), numOfPage)
+	chunkHeaderSize := tsFileIoWriter.StartFlushChunk(p.desc, p.desc.GetCompresstionType(), p.desc.GetTsDataType(), p.desc.GetTsEncoding(), seriesStatistics, p.maxTimestamp, p.minTimestamp, p.pageBuf.Len(), numOfPage)
 	preSize := tsFileIoWriter.GetPos()
 	// write all pages to file
 	tsFileIoWriter.WriteBytesToFile(p.pageBuf)
