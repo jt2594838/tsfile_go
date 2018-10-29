@@ -2,10 +2,11 @@ package encoder
 
 import (
 	"bytes"
+	"encoding/binary"
 	"tsfile/common/conf"
 	"tsfile/common/constant"
 	"tsfile/common/log"
-	"tsfile/common/utils"
+	_ "tsfile/common/utils"
 )
 
 /**
@@ -23,71 +24,25 @@ type PlainEncoder struct {
 }
 
 func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
-	switch {
-	case p.tsDataType == constant.BOOLEAN:
-		if data, ok := value.(bool); ok {
-			p.EncBool(data, buffer)
+	switch p.tsDataType {
+	case constant.BOOLEAN, constant.INT32, constant.INT64, constant.FLOAT, constant.DOUBLE:
+		if p.encodeEndian == 0 {
+			_ = binary.Write(buffer, binary.BigEndian, value)
+		} else {
+			_ = binary.Write(buffer, binary.LittleEndian, value)
 		}
-	case p.tsDataType == constant.INT32:
-		if data, ok := value.(int32); ok {
-			p.EncInt32(data, buffer)
-		}
-	case p.tsDataType == constant.INT64:
-		if data, ok := value.(int64); ok {
-			p.EncInt64(data, buffer)
-		}
-	case p.tsDataType == constant.FLOAT:
-		if data, ok := value.(float32); ok {
-			p.EncFloat32(data, buffer)
-		}
-	case p.tsDataType == constant.DOUBLE:
-		if data, ok := value.(float64); ok {
-			p.EncFloat64(data, buffer)
-		}
-	case p.tsDataType == constant.TEXT:
+	case constant.TEXT:
 		if data, ok := value.(string); ok {
-			p.EncBinary([]byte(data), buffer)
+			if p.encodeEndian == 0 {
+				_ = binary.Write(buffer, binary.BigEndian, int32(len(data)))
+			} else {
+				_ = binary.Write(buffer, binary.LittleEndian, int32(len(data)))
+			}
+			buffer.Write([]byte(data))
 		}
 	default:
 		log.Error("invalid input encode type: %d", p.tsDataType)
 	}
-	return
-}
-
-func (p *PlainEncoder) EncBool(value bool, buffer *bytes.Buffer) {
-	buffer.Write(utils.BoolToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncShort(value int16, buffer *bytes.Buffer) {
-	buffer.Write(utils.Int16ToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncInt32(value int32, buffer *bytes.Buffer) {
-	buffer.Write(utils.Int32ToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncInt64(value int64, buffer *bytes.Buffer) {
-	buffer.Write(utils.Int64ToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncFloat32(value float32, buffer *bytes.Buffer) {
-	buffer.Write(utils.Float32ToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncFloat64(value float64, buffer *bytes.Buffer) {
-	buffer.Write(utils.Float64ToByte(value, p.encodeEndian))
-	return
-}
-
-func (p *PlainEncoder) EncBinary(value []byte, buffer *bytes.Buffer) {
-	p.EncInt32(int32(len(value)), buffer)
-	buffer.Write(value)
-	return
 }
 
 func (p *PlainEncoder) Flush(buffer *bytes.Buffer) {
