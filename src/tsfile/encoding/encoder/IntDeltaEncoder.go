@@ -52,25 +52,25 @@ func (d *IntDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 
 func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 	if d.index != -1 {
+		index := d.index
 		// since we store the min delta, the deltas will be converted to be the difference to min delta and all positive
-		for i := 0; i < int(d.index); i++ {
-			d.encodedValues[i] = d.encodedValues[i] - d.baseValue
-			//d.encodedValues[i] -= d.baseValue
+		for i := int32(0); i < index; i++ {
+			d.encodedValues[i] -= d.baseValue
 		}
 
-		w := int32(0)
-		for i := int32(0); i < d.index; i++ {
+		width := int32(0)
+		for i := int32(0); i < index; i++ {
 			valueWidth := int32(32) - utils.NumberOfLeadingZeros(d.encodedValues[i])
-			if valueWidth > w {
-				w = valueWidth
+			if valueWidth > width {
+				width = valueWidth
 			}
 		}
 
-		d.width = w
+		d.width = width
 
 		//write header
-		binary.Write(buffer, binary.BigEndian, d.index)
-		binary.Write(buffer, binary.BigEndian, d.width)
+		binary.Write(buffer, binary.BigEndian, index)
+		binary.Write(buffer, binary.BigEndian, width)
 		binary.Write(buffer, binary.BigEndian, d.baseValue)
 		binary.Write(buffer, binary.BigEndian, d.firstValue)
 		//buffer.Write(utils.Int32ToByte(d.index, int16(constant.BIG_ENDIAN)))
@@ -79,22 +79,31 @@ func (d *IntDeltaEncoder) Flush(buffer *bytes.Buffer) {
 		//buffer.Write(utils.Int32ToByte(d.firstValue, int16(constant.BIG_ENDIAN)))
 
 		//write data with min width
-		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
+		if encodingLength := int(math.Ceil(float64(index*width) / 8.0)); encodingLength > 0 {
 			encodingBlockBuffer := make([]byte, encodingLength)
-			//s1 := make([]byte, 0)
-			//buf := bytes.NewBuffer(s1)
-			//tsCurWrite1 := time.Now()
-			for i := int32(0); i < d.index; i++ {
-				utils.IntToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
-				//fmt.Printf("value:%d pos:%d  width:%d d.index=%d\n", d.encodedValues[i], d.width*i, d.width, d.index)
+			//var byteWrite byte
+			var temp1 int32 = width - 1
+			var temp2 int32
+			var temp3 int32
+			//fmt.Printf("start flash %d\n", d.width)
+			for i := int32(0); i < index; i++ {
+				temp2 = temp1
+				for j := int32(0); j < width; j++ {
+					temp3 = temp2 / 8
+					//fmt.Printf("start temp3 %d\n", temp3)
+					if (d.encodedValues[i] & (1 << uint32(j%32))) != 0 {
+						encodingBlockBuffer[temp3] = (byte)(encodingBlockBuffer[temp3] | (1 << uint32(7-temp2%8)))
+					} else {
+						encodingBlockBuffer[temp3] = (byte)(encodingBlockBuffer[temp3] & ^(1 << uint32(7-temp2%8)))
+					}
+					temp2--
+				}
+				temp1 += width
+				//IntToBytes(d.encodedValues[i], encodingBlockBuffer, width*i, width)
 				//binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
 			}
-			//fmt.Println(encodingBlockBuffer)
-			//fmt.Println(buf.Bytes())
-			//logcost.CostWriteTimesTest6 += int64(time.Since(tsCurWrite1))
 			buffer.Write(encodingBlockBuffer)
 		}
-
 		d.reset()
 	}
 }
