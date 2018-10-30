@@ -108,20 +108,6 @@ func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 	}
 }
 
-func LongToBytes(srcNum int64, result []byte, pos int32, width int32) {
-	var temp2 int32 = pos + width - 1
-	var temp3 int32 = 0
-	for i := int32(0); i < width; i++ {
-		temp3 = temp2 / 8
-		if (srcNum & (int64(1) << uint32(i%64))) != 0 {
-			result[temp3] = (byte)(result[temp3] | (1 << uint32(7-temp2%8)))
-		} else {
-			result[temp3] = (byte)(result[temp3] & ^(1 << uint32(7-temp2%8)))
-		}
-		temp2--
-	}
-}
-
 func (d *LongDeltaEncoder) GetMaxByteSize() int64 {
 	return int64(24 + d.index*8)
 }
