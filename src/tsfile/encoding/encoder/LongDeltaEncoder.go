@@ -57,38 +57,68 @@ func (d *LongDeltaEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 
 func (d *LongDeltaEncoder) Flush(buffer *bytes.Buffer) {
 	if d.index != -1 {
+		index := d.index
 		// since we store the min delta, the deltas will be converted to be the difference to min delta and all positive
-		for i := 0; i < int(d.index); i++ {
+		for i := int32(0); i < index; i++ {
 			d.encodedValues[i] = d.encodedValues[i] - d.baseValue
 		}
 
-		w := int32(0)
-		for i := int32(0); i < d.index; i++ {
+		width := int32(0)
+		for i := int32(0); i < index; i++ {
 			valueWidth := int32(64) - utils.NumberOfLeadingZerosLong(d.encodedValues[i])
-			if valueWidth > w {
-				w = valueWidth
+			if valueWidth > width {
+				width = valueWidth
 			}
 		}
 
-		d.width = w
+		d.width = width
 
 		//write header
-		binary.Write(buffer, binary.BigEndian, d.index)
-		binary.Write(buffer, binary.BigEndian, d.width)
+		binary.Write(buffer, binary.BigEndian, index)
+		binary.Write(buffer, binary.BigEndian, width)
 		binary.Write(buffer, binary.BigEndian, d.baseValue)
 		binary.Write(buffer, binary.BigEndian, d.firstValue)
 
 		//write data with min width
-		if encodingLength := int(math.Ceil(float64(d.index*d.width) / 8.0)); encodingLength > 0 {
+		if encodingLength := int(math.Ceil(float64(index*d.width) / 8.0)); encodingLength > 0 {
 			encodingBlockBuffer := make([]byte, encodingLength)
-			for i := int32(0); i < d.index; i++ {
-				utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
+			var temp1 int32 = width - 1
+			var temp2 int32
+			var temp3 int32
+			for i := int32(0); i < index; i++ {
+				//LongToBytes(d.encodedValues[i], encodingBlockBuffer, width*i, width)
+				temp2 = temp1
+				for j := int32(0); j < width; j++ {
+					temp3 = temp2 / 8
+					if (d.encodedValues[i] & (int64(1) << uint32(j%64))) != 0 {
+						encodingBlockBuffer[temp3] = (byte)(encodingBlockBuffer[temp3] | (1 << uint32(7-temp2%8)))
+					} else {
+						encodingBlockBuffer[temp3] = (byte)(encodingBlockBuffer[temp3] & ^(1 << uint32(7-temp2%8)))
+					}
+					temp2--
+				}
+				temp1 += width
+				//utils.LongToBytes(d.encodedValues[i], encodingBlockBuffer, int(d.width*i), int(d.width))
 				//binary.Write(buffer, binary.BigEndian, d.encodedValues[i])
 			}
 			buffer.Write(encodingBlockBuffer)
 		}
 
 		d.reset()
+	}
+}
+
+func LongToBytes(srcNum int64, result []byte, pos int32, width int32) {
+	var temp2 int32 = pos + width - 1
+	var temp3 int32 = 0
+	for i := int32(0); i < width; i++ {
+		temp3 = temp2 / 8
+		if (srcNum & (int64(1) << uint32(i%64))) != 0 {
+			result[temp3] = (byte)(result[temp3] | (1 << uint32(7-temp2%8)))
+		} else {
+			result[temp3] = (byte)(result[temp3] & ^(1 << uint32(7-temp2%8)))
+		}
+		temp2--
 	}
 }
 
