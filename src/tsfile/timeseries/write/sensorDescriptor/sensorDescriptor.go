@@ -13,6 +13,7 @@ import (
 	"tsfile/common/constant"
 	"tsfile/compress"
 	"tsfile/encoding/encoder"
+	//"github.com/lenovo/eqSDK/tcp"
 )
 
 type SensorDescriptor struct {
@@ -81,6 +82,19 @@ func New(sId string, tdt constant.TSDataType, te constant.TSEncoding) (*SensorDe
 		tsEncoding:         int16(te),
 		compressor:         enCompressor,
 		tsCompresstionType: int16(constant.UNCOMPRESSED),
+		timeCount:          -1,
+	}, nil
+}
+
+func NewWithCompress(sId string, tdt constant.TSDataType, te constant.TSEncoding, tct constant.CompressionType) (*SensorDescriptor, error) {
+	// init compressor
+	enCompressor := new(compress.Encompress)
+	return &SensorDescriptor{
+		sensorId:           sId,
+		tsDataType:         int16(tdt),
+		tsEncoding:         int16(te),
+		compressor:         enCompressor,
+		tsCompresstionType: int16(tct),
 		timeCount:          -1,
 	}, nil
 }

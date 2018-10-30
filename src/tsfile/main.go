@@ -32,7 +32,7 @@ func main() {
 	}
 
 	// init sensorDescriptor
-	sd, sdErr := sensorDescriptor.New("sensor_1", constant.TEXT, constant.PLAIN)
+	sd, sdErr := sensorDescriptor.NewWithCompress("sensor_1", constant.TEXT, constant.PLAIN, constant.SNAPPY)
 	if sdErr != nil {
 		log.Info("init sensorDescriptor error = %s", sdErr)
 	}
