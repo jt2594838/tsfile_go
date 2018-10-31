@@ -103,7 +103,7 @@ func (t *TsFileWriter) reset() {
 
 func (t *TsFileWriter) Write(tr TsRecord) bool {
 	// write data here
-	if t.checkIsDeviceExist(tr, *t.schema) {
+	if t.checkIsDeviceExist(&tr, t.schema) {
 		//var r RowGroupWriter;
 		gd := t.groupDevices[tr.GetDeviceId()]
 		gd.Write(tr.GetTime(), tr.GetDataPointSli())
@@ -159,7 +159,7 @@ func (t *TsFileWriter) CalculateMemSizeForAllGroup() int64 {
 	return memTotalSize //128 * 1024 *1024
 }
 
-func (t *TsFileWriter) checkIsDeviceExist(tr TsRecord, schema fileSchema.FileSchema) bool {
+func (t *TsFileWriter) checkIsDeviceExist(tr *TsRecord, schema *fileSchema.FileSchema) bool {
 	var groupDevice *RowGroupWriter
 	var err error
 	// check device
