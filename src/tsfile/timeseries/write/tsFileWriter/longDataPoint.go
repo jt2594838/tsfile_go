@@ -18,10 +18,18 @@ type LongDataPoint struct {
 	value      int64
 }
 
-func NewLong(sId string, tdt constant.TSDataType, val int64) (*DataPoint, error) {
+func NewLongOld(sId string, tdt constant.TSDataType, val int64) (*DataPoint, error) {
 	return &DataPoint{
 		sensorId:   sId,
-		tsDataType: int16(tdt),
+		tsDataType: tdt,
 		value:      val,
 	}, nil
+}
+
+func NewLong(sId string, tdt constant.TSDataType, val int64) (*DataPoint, error) {
+	f := getDataPoint()
+	f.sensorId = sId
+	f.tsDataType = tdt
+	f.value = val
+	return f, nil
 }

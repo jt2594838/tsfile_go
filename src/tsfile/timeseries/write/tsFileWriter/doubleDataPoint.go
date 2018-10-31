@@ -18,10 +18,18 @@ type DoubleDataPoint struct {
 	value      float64
 }
 
-func NewDouble(sId string, tdt constant.TSDataType, val float64) (*DataPoint, error) {
+func NewDoubleOld(sId string, tdt constant.TSDataType, val float64) (*DataPoint, error) {
 	return &DataPoint{
 		sensorId:   sId,
-		tsDataType: int16(tdt),
+		tsDataType: tdt,
 		value:      val,
 	}, nil
+}
+
+func NewDouble(sId string, tdt constant.TSDataType, val float64) (*DataPoint, error) {
+	f := getDataPoint()
+	f.sensorId = sId
+	f.tsDataType = tdt
+	f.value = val
+	return f, nil
 }

@@ -9,6 +9,8 @@ package tsFileWriter
  */
 
 import (
+	"sync"
+	"tsfile/common/constant"
 	"tsfile/common/log"
 )
 
@@ -18,7 +20,7 @@ type DataPointOperate interface {
 
 type DataPoint struct {
 	sensorId   string
-	tsDataType int16
+	tsDataType constant.TSDataType
 	value      interface{}
 }
 
@@ -33,6 +35,22 @@ func (d *DataPoint) Write(t int64, sw *SeriesWriter) bool {
 	}
 	sw.Write(t, d.value)
 	return true
+}
+
+var dataPointMutex sync.Mutex
+var dataPointArrBuf []DataPoint //= make([]FloatDataPoint, 100)
+var dataPointArrBufCount int = 0
+
+func getDataPoint() *DataPoint {
+	dataPointMutex.Lock()
+	if dataPointArrBufCount == 0 {
+		dataPointArrBufCount = 1000
+		dataPointArrBuf = make([]DataPoint, dataPointArrBufCount)
+	}
+	dataPointArrBufCount--
+	f := &(dataPointArrBuf[dataPointArrBufCount])
+	dataPointMutex.Unlock()
+	return f
 }
 
 //func New(sId string, tdt int, te int) (*DataPoint, error) {
