@@ -33,7 +33,7 @@ func (d *DataPoint) Write(t int64, sw *SeriesWriter) bool {
 		log.Info("give seriesWriter is null, do nothing and return.")
 		return false
 	}
-	sw.Write(t, d.value)
+	sw.Write(t, d)
 	return true
 }
 

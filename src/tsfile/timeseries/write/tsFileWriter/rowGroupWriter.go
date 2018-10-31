@@ -52,7 +52,7 @@ func (r *RowGroupWriter) Write(t int64, data []*DataPoint) {
 			if dataSW.GetTsDeviceId() == "" {
 				log.Info("give seriesWriter is null, do nothing and return.")
 			} else {
-				dataSW.Write(t, v.value)
+				dataSW.Write(t, v)
 			}
 			//v.Write(t, dataSeriesWriter)
 		} else {

@@ -59,13 +59,13 @@ func (s *SeriesWriter) GetCurrentChunkSize(sId string) int {
 	return size
 }
 
-func (s *SeriesWriter) Write(t int64, value interface{}) bool {
+func (s *SeriesWriter) Write(t int64, data *DataPoint) bool {
 	s.time = t
 	//s.valueCount = s.valueCount + 1
-	s.valueWriter.Write(t, s.tsDataType, value, s.valueCount)
+	s.valueWriter.Write(t, s.tsDataType, data, s.valueCount)
 	s.valueCount = s.valueCount + 1
 	// statistics ignore here, if necessary, Statistics.java
-	s.pageStatistics.UpdateStats(value)
+	s.pageStatistics.UpdateStats(data.value)
 	if s.minTimestamp == -1 {
 		s.minTimestamp = t
 	}
