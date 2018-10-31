@@ -54,9 +54,9 @@ func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType 
 
 	if encoding == constant.RLE {
 		if dataType == constant.FLOAT {
-			d.baseEncoder = NewRleEncoder(dataType)
+			d.baseEncoder = NewRleEncoder(constant.INT32)
 		} else if dataType == constant.DOUBLE {
-			d.baseEncoder = NewRleEncoder(dataType)
+			d.baseEncoder = NewRleEncoder(constant.INT64)
 		} else {
 			panic("data type is not supported by FloatEncoder: " + strconv.Itoa(int(d.dataType)))
 		}
