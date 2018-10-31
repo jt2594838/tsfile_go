@@ -47,9 +47,14 @@ func (r *RowGroupWriter) Write(t int64, data []*DataPoint) {
 		//start_edit wangcan 2018-10-15
 		//if ok, _ := utils.MapContains(r.dataSeriesWriters, v.GetSensorId()); ok {
 		//	v.Write(t, r.dataSeriesWriters[v.GetSensorId()])
-		dataSeriesWriter, ok := r.dataSeriesWriters[v.GetSensorId()]
+		dataSW, ok := r.dataSeriesWriters[v.GetSensorId()]
 		if ok {
-			v.Write(t, dataSeriesWriter)
+			if dataSW.GetTsDeviceId() == "" {
+				log.Info("give seriesWriter is null, do nothing and return.")
+			} else {
+				dataSW.Write(t, v.value)
+			}
+			//v.Write(t, dataSeriesWriter)
 		} else {
 			log.Error("time: %d, sensor id %s not found! ", t, v.GetSensorId())
 		}
