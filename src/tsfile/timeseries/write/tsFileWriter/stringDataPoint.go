@@ -18,10 +18,18 @@ type StringDataPoint struct {
 	value      string
 }
 
-func NewString(sId string, tdt constant.TSDataType, val string) (*DataPoint, error) {
+func NewStringOld(sId string, tdt constant.TSDataType, val string) (*DataPoint, error) {
 	return &DataPoint{
 		sensorId:   sId,
-		tsDataType: int16(tdt),
+		tsDataType: tdt,
 		value:      val,
 	}, nil
+}
+
+func NewString(sId string, tdt constant.TSDataType, val string) (*DataPoint, error) {
+	f := getDataPoint()
+	f.sensorId = sId
+	f.tsDataType = tdt
+	f.value = val
+	return f, nil
 }

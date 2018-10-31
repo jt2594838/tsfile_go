@@ -59,13 +59,23 @@ func (s *SeriesWriter) GetCurrentChunkSize(sId string) int {
 	return size
 }
 
-func (s *SeriesWriter) Write(t int64, value interface{}) bool {
+func (s *SeriesWriter) Write(t int64, data *DataPoint) bool {
 	s.time = t
 	//s.valueCount = s.valueCount + 1
-	s.valueWriter.Write(t, s.tsDataType, value, s.valueCount)
+
+	vw := s.valueWriter
+	vw.timeEncoder.Encode(t, vw.timeBuf)
+	switch s.tsDataType {
+	case 0, 1, 2, 3, 4, 5:
+		vw.valueEncoder.Encode(data.value, vw.valueBuf)
+	default:
+	}
+	//s.valueWriter.Write(t, s.tsDataType, data, s.valueCount)
+	//logcost.CostWriteTimesTest5 += int64(time.Since(tsCurNew))
 	s.valueCount = s.valueCount + 1
 	// statistics ignore here, if necessary, Statistics.java
-	s.pageStatistics.UpdateStats(value)
+	s.pageStatistics.UpdateStats(data.value)
+
 	if s.minTimestamp == -1 {
 		s.minTimestamp = t
 	}

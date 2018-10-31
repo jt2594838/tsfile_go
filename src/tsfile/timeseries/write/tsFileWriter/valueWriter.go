@@ -60,11 +60,11 @@ func (v *ValueWriter) GetByteBuffer() *bytes.Buffer {
 }
 
 // write with encoder
-func (v *ValueWriter) Write(t int64, tdt int16, value interface{}, valueCount int) {
+func (v *ValueWriter) Write(t int64, tdt int16, data *DataPoint, valueCount int) {
 	v.timeEncoder.Encode(t, v.timeBuf)
 	switch tdt {
 	case 0, 1, 2, 3, 4, 5:
-		v.valueEncoder.Encode(value, v.valueBuf)
+		v.valueEncoder.Encode(data.value, v.valueBuf)
 	case 6:
 		//fixed_len_byte_array
 	case 7:

@@ -43,8 +43,12 @@ func GetEncoder(et int16, tdt int16) Encoder {
 			encoder = NewIntDeltaEncoder(constant.INT32)
 		} else if dataType == constant.INT64 {
 			encoder = NewLongDeltaEncoder(constant.INT32)
-		} else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
-			encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+		} else if dataType == constant.DOUBLE {
+			encoder = NewDoubleDeltaEncoder(encoding, conf.FloatPrecision, dataType)
+			//encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+		} else if dataType == constant.FLOAT {
+			encoder = NewFloatDeltaEncoder(encoding, conf.FloatPrecision, dataType)
+			//encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
 		}
 	case encoding == constant.GORILLA:
 		if dataType == constant.FLOAT {
