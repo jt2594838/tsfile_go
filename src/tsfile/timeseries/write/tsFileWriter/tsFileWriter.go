@@ -11,7 +11,6 @@ package tsFileWriter
 import (
 	"tsfile/common/conf"
 	"tsfile/common/log"
-	_ "tsfile/common/utils"
 	"tsfile/timeseries/write/fileSchema"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -103,11 +102,25 @@ func (t *TsFileWriter) reset() {
 
 func (t *TsFileWriter) Write(tr TsRecord) bool {
 	// write data here
-	if t.checkIsDeviceExist(&tr, t.schema) {
-		//var r RowGroupWriter;
-		gd := t.groupDevices[tr.GetDeviceId()]
-		gd.Write(tr.GetTime(), tr.GetDataPointSli())
-		//(t.groupDevices[tr.GetDeviceId()]).Write(tr.GetTime(), tr.GetDataPointMap())
+	//var gd *RowGroupWriter
+	//var ok bool
+	gd, ok := t.checkIsDeviceExist(&tr, t.schema)
+	if ok {
+		timeST := tr.GetTime()
+		data := tr.GetDataPointSli()
+		for _, v := range data {
+			dataSW, ok := gd.dataSeriesWriters[v.GetSensorId()]
+			if ok {
+				if dataSW.GetTsDeviceId() == "" {
+					log.Info("give seriesWriter is null, do nothing and return.")
+				} else {
+					dataSW.Write(timeST, v)
+				}
+				//v.Write(t, dataSeriesWriter)
+			} else {
+				log.Error("time: %d, sensor id %s not found! ", timeST, v.GetSensorId())
+			}
+		}
 		t.recordCount = t.recordCount + 1
 		return t.checkMemorySizeAndMayFlushGroup() //t.checkMemorySize()
 	}
@@ -159,7 +172,7 @@ func (t *TsFileWriter) CalculateMemSizeForAllGroup() int64 {
 	return memTotalSize //128 * 1024 *1024
 }
 
-func (t *TsFileWriter) checkIsDeviceExist(tr *TsRecord, schema *fileSchema.FileSchema) bool {
+func (t *TsFileWriter) checkIsDeviceExist(tr *TsRecord, schema *fileSchema.FileSchema) (*RowGroupWriter, bool) {
 	var groupDevice *RowGroupWriter
 	var err error
 	// check device
@@ -177,7 +190,8 @@ func (t *TsFileWriter) checkIsDeviceExist(tr *TsRecord, schema *fileSchema.FileS
 		//	groupDevice = t.groupDevices[tr.GetDeviceId()]
 	}
 	schemaSensorDescriptorMap := schema.GetSensorDescriptiorMap()
-	for _, v := range tr.GetDataPointSli() {
+	data := tr.GetDataPointSli()
+	for _, v := range data {
 		//if contain, _ := utils.MapContains(schemaSensorDescriptorMap, v.GetSensorId()); contain {
 		//	//groupDevice.AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], tsFileConf.PageSizeInByte)
 		//	t.groupDevices[tr.GetDeviceId()].AddSeriesWriter(schemaSensorDescriptorMap[v.GetSensorId()], conf.PageSizeInByte)
@@ -189,7 +203,7 @@ func (t *TsFileWriter) checkIsDeviceExist(tr *TsRecord, schema *fileSchema.FileS
 		}
 		//log.Info("k=%v, v=%v\n", k, v)
 	}
-	return true
+	return groupDevice, true
 }
 
 func NewTsFileWriter(file string) (*TsFileWriter, error) {
