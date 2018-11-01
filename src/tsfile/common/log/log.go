@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var level = 0
+var level = 5
 
 func getTag() string {
 	s := strings.Split(os.Args[0], "/") //[2:3]
