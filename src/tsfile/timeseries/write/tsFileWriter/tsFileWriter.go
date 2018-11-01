@@ -104,6 +104,7 @@ func (t *TsFileWriter) Write(tr TsRecord) bool {
 	// write data here
 	//var gd *RowGroupWriter
 	//var ok bool
+	var valueWriter ValueWriter
 	gd, ok := t.checkIsDeviceExist(&tr, t.schema)
 	if ok {
 		timeST := tr.GetTime()
@@ -111,18 +112,37 @@ func (t *TsFileWriter) Write(tr TsRecord) bool {
 		for _, v := range data {
 			dataSW, ok := gd.dataSeriesWriters[v.GetSensorId()]
 			if ok {
+				//v.Write(t, dataSeriesWriter)
 				if dataSW.GetTsDeviceId() == "" {
 					log.Info("give seriesWriter is null, do nothing and return.")
 				} else {
-					dataSW.Write(timeST, v)
+					//dataSW.Write(timeST, v)
+					dataSW.time = timeST
+
+					valueWriter = dataSW.valueWriter
+					valueWriter.timeEncoder.Encode(timeST, valueWriter.timeBuf)
+					var valueInterface interface{} = v.value
+					switch dataSW.tsDataType {
+					case 0, 1, 2, 3, 4, 5:
+						valueWriter.valueEncoder.Encode(valueInterface, valueWriter.valueBuf)
+					default:
+					}
+					dataSW.valueCount++
+					// statistics ignore here, if necessary, Statistics.java
+					dataSW.pageStatistics.UpdateStats(valueInterface)
+
+					if dataSW.minTimestamp == -1 {
+						dataSW.minTimestamp = timeST
+					}
+					// check page size and write page data to buffer
+					dataSW.checkPageSizeAndMayOpenNewpage()
 				}
-				//v.Write(t, dataSeriesWriter)
 			} else {
 				log.Error("time: %d, sensor id %s not found! ", timeST, v.GetSensorId())
 			}
 		}
-		t.recordCount = t.recordCount + 1
-		return t.checkMemorySizeAndMayFlushGroup() //t.checkMemorySize()
+		t.recordCount++
+		return t.checkMemorySizeAndMayFlushGroup()
 	}
 	return false
 }
