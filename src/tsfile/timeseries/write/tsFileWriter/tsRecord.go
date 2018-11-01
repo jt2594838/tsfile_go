@@ -26,6 +26,14 @@ func (t *TsRecord) SetTime(time time.Time) {
 	return
 }
 
+func (t *TsRecord) SetTuple(dataSlice []*DataPoint) {
+	//PushBack(t, tuple)
+	// t.dataPointMap[t.deviceId] = tuple
+	//t.dataPointMap[t.deviceId] = tuple
+	t.DataPointSli = dataSlice
+	return
+}
+
 func (t *TsRecord) AddTuple(tuple *DataPoint) {
 	//PushBack(t, tuple)
 	// t.dataPointMap[t.deviceId] = tuple

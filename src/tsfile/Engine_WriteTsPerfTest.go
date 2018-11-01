@@ -194,7 +194,6 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 	strDeviceID string, strSensorID string, iType constant.TSDataType) {
 	var tsCurNew time.Time
 	var fdp *tsFileWriter.DataPoint
-	var fDpErr error
 	var costTsRow int64
 	var costTsDataPt int64
 	var costTsAddTuple int64
@@ -202,6 +201,7 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 	if bDebugMoreInfo {
 		tsCurNew = time.Now()
 		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
+		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 		for index, dp := range dpslice {
 			tsCurNew = time.Now()
@@ -226,9 +226,9 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 			}
 			costTsDataPt = time.Since(tsCurNew).Nanoseconds()
 			tsCurNew = time.Now()
-			if fDpErr == nil {
-				tr1.AddTuple(fdp)
-			}
+			dataSliceEx[index] = fdp
+			tr1.SetTuple(dataSliceEx[index : index+1])
+			//tr1.AddTuple(fdp)
 			costTsAddTuple = time.Since(tsCurNew).Nanoseconds()
 			tsCurNew = time.Now()
 			tfWriter.Write(tr1)
@@ -244,6 +244,7 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 	} else {
 		tsCurNew = time.Now()
 		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
+		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 		for index, dp := range dpslice {
 			tsCurNew = time.Now()
@@ -264,7 +265,9 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 			case constant.TEXT:
 				fdp.SetValue(strSensorID, dp.strValue)
 			}
-			tr1.AddTuple(fdp)
+			dataSliceEx[index] = fdp
+			tr1.SetTuple(dataSliceEx[index : index+1])
+			//tr1.AddTuple(fdp)
 			tfWriter.Write(tr1)
 			CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 		}
