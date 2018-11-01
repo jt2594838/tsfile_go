@@ -9,8 +9,10 @@ package tsFileWriter
  */
 
 import (
+	_ "time"
 	"tsfile/common/conf"
 	"tsfile/common/log"
+	_ "tsfile/common/logcost"
 	"tsfile/timeseries/write/fileSchema"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -100,12 +102,12 @@ func (t *TsFileWriter) reset() {
 	}
 }
 
-func (t *TsFileWriter) Write(tr TsRecord) bool {
+func (t *TsFileWriter) Write(tr *TsRecord) bool {
 	// write data here
 	//var gd *RowGroupWriter
 	//var ok bool
 	var valueWriter ValueWriter
-	gd, ok := t.checkIsDeviceExist(&tr, t.schema)
+	gd, ok := t.checkIsDeviceExist(tr, t.schema)
 	if ok {
 		timeST := tr.GetTime()
 		data := tr.GetDataPointSli()

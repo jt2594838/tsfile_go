@@ -274,8 +274,8 @@ func genTextFile(filename string, iMaxRow int, iMaxColumn int, iFormat int, bRan
 	return true
 }
 
-func TestGenFilePerf() {
-	var iMaxRow = 1000 //1000000
+func TestGenFilePerf(iMaxRowE int) {
+	var iMaxRow = iMaxRowE //1000000
 	perRSDur, _ := time.ParseDuration("1s")
 	addYesday, _ := time.ParseDuration("-96h")
 	now := time.Now()

@@ -70,7 +70,7 @@ func main() {
 	//tr.AddTuple(idp)
 
 	// write tsRecord to file
-	tfWriter.Write(*tr)
+	tfWriter.Write(tr)
 
 	//log.Info("init tsRecord device_1_2")
 	//
@@ -94,7 +94,7 @@ func main() {
 	//tr1.AddTuple(idp1)
 	//
 	//// write tsRecord to file
-	//tfWriter.Write(*tr1)
+	//tfWriter.Write(tr1)
 	////tfWriter.Write([]byte("&TsFileData&"))
 	//
 	//log.Info("init tsRecord device_2.")
@@ -120,7 +120,7 @@ func main() {
 	//tr2.AddTuple(idp2)
 	//
 	//// write tsRecord to file
-	//tfWriter.Write(*tr2)
+	//tfWriter.Write(tr2)
 
 	// close file descriptor
 	tfWriter.Close()
