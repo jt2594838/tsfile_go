@@ -37,6 +37,11 @@ func (d *DataPoint) Write(t int64, sw *SeriesWriter) bool {
 	return true
 }
 
+func (d *DataPoint) SetValue(sId string, val interface{}) {
+	d.sensorId = sId
+	d.value = val
+}
+
 var dataPointMutex sync.Mutex
 var dataPointArrBuf []DataPoint //= make([]FloatDataPoint, 100)
 var dataPointArrBufCount int = 0
@@ -44,7 +49,7 @@ var dataPointArrBufCount int = 0
 func getDataPoint() *DataPoint {
 	dataPointMutex.Lock()
 	if dataPointArrBufCount == 0 {
-		dataPointArrBufCount = 100
+		dataPointArrBufCount = 200
 		dataPointArrBuf = make([]DataPoint, dataPointArrBufCount)
 	}
 	dataPointArrBufCount--
