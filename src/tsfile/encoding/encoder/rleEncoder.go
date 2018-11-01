@@ -32,7 +32,7 @@ type RleEncoder struct {
 }
 
 func (this *RleEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
-	log.Info("enter RleEncoder!!")
+	//log.Info("enter RleEncoder!!")
 	switch {
 	case this.tsDataType == (constant.BOOLEAN):
 		if data, ok := value.(bool); ok {
