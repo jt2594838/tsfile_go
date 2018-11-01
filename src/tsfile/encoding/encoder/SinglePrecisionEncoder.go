@@ -41,7 +41,7 @@ func (d *SinglePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
 		    var tailingZeroNumTmp  int32
 		    leadingZeroNumTmp = utils.NumberOfLeadingZeros(tmp)
 		    tailingZeroNumTmp = utils.NumberOfTrailingZeros(tmp)
-		    if (leadingZeroNumTmp >= d.base.leadingZeroNum && tailingZeroNumTmp >= tailingZeroNumTmp){
+		    if (leadingZeroNumTmp >= d.base.leadingZeroNum && tailingZeroNumTmp >= d.base.tailingZeroNum){
 			    // case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
 			    d.base.writeBit(true,buffer)
 			    d.base.writeBit(false,buffer)
