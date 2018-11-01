@@ -103,6 +103,7 @@ func (t *TsFileWriter) reset() {
 func (t *TsFileWriter) Write(tr *TsRecord) bool {
 	// write data here
 	//gd, ok := t.checkIsDeviceExist(tr, t.schema)
+
 	var ok bool
 	var gd *RowGroupWriter
 	var valueWriter *ValueWriter
@@ -121,9 +122,12 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 	timeST := tr.GetTime()
 	schemaSensorDescriptorMap := t.schema.GetSensorDescriptiorMap()
 	data := tr.GetDataPointSli()
+
 	for _, v := range data {
+
 		sessorID = v.GetSensorId()
 		dataSW, ok = gd.dataSeriesWriters[sessorID]
+
 		if !ok {
 			//if not exist SeriesWriter, new it
 			sensorDescriptor, bExistSensorDesc := schemaSensorDescriptorMap[sessorID]
@@ -166,7 +170,17 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 					dataSW.minTimestamp = timeST
 				}
 				// check page size and write page data to buffer
-				dataSW.checkPageSizeAndMayOpenNewpage()
+				//dataSW.checkPageSizeAndMayOpenNewpage()
+				if dataSW.valueCount == conf.MaxNumberOfPointsInPage {
+					dataSW.WritePage()
+				} else if dataSW.valueCount >= dataSW.valueCountForNextSizeCheck {
+					currentColumnSize := valueWriter.GetCurrentMemSize()
+					if currentColumnSize > dataSW.psThres {
+						// write data to buffer
+						dataSW.WritePage()
+					}
+					dataSW.valueCountForNextSizeCheck = dataSW.psThres * 1.0 / currentColumnSize * dataSW.valueCount
+				}
 			}
 		}
 	}

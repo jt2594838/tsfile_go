@@ -28,48 +28,56 @@ type PageWriter struct {
 }
 
 func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, valueCount int, sts statistics.Statistics, maxTimestamp int64, minTimestamp int64) int {
-	//this uncompressedSize should be calculate from timeBuf and valueBuf
-	uncompressedSize := dataBuffer.Len()
-
-	// write pageData to pageBuf
-	//声明一个空的slice,容量为dataBuffer的长度
-	dataSlice := make([]byte, dataBuffer.Len())
-	//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
-	dataBuffer.Read(dataSlice)
-
-	var compressedSize int
-	var enc []byte
 	if p.desc.GetCompresstionType() == int16(constant.UNCOMPRESSED) {
-		compressedSize = uncompressedSize
+		//this uncompressedSize should be calculate from timeBuf and valueBuf
+		uncompressedSize := dataBuffer.Len()
+		var compressedSize int = uncompressedSize
+		pageHeader, pageHeaderErr := header.NewPageHeader(
+			int32(uncompressedSize), int32(compressedSize),
+			int32(valueCount), sts, maxTimestamp,
+			minTimestamp, p.desc.GetTsDataType())
+		if pageHeaderErr != nil {
+			log.Error("init pageHeader error: ", pageHeaderErr)
+		}
+		pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
+		p.pageBuf.Write(dataBuffer.Bytes())
+		p.totalValueCount += int64(valueCount)
 	} else {
+		//this uncompressedSize should be calculate from timeBuf and valueBuf
+		uncompressedSize := dataBuffer.Len()
+
+		// write pageData to pageBuf
+		//声明一个空的slice,容量为dataBuffer的长度
+		dataSlice := make([]byte, dataBuffer.Len())
+		//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
+		dataBuffer.Read(dataSlice)
+
+		var compressedSize int
+		var enc []byte
 		aSlice := make([]byte, 0)
 		enc = p.compressor.GetEncompressor(p.desc.GetCompresstionType()).Encompress(aSlice, dataSlice)
 		compressedSize = len(enc)
-	}
 
-	pageHeader, pageHeaderErr := header.NewPageHeader(int32(uncompressedSize), int32(compressedSize), int32(valueCount), sts, maxTimestamp, minTimestamp, p.desc.GetTsDataType())
-	if pageHeaderErr != nil {
-		log.Error("init pageHeader error: ", pageHeaderErr)
-	}
-	// write pageheader to pageBuf
-	//log.Info("start to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
-	pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
-	//log.Info("pageHeader: %v", pageHeader)
-	//log.Info("finished to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
+		pageHeader, pageHeaderErr := header.NewPageHeader(int32(uncompressedSize), int32(compressedSize), int32(valueCount), sts, maxTimestamp, minTimestamp, p.desc.GetTsDataType())
+		if pageHeaderErr != nil {
+			log.Error("init pageHeader error: ", pageHeaderErr)
+		}
+		// write pageheader to pageBuf
+		//log.Info("start to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
+		pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
+		//log.Info("pageHeader: %v", pageHeader)
+		//log.Info("finished to flush a page header into buffer, buf pos: %d", p.pageBuf.Len())
 
-	//// write pageData to pageBuf
-	////声明一个空的slice,容量为dataBuffer的长度
-	//dataSlice := make([]byte, dataBuffer.Len())
-	////把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
-	//dataBuffer.Read(dataSlice)
-	//log.Info("start to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
-	if p.desc.GetCompresstionType() == int16(constant.UNCOMPRESSED) {
-		p.pageBuf.Write(dataSlice)
-	} else {
+		//// write pageData to pageBuf
+		////声明一个空的slice,容量为dataBuffer的长度
+		//dataSlice := make([]byte, dataBuffer.Len())
+		////把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
+		//dataBuffer.Read(dataSlice)
+		//log.Info("start to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
 		p.pageBuf.Write(enc)
+		//log.Info("finished to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
+		p.totalValueCount += int64(valueCount)
 	}
-	//log.Info("finished to flush a page data into buffer, buf pos: %d", p.pageBuf.Len())
-	p.totalValueCount += int64(valueCount)
 	return 0
 }
 

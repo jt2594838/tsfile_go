@@ -63,7 +63,7 @@ func (s *SeriesWriter) Write(t int64, data *DataPoint) bool {
 	s.time = t
 	//s.valueCount = s.valueCount + 1
 
-	vw := s.valueWriter
+	vw := &(s.valueWriter)
 	vw.timeEncoder.Encode(t, vw.timeBuf)
 	switch s.tsDataType {
 	case 0, 1, 2, 3, 4, 5:
@@ -124,7 +124,8 @@ func (s *SeriesWriter) EstimateMaxSeriesMemSize() int64 {
 }
 
 func (s *SeriesWriter) WritePage() {
-	s.pageWriter.WritePageHeaderAndDataIntoBuff(s.valueWriter.GetByteBuffer(), s.valueCount, s.pageStatistics, s.time, s.minTimestamp)
+	s.pageWriter.WritePageHeaderAndDataIntoBuff(s.valueWriter.GetByteBuffer(),
+		s.valueCount, s.pageStatistics, s.time, s.minTimestamp)
 	// pageStatistics
 	s.numOfPages += 1
 
