@@ -10,7 +10,7 @@ import (
 )
 
 // file stream reader with buffer, supports random reading
-const SIZE_BUF = 4096
+const SIZE_BUF = 1024 * 8
 
 type FileReader struct {
 	reader *os.File

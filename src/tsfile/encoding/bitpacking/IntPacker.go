@@ -136,10 +136,10 @@ func (p *IntPacker) UnpackAllValues(buf []byte, length int, values []int32) {
 		tv := make([]int32, 8)
 		//decode 8 values one time, current result will be saved in the array named 'tv'
 		p.Unpack8Values(buf, idx, tv)
-
 		for i := 0; i < 8; i++ {
 			values[k+i] = tv[i]
 		}
+
 		idx += p.BitWidth
 		k += 8
 	}

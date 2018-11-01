@@ -48,14 +48,11 @@ func (d *SinglePrecisionDecoder) Next() interface{} {
 }
 
 func (d *SinglePrecisionDecoder) getNextValue() {
-	d.base.nextFlag1 = d.base.readBit(d.reader)
 	// case: '0'
-	if !d.base.nextFlag1 {
+	if !d.base.readBit(d.reader) {
 		return
 	}
-	d.base.nextFlag2 = d.base.readBit(d.reader)
-
-	if !d.base.nextFlag2 {
+	if !d.base.readBit(d.reader) {
 		// case: '10'
 		var tmp int32 = 0
 		for i := 0; i < conf.FLOAT_LENGTH-int(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {

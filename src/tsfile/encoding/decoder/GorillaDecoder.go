@@ -9,9 +9,7 @@ import (
 type GorillaDecoder struct {
 	leadingZeroNum, tailingZeroNum int32
 	buffer                         int32
-	numberLeftInBuffer             int
-	nextFlag1                      bool
-	nextFlag2                      bool
+	numberLeftInBuffer             int32
 }
 
 func (g *GorillaDecoder) readBit(reader *utils.BytesReader) bool {
@@ -20,7 +18,7 @@ func (g *GorillaDecoder) readBit(reader *utils.BytesReader) bool {
 	}
 
 	g.numberLeftInBuffer--
-	return ((g.buffer >> uint(g.numberLeftInBuffer)) & 1) == 1
+	return ((g.buffer >> uint32(g.numberLeftInBuffer)) & 1) == 1
 }
 
 func (g *GorillaDecoder) fillBuffer(reader *utils.BytesReader) {

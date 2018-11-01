@@ -64,7 +64,6 @@ var CurrentVersion = 3
  */
 var BYTE_SIZE_PER_CHAR int = 4
 
-
 func init() {
 	loadProperties()
 }

@@ -53,24 +53,23 @@ func (d *DoublePrecisionDecoder) Next() interface{} {
 }
 
 func (d *DoublePrecisionDecoder) getNextValue() {
-	d.base.nextFlag1 = d.base.readBit(d.reader)
 	// case: '0'
-	if !d.base.nextFlag1 {
+	if !d.base.readBit(d.reader) {
 		return
 	}
-	d.base.nextFlag2 = d.base.readBit(d.reader)
-
-	if !d.base.nextFlag2 {
+	if !d.base.readBit(d.reader) {
 		// case: '10'
 		var tmp int64 = 0
-		for i := 0; i < conf.DOUBLE_LENGTH-int(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
-			var bit int64
+		l := conf.DOUBLE_LENGTH - int(d.base.leadingZeroNum+d.base.tailingZeroNum)
+		t := conf.DOUBLE_LENGTH - int(d.base.leadingZeroNum+1)
+		for i := 0; i < l; i++ {
+			var bit int
 			if d.base.readBit(d.reader) {
 				bit = 1
 			} else {
 				bit = 0
 			}
-			tmp |= bit << uint64(conf.DOUBLE_LENGTH-1-int(d.base.leadingZeroNum)-i)
+			tmp |= int64(bit << uint(t-i))
 		}
 		tmp ^= d.preValue
 		d.preValue = tmp
