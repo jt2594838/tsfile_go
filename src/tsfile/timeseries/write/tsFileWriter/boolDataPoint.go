@@ -20,16 +20,16 @@ type BoolDataPoint struct {
 
 func NewBoolOld(sId string, tdt constant.TSDataType, val bool) (*DataPoint, error) {
 	return &DataPoint{
-		sensorId:   sId,
-		tsDataType: tdt,
-		value:      val,
+		sensorId: sId,
+		//tsDataType: tdt,
+		value: val,
 	}, nil
 }
 
 func NewBool(sId string, tdt constant.TSDataType, val bool) (*DataPoint, error) {
 	f := getDataPoint()
 	f.sensorId = sId
-	f.tsDataType = tdt
+	//f.tsDataType = tdt
 	f.value = val
 	return f, nil
 }

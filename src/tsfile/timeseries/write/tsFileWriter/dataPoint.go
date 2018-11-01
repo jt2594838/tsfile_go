@@ -10,7 +10,7 @@ package tsFileWriter
 
 import (
 	"sync"
-	"tsfile/common/constant"
+	_ "tsfile/common/constant"
 	"tsfile/common/log"
 )
 
@@ -19,9 +19,9 @@ type DataPointOperate interface {
 }
 
 type DataPoint struct {
-	sensorId   string
-	tsDataType constant.TSDataType
-	value      interface{}
+	sensorId string
+	//tsDataType constant.TSDataType
+	value interface{}
 }
 
 func (d *DataPoint) GetSensorId() string {
@@ -44,7 +44,7 @@ var dataPointArrBufCount int = 0
 func getDataPoint() *DataPoint {
 	dataPointMutex.Lock()
 	if dataPointArrBufCount == 0 {
-		dataPointArrBufCount = 1000
+		dataPointArrBufCount = 100
 		dataPointArrBuf = make([]DataPoint, dataPointArrBufCount)
 	}
 	dataPointArrBufCount--

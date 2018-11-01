@@ -28,16 +28,16 @@ type FloatDataPoint struct {
 
 func NewFloatOld(sId string, tdt constant.TSDataType, val float32) (*DataPoint, error) {
 	return &DataPoint{
-		sensorId:   sId,
-		tsDataType: tdt,
-		value:      val,
+		sensorId: sId,
+		//tsDataType: tdt,
+		value: val,
 	}, nil
 }
 
 func NewFloat(sId string, tdt constant.TSDataType, val float32) (*DataPoint, error) {
 	f := getDataPoint()
 	f.sensorId = sId
-	f.tsDataType = tdt
+	//f.tsDataType = tdt
 	f.value = val
 	return f, nil
 }

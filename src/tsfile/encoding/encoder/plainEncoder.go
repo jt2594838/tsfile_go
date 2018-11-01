@@ -27,16 +27,16 @@ func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
 	switch p.tsDataType {
 	case constant.BOOLEAN, constant.INT32, constant.INT64, constant.FLOAT, constant.DOUBLE:
 		if p.encodeEndian == 0 {
-			_ = binary.Write(buffer, binary.BigEndian, value)
+			binary.Write(buffer, binary.BigEndian, value)
 		} else {
-			_ = binary.Write(buffer, binary.LittleEndian, value)
+			binary.Write(buffer, binary.LittleEndian, value)
 		}
 	case constant.TEXT:
 		if data, ok := value.(string); ok {
 			if p.encodeEndian == 0 {
-				_ = binary.Write(buffer, binary.BigEndian, int32(len(data)))
+				binary.Write(buffer, binary.BigEndian, int32(len(data)))
 			} else {
-				_ = binary.Write(buffer, binary.LittleEndian, int32(len(data)))
+				binary.Write(buffer, binary.LittleEndian, int32(len(data)))
 			}
 			buffer.Write([]byte(data))
 		}
