@@ -9,10 +9,8 @@ package tsFileWriter
  */
 
 import (
-	_ "time"
 	"tsfile/common/conf"
 	"tsfile/common/log"
-	_ "tsfile/common/logcost"
 	"tsfile/timeseries/write/fileSchema"
 	"tsfile/timeseries/write/sensorDescriptor"
 )
@@ -104,49 +102,76 @@ func (t *TsFileWriter) reset() {
 
 func (t *TsFileWriter) Write(tr *TsRecord) bool {
 	// write data here
-	//var gd *RowGroupWriter
-	//var ok bool
-	var valueWriter ValueWriter
-	gd, ok := t.checkIsDeviceExist(tr, t.schema)
-	if ok {
-		timeST := tr.GetTime()
-		data := tr.GetDataPointSli()
-		for _, v := range data {
-			dataSW, ok := gd.dataSeriesWriters[v.GetSensorId()]
-			if ok {
-				//v.Write(t, dataSeriesWriter)
-				if dataSW.GetTsDeviceId() == "" {
-					log.Info("give seriesWriter is null, do nothing and return.")
-				} else {
-					//dataSW.Write(timeST, v)
-					dataSW.time = timeST
+	//gd, ok := t.checkIsDeviceExist(tr, t.schema)
+	var ok bool
+	var gd *RowGroupWriter
+	var valueWriter *ValueWriter
+	var sessorID string
+	var dataSW *SeriesWriter
 
-					valueWriter = dataSW.valueWriter
-					valueWriter.timeEncoder.Encode(timeST, valueWriter.timeBuf)
-					var valueInterface interface{} = v.value
-					switch dataSW.tsDataType {
-					case 0, 1, 2, 3, 4, 5:
-						valueWriter.valueEncoder.Encode(valueInterface, valueWriter.valueBuf)
-					default:
-					}
-					dataSW.valueCount++
-					// statistics ignore here, if necessary, Statistics.java
-					dataSW.pageStatistics.UpdateStats(valueInterface)
+	// check device
+	var strDeviceID string = tr.GetDeviceId()
+	gd, ok = t.groupDevices[strDeviceID]
+	if !ok {
+		// if not exist
+		gd, _ = NewRowGroupWriter(strDeviceID)
+		t.groupDevices[strDeviceID] = gd
+	}
 
-					if dataSW.minTimestamp == -1 {
-						dataSW.minTimestamp = timeST
-					}
-					// check page size and write page data to buffer
-					dataSW.checkPageSizeAndMayOpenNewpage()
-				}
+	timeST := tr.GetTime()
+	schemaSensorDescriptorMap := t.schema.GetSensorDescriptiorMap()
+	data := tr.GetDataPointSli()
+	for _, v := range data {
+		sessorID = v.GetSensorId()
+		dataSW, ok = gd.dataSeriesWriters[sessorID]
+		if !ok {
+			//if not exist SeriesWriter, new it
+			sensorDescriptor, bExistSensorDesc := schemaSensorDescriptorMap[sessorID]
+			if !bExistSensorDesc {
+				log.Error("input sensor is invalid: ", sessorID)
 			} else {
-				log.Error("time: %d, sensor id %s not found! ", timeST, v.GetSensorId())
+				// new pagewriter
+				pw, _ := NewPageWriter(sensorDescriptor)
+				// new serieswrite
+				dataSW, _ = NewSeriesWriter(strDeviceID, sensorDescriptor, pw, conf.PageSizeInByte)
+				gd.dataSeriesWriters[sessorID] = dataSW
+				ok = true
 			}
 		}
-		t.recordCount++
-		return t.checkMemorySizeAndMayFlushGroup()
+		if !ok {
+			log.Error("time: %d, sensor id %s not found! ", timeST, sessorID)
+		} else {
+			//v.Write(t, dataSeriesWriter)
+			if dataSW.GetTsDeviceId() == "" {
+				log.Info("give seriesWriter is null, do nothing and return.")
+			} else {
+				//dataSW.Write(timeST, v)
+				dataSW.time = timeST
+
+				valueWriter = &(dataSW.valueWriter)
+				//tsCurNew2 := time.Now()
+				valueWriter.timeEncoder.Encode(timeST, valueWriter.timeBuf)
+				var valueInterface interface{} = v.value
+				switch dataSW.tsDataType {
+				case 0, 1, 2, 3, 4, 5:
+					valueWriter.valueEncoder.Encode(valueInterface, valueWriter.valueBuf)
+				default:
+				}
+				//logcost.CostWriteTimesTest2 += int64(time.Since(tsCurNew2))
+				dataSW.valueCount++
+				// statistics ignore here, if necessary, Statistics.java
+				dataSW.pageStatistics.UpdateStats(valueInterface)
+
+				if dataSW.minTimestamp == -1 {
+					dataSW.minTimestamp = timeST
+				}
+				// check page size and write page data to buffer
+				dataSW.checkPageSizeAndMayOpenNewpage()
+			}
+		}
 	}
-	return false
+	t.recordCount++
+	return t.checkMemorySizeAndMayFlushGroup()
 }
 
 func (t *TsFileWriter) Close() bool {
