@@ -9,6 +9,7 @@ package tsFileWriter
  */
 
 import (
+	_ "time"
 	"tsfile/common/conf"
 	"tsfile/common/log"
 	"tsfile/timeseries/write/fileSchema"
@@ -25,6 +26,9 @@ type TsFileWriter struct {
 	pageSize                   int64
 	oneRowMaxSize              int
 	groupDevices               map[string]*RowGroupWriter
+	lastGroupDevice            *RowGroupWriter
+	lastSeriesWriter           *SeriesWriter
+	lastSessorId               string
 }
 
 func (t *TsFileWriter) AddSensor(sd *sensorDescriptor.SensorDescriptor) []byte {
@@ -103,44 +107,59 @@ func (t *TsFileWriter) reset() {
 func (t *TsFileWriter) Write(tr *TsRecord) bool {
 	// write data here
 	//gd, ok := t.checkIsDeviceExist(tr, t.schema)
-
+	//tsCurNew2 := time.Now()
 	var ok bool
 	var gd *RowGroupWriter
 	var valueWriter *ValueWriter
 	var sessorID string
 	var dataSW *SeriesWriter
+	//var dataSWLast *SeriesWriter
 
 	// check device
 	var strDeviceID string = tr.GetDeviceId()
-	gd, ok = t.groupDevices[strDeviceID]
-	if !ok {
-		// if not exist
-		gd, _ = NewRowGroupWriter(strDeviceID)
-		t.groupDevices[strDeviceID] = gd
+	if t.lastGroupDevice != nil && (t.lastGroupDevice.deviceId == strDeviceID) {
+		gd = t.lastGroupDevice
+		ok = true
+	} else {
+		gd, ok = t.groupDevices[strDeviceID]
+		if !ok {
+			// if not exist
+			gd, _ = NewRowGroupWriter(strDeviceID)
+			t.groupDevices[strDeviceID] = gd
+		}
+		t.lastGroupDevice = gd
+		t.lastSeriesWriter = nil
+		t.lastSessorId = ""
 	}
 
 	timeST := tr.GetTime()
 	schemaSensorDescriptorMap := t.schema.GetSensorDescriptiorMap()
 	data := tr.GetDataPointSli()
-
+	//log.CostWriteTimesTest2 += int64(time.Since(tsCurNew2))
 	for _, v := range data {
-
 		sessorID = v.GetSensorId()
-		dataSW, ok = gd.dataSeriesWriters[sessorID]
+		if t.lastSeriesWriter != nil && (t.lastSessorId == sessorID) {
+			dataSW = t.lastSeriesWriter
+			ok = true
+		} else {
+			dataSW, ok = gd.dataSeriesWriters[sessorID]
 
-		if !ok {
-			//if not exist SeriesWriter, new it
-			sensorDescriptor, bExistSensorDesc := schemaSensorDescriptorMap[sessorID]
-			if !bExistSensorDesc {
-				log.Error("input sensor is invalid: ", sessorID)
-			} else {
-				// new pagewriter
-				pw, _ := NewPageWriter(sensorDescriptor)
-				// new serieswrite
-				dataSW, _ = NewSeriesWriter(strDeviceID, sensorDescriptor, pw, conf.PageSizeInByte)
-				gd.dataSeriesWriters[sessorID] = dataSW
-				ok = true
+			if !ok {
+				//if not exist SeriesWriter, new it
+				sensorDescriptor, bExistSensorDesc := schemaSensorDescriptorMap[sessorID]
+				if !bExistSensorDesc {
+					log.Error("input sensor is invalid: ", sessorID)
+				} else {
+					// new pagewriter
+					pw, _ := NewPageWriter(sensorDescriptor)
+					// new serieswrite
+					dataSW, _ = NewSeriesWriter(strDeviceID, sensorDescriptor, pw, conf.PageSizeInByte)
+					gd.dataSeriesWriters[sessorID] = dataSW
+					ok = true
+				}
 			}
+			t.lastSeriesWriter = dataSW
+			t.lastSessorId = sessorID
 		}
 		if !ok {
 			log.Error("time: %d, sensor id %s not found! ", timeST, sessorID)
@@ -153,7 +172,7 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 				dataSW.time = timeST
 
 				valueWriter = &(dataSW.valueWriter)
-				//tsCurNew2 := time.Now()
+
 				valueWriter.timeEncoder.Encode(timeST, valueWriter.timeBuf)
 				var valueInterface interface{} = v.value
 				switch dataSW.tsDataType {
@@ -161,7 +180,7 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 					valueWriter.valueEncoder.Encode(valueInterface, valueWriter.valueBuf)
 				default:
 				}
-				//logcost.CostWriteTimesTest2 += int64(time.Since(tsCurNew2))
+				//log.CostWriteTimesTest1 += int64(time.Since(tsCurNew2))
 				dataSW.valueCount++
 				// statistics ignore here, if necessary, Statistics.java
 				dataSW.pageStatistics.UpdateStats(valueInterface)
@@ -169,6 +188,7 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 				if dataSW.minTimestamp == -1 {
 					dataSW.minTimestamp = timeST
 				}
+				//tsCurNew2 = time.Now()
 				// check page size and write page data to buffer
 				//dataSW.checkPageSizeAndMayOpenNewpage()
 				if dataSW.valueCount == conf.MaxNumberOfPointsInPage {
@@ -181,6 +201,7 @@ func (t *TsFileWriter) Write(tr *TsRecord) bool {
 					}
 					dataSW.valueCountForNextSizeCheck = dataSW.psThres * 1.0 / currentColumnSize * dataSW.valueCount
 				}
+				//log.CostWriteTimesTest1 += int64(time.Since(tsCurNew2))
 			}
 		}
 	}
@@ -197,6 +218,9 @@ func (t *TsFileWriter) Close() bool {
 	t.CalculateMemSizeForAllGroup()
 	t.flushAllRowGroups(false)
 	t.tsFileIoWriter.EndFile(*t.schema)
+	t.lastGroupDevice = nil
+	t.lastSeriesWriter = nil
+	t.lastSessorId = ""
 	return true
 }
 
