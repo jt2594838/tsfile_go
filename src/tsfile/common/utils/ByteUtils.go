@@ -10,7 +10,7 @@ import (
 func getByteN(data byte, offset int) int {
 	offset &= 0x7
 
-	if (data & (1 << uint(7-offset))) != 0 {
+	if (data & (1 << uint32(7-offset))) != 0 {
 		return 1
 	} else {
 		return 0
@@ -113,15 +113,15 @@ func BytesToInt(data []byte, pos int, width int) int32 {
 	offset := pos + width - 1
 	for i := 0; i < width; i++ {
 		index := offset - i
-		//value = SetIntN(value, i, getByteN(result[index/8], index))
+		//value = setIntN(value, i, getByteN(data[index/8], index))
 
-		offset = i & 0x3f
 		if (data[index/8] & (1 << uint32(7-index&7))) != 0 {
-			value = (value | (1 << uint32(offset)))
+			value = (value | (1 << uint32(i&0x1f)))
 		} else {
-			value = (value & ^(1 << uint32(offset)))
+			value = (value & ^(1 << uint32(i&0x1f)))
 		}
 	}
+
 	return value
 }
 
@@ -132,13 +132,12 @@ func BytesToLong(data []byte, pos int, width int) int64 {
 	offset := pos + width - 1
 	for i := 0; i < width; i++ {
 		index := offset - i
-		//value = SetLongN(value, i, getByteN(data[index/8], index))
+		//value = setLongN(value, i, getByteN(data[index/8], index))
 
-		offset = i & 0x3f
 		if (data[index/8] & (1 << uint32(7-index&7))) != 0 {
-			value = (value | (1 << uint32(offset)))
+			value = (value | (1 << uint32(i&0x3f)))
 		} else {
-			value = (value & ^(1 << uint32(offset)))
+			value = (value & ^(1 << uint32(i&0x3f)))
 		}
 	}
 
