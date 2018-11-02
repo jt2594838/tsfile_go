@@ -10,7 +10,6 @@ import (
 	"time"
 	"tsfile/common/constant"
 	"tsfile/common/log"
-	"tsfile/common/logcost"
 	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/timeseries/write/tsFileWriter"
 )
@@ -194,23 +193,17 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Duration, bReadTsFile bool, bMoreInfo bool) {
 	if bMoreInfo {
 		fmt.Printf("%s %s %s cost time %d = %fms \ntotal=%d \nOpen =%d \nClose=%d \nNew  =%d \nWrite=%d \ntest5=%d \ntest6=%d\n",
-			inputFile, tag, tsFile, iCostTime.Nanoseconds(),
+			inputFile, tsFile, tag, iCostTime.Nanoseconds(),
 			iCostTime.Seconds()*1000, iCostTime.Nanoseconds(),
 			CostTimeTsOpen, CostTimeTsClose, CostTimeTsNew,
-			CostTimeTsWrite, logcost.CostWriteTimesTest5, logcost.CostWriteTimesTest6)
+			CostTimeTsWrite, 0, 0)
 	} else {
-		fmt.Printf("%s %s %s cost time %d = %fms \n", inputFile, tag, tsFile,
+		fmt.Printf("%s %s %s cost time %d = %fms \n", inputFile, tsFile, tag,
 			iCostTime.Nanoseconds(), iCostTime.Seconds()*1000)
 	}
 	if bReadTsFile {
 		TestRead(tsFile)
 	}
-	logcost.CostWriteTimesTest1 = 0
-	logcost.CostWriteTimesTest2 = 0
-	logcost.CostWriteTimesTest3 = 0
-	logcost.CostWriteTimesTest4 = 0
-	logcost.CostWriteTimesTest5 = 0
-	logcost.CostWriteTimesTest6 = 0
 }
 
 func TestWriteTsFilePerf(debug int, debugErr int, bReadTs bool, bMoreInfo bool) {
