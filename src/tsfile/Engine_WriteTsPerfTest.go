@@ -10,7 +10,6 @@ import (
 	"time"
 	"tsfile/common/constant"
 	"tsfile/common/log"
-	"tsfile/common/logcost"
 	"tsfile/timeseries/write/sensorDescriptor"
 	"tsfile/timeseries/write/tsFileWriter"
 )
@@ -27,6 +26,8 @@ type MyTsRecord struct {
 var CostTimeTs int64 = 0
 var CostTimeTsClose int64 = 0
 var CostTimeTsOpen int64 = 0
+var CostTimeTsNew int64 = 0
+var CostTimeTsWrite int64 = 0
 
 func writeTsFile(fileName string, fileInFile string, strDeviceID string, strSensorID string,
 	iType constant.TSDataType, iEncode constant.TSEncoding, iCachSize int) time.Duration {
@@ -40,6 +41,11 @@ func writeTsFile(fileName string, fileInFile string, strDeviceID string, strSens
 	}
 
 	CostTimeTs = 0
+	CostTimeTsClose = 0
+	CostTimeTsOpen = 0
+	CostTimeTsNew = 0
+	CostTimeTsWrite = 0
+
 	tsCur := time.Now()
 	tfWriter, tfwErr := tsFileWriter.NewTsFileWriter(fileName)
 	if tfwErr != nil {
@@ -50,13 +56,15 @@ func writeTsFile(fileName string, fileInFile string, strDeviceID string, strSens
 		log.Info("init sensorDescriptor error = %s", sdErr)
 	}
 	tfWriter.AddSensor(sd1)
-	CostTimeTs += time.Since(tsCur).Nanoseconds()
+	CostTimeTsOpen = time.Since(tsCur).Nanoseconds()
+	CostTimeTs += CostTimeTsOpen
 
 	_ = ReadFileToTSFile(fileInFile, tfWriter, strDeviceID, strSensorID,
 		iType, iEncode, iCachSize)
 	tsCur = time.Now()
 	tfWriter.Close()
-	CostTimeTs += time.Since(tsCur).Nanoseconds()
+	CostTimeTsClose = time.Since(tsCur).Nanoseconds()
+	CostTimeTs += CostTimeTsClose
 
 	return time.Duration(CostTimeTs)
 }
@@ -146,6 +154,7 @@ func ReadFileToTSFile(fileName string, tfWriter *tsFileWriter.TsFileWriter,
 
 func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRecord,
 	strDeviceID string, strSensorID string, iType constant.TSDataType) {
+	var lTemp int64
 	tsCurNew := time.Now()
 	var fdp *tsFileWriter.DataPoint
 	fdp, _ = tsFileWriter.NewDataPoint()
@@ -156,7 +165,9 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 		log.Info("init tsRecord error.")
 	}
 	tr1.SetDataPointSli(dataSlice)
-	CostTimeTs += time.Since(tsCurNew).Nanoseconds()
+	lTemp = time.Since(tsCurNew).Nanoseconds()
+	CostTimeTsNew += lTemp
+	CostTimeTs += lTemp
 	for _, dp := range dpslice {
 		tsCurNew = time.Now()
 		tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
@@ -173,32 +184,26 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 			fdp.SetValue(strSensorID, dp.strValue)
 		}
 		tfWriter.Write(tr1)
-		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
+		lTemp = time.Since(tsCurNew).Nanoseconds()
+		CostTimeTsWrite += lTemp
+		CostTimeTs += lTemp
 	}
 }
 
 func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Duration, bReadTsFile bool, bMoreInfo bool) {
 	if bMoreInfo {
-		logcost.CostWriteTimesTest1 = CostTimeTsOpen
-		logcost.CostWriteTimesTest2 = CostTimeTsClose
-		fmt.Printf("%s %s %s cost time %d = %fms \ntotal=%d \ntest1=%d \ntest2=%d \ntest3=%d \ntest4=%d \ntest5=%d \ntest6=%d\n",
-			inputFile, tag, tsFile, iCostTime.Nanoseconds(),
+		fmt.Printf("%s %s %s cost time %d = %fms \ntotal=%d \nOpen =%d \nClose=%d \nNew  =%d \nWrite=%d \ntest5=%d \ntest6=%d\n",
+			inputFile, tsFile, tag, iCostTime.Nanoseconds(),
 			iCostTime.Seconds()*1000, iCostTime.Nanoseconds(),
-			logcost.CostWriteTimesTest1, logcost.CostWriteTimesTest2, logcost.CostWriteTimesTest3,
-			logcost.CostWriteTimesTest4, logcost.CostWriteTimesTest5, logcost.CostWriteTimesTest6)
+			CostTimeTsOpen, CostTimeTsClose, CostTimeTsNew,
+			CostTimeTsWrite, 0, 0)
 	} else {
-		fmt.Printf("%s %s %s cost time %d = %fms \n", inputFile, tag, tsFile,
+		fmt.Printf("%s %s %s cost time %d = %fms \n", inputFile, tsFile, tag,
 			iCostTime.Nanoseconds(), iCostTime.Seconds()*1000)
 	}
 	if bReadTsFile {
 		TestRead(tsFile)
 	}
-	logcost.CostWriteTimesTest1 = 0
-	logcost.CostWriteTimesTest2 = 0
-	logcost.CostWriteTimesTest3 = 0
-	logcost.CostWriteTimesTest4 = 0
-	logcost.CostWriteTimesTest5 = 0
-	logcost.CostWriteTimesTest6 = 0
 }
 
 func TestWriteTsFilePerf(debug int, debugErr int, bReadTs bool, bMoreInfo bool) {
