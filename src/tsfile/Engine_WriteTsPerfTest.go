@@ -28,78 +28,56 @@ var CostTimeTs int64 = 0
 var CostTimeTsClose int64 = 0
 var CostTimeTsOpen int64 = 0
 
-func writeTsFile(fileTsName string, fileInName string,
-	strDeviceID string, strSensorID string,
-	iType constant.TSDataType, iEncode constant.TSEncoding, iMaxSize int) time.Duration {
-
+func writeTsFile(fileName string, fileInFile string, strDeviceID string, strSensorID string,
+	iType constant.TSDataType, iEncode constant.TSEncoding, iCachSize int) time.Duration {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Info("Error: ", err)
 		}
 	}()
+	if _, err := os.Stat(fileName); !os.IsNotExist(err) {
+		os.Remove(fileName)
+	}
 
 	CostTimeTs = 0
-	CostTimeTsClose = 0
-	CostTimeTsOpen = 0
+	tsCur := time.Now()
+	tfWriter, tfwErr := tsFileWriter.NewTsFileWriter(fileName)
+	if tfwErr != nil {
+		log.Info("init tsFileWriter error = %s", tfwErr)
+	}
+	sd1, sdErr := sensorDescriptor.New(strSensorID, iType, iEncode) //constant.RLE
+	if sdErr != nil {
+		log.Info("init sensorDescriptor error = %s", sdErr)
+	}
+	tfWriter.AddSensor(sd1)
+	CostTimeTs += time.Since(tsCur).Nanoseconds()
+
+	_ = ReadFileToTSFile(fileInFile, tfWriter, strDeviceID, strSensorID,
+		iType, iEncode, iCachSize)
+	tsCur = time.Now()
+	tfWriter.Close()
+	CostTimeTs += time.Since(tsCur).Nanoseconds()
+
+	return time.Duration(CostTimeTs)
+}
+
+func ReadFileToTSFile(fileName string, tfWriter *tsFileWriter.TsFileWriter,
+	strDeviceID string, strSensorID string,
+	iType constant.TSDataType, iEncode constant.TSEncoding, iMaxSize int) error {
+
 	dataSlice := make([]*MyTsRecord, 0)
-	f, err := os.Open(fileInName)
+	f, err := os.Open(fileName)
 	if err != nil {
-		return time.Duration(CostTimeTs)
+		return err
 	}
 	buf := bufio.NewReader(f)
 	buf.ReadByte()
 	buf.ReadByte()
 	buf.ReadByte()
 
-	//var iCost int64 = 0
-	var tfWriter *tsFileWriter.TsFileWriter
-	var tfwErr error
-	if _, err := os.Stat(fileTsName); !os.IsNotExist(err) {
-		os.Remove(fileTsName)
-	}
-
-	tsCur := time.Now()
-	tfWriter, tfwErr = tsFileWriter.NewTsFileWriter(fileTsName)
-	if tfwErr != nil {
-		log.Info("init tsFileWriter error = %s", tfwErr)
-	}
-	if iType == constant.INT32 {
-		sd1, sdErr := sensorDescriptor.New(strSensorID, constant.INT32, iEncode) //constant.RLE
-		if sdErr != nil {
-			log.Info("init sensorDescriptor error = %s", sdErr)
-		}
-		tfWriter.AddSensor(sd1)
-	} else if iType == constant.INT64 {
-		sd1, sdErr := sensorDescriptor.New(strSensorID, constant.INT64, iEncode) //constant.RLE
-		if sdErr != nil {
-			log.Info("init sensorDescriptor error = %s", sdErr)
-		}
-		tfWriter.AddSensor(sd1)
-	} else if iType == constant.FLOAT {
-		sd1, sdErr := sensorDescriptor.New(strSensorID, constant.FLOAT, iEncode) //constant.RLE
-		if sdErr != nil {
-			log.Info("init sensorDescriptor error = %s", sdErr)
-		}
-		tfWriter.AddSensor(sd1)
-	} else if iType == constant.DOUBLE {
-		sd1, sdErr := sensorDescriptor.New(strSensorID, constant.DOUBLE, iEncode) //constant.RLE
-		if sdErr != nil {
-			log.Info("init sensorDescriptor error = %s", sdErr)
-		}
-		tfWriter.AddSensor(sd1)
-	} else if iType == constant.TEXT {
-		sd1, sdErr := sensorDescriptor.New(strSensorID, constant.TEXT, iEncode) //constant.RLE
-		if sdErr != nil {
-			log.Info("init sensorDescriptor error = %s", sdErr)
-		}
-		tfWriter.AddSensor(sd1)
-	}
-	CostTimeTsOpen = time.Since(tsCur).Nanoseconds()
-	CostTimeTs += CostTimeTsOpen
-
 	var _ts time.Time
-	var _i32Value int64
 	var _i64Value int64
+	var _i32Value int64
 	var _f64Value float64
 	var _f32Value float64
 	var _strValue string
@@ -118,12 +96,9 @@ func writeTsFile(fileTsName string, fileInName string,
 		line = s[1]
 		line = strings.TrimSpace(line)
 		_ts, err = time.Parse("2006-01-02 15:04:05", s[0])
-		//var strTsValue string = _ts.Format("2006-01-02 15:04:05")
-		//log.Info("wangcan time %s %s", strTsValue, line)
+		_i32Value = 0
 		_i64Value = 0
 		_f64Value = 0
-		_f32Value = 0
-		_i32Value = 0
 		_strValue = ""
 		if iType == constant.INT32 {
 			_i32Value, _ = strconv.ParseInt(line, 10, 32)
@@ -149,6 +124,7 @@ func writeTsFile(fileTsName string, fileInName string,
 
 		if len(dataSlice) >= iMaxSize {
 			writeBufferToTsFile(tfWriter, dataSlice, strDeviceID, strSensorID, iType)
+			//dataSlice = make([]*tsFileWriter.DataPoint, 0)
 			dataSlice = make([]*MyTsRecord, 0)
 		}
 
@@ -157,34 +133,21 @@ func writeTsFile(fileTsName string, fileInName string,
 				if len(dataSlice) > 0 {
 					writeBufferToTsFile(tfWriter, dataSlice, strDeviceID, strSensorID, iType)
 				}
-				tsCur = time.Now()
-				tfWriter.Close()
-				CostTimeTsClose = time.Since(tsCur).Nanoseconds()
-				CostTimeTs += CostTimeTsClose
-				return time.Duration(CostTimeTs)
+				return nil
 			}
-			tsCur = time.Now()
-			tfWriter.Close()
-			CostTimeTsClose = time.Since(tsCur).Nanoseconds()
-			CostTimeTs += CostTimeTsClose
-			return time.Duration(CostTimeTs)
+			return err
 		}
 	}
 	if len(dataSlice) > 0 {
 		writeBufferToTsFile(tfWriter, dataSlice, strDeviceID, strSensorID, iType)
-		tsCur = time.Now()
-		tfWriter.Close()
-		CostTimeTsClose = time.Since(tsCur).Nanoseconds()
-		CostTimeTs += CostTimeTsClose
 	}
-	return time.Duration(CostTimeTs)
+	return nil
 }
 
 func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRecord,
 	strDeviceID string, strSensorID string, iType constant.TSDataType) {
-	var tsCurNew time.Time
+	tsCurNew := time.Now()
 	var fdp *tsFileWriter.DataPoint
-	tsCurNew = time.Now()
 	fdp, _ = tsFileWriter.NewDataPoint()
 	dataSlice := make([]*tsFileWriter.DataPoint, 1)
 	dataSlice[0] = fdp
@@ -212,7 +175,6 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 		tfWriter.Write(tr1)
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 	}
-	//return int64(time.Since(tsCur))
 }
 
 func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Duration, bReadTsFile bool, bMoreInfo bool) {
