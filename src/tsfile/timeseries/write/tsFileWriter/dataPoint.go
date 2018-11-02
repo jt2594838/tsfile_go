@@ -58,10 +58,6 @@ func getDataPoint() *DataPoint {
 	return f
 }
 
-//func New(sId string, tdt int, te int) (*DataPoint, error) {
-//	return &DataPoint{
-//		sensorId:sId,
-//		tsDataType:tdt,
-//		tsEncoding:te,
-//	},nil
-//}
+func NewDataPoint() (*DataPoint, error) {
+	return &DataPoint{}, nil
+}

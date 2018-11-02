@@ -27,12 +27,6 @@ type MyTsRecord struct {
 var CostTimeTs int64 = 0
 var CostTimeTsClose int64 = 0
 var CostTimeTsOpen int64 = 0
-var CostTimeTsRow int64 = 0
-var CostTimeTsDataPt int64 = 0
-var CostTimeTsAddTuple int64 = 0
-var CostTimeTsWrite int64 = 0
-
-var bDebugMoreInfo bool = false
 
 func writeTsFile(fileTsName string, fileInName string,
 	strDeviceID string, strSensorID string,
@@ -47,10 +41,6 @@ func writeTsFile(fileTsName string, fileInName string,
 	CostTimeTs = 0
 	CostTimeTsClose = 0
 	CostTimeTsOpen = 0
-	CostTimeTsRow = 0
-	CostTimeTsDataPt = 0
-	CostTimeTsAddTuple = 0
-	CostTimeTsWrite = 0
 	dataSlice := make([]*MyTsRecord, 0)
 	f, err := os.Open(fileInName)
 	if err != nil {
@@ -194,85 +184,33 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 	strDeviceID string, strSensorID string, iType constant.TSDataType) {
 	var tsCurNew time.Time
 	var fdp *tsFileWriter.DataPoint
-	var costTsRow int64
-	var costTsDataPt int64
-	var costTsAddTuple int64
-	var costTsWrite int64
-	if bDebugMoreInfo {
+	tsCurNew = time.Now()
+	fdp, _ = tsFileWriter.NewDataPoint()
+	dataSlice := make([]*tsFileWriter.DataPoint, 1)
+	dataSlice[0] = fdp
+	tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(0, "")
+	if trErr != nil {
+		log.Info("init tsRecord error.")
+	}
+	tr1.SetDataPointSli(dataSlice)
+	CostTimeTs += time.Since(tsCurNew).Nanoseconds()
+	for _, dp := range dpslice {
 		tsCurNew = time.Now()
-		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
-		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
-		tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(0, "")
-		if trErr != nil {
-			log.Info("init tsRecord error.")
+		tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
+		switch iType {
+		case constant.INT32:
+			fdp.SetValue(strSensorID, dp.i32Value)
+		case constant.INT64:
+			fdp.SetValue(strSensorID, dp.i64Value)
+		case constant.FLOAT:
+			fdp.SetValue(strSensorID, dp.f32Value)
+		case constant.DOUBLE:
+			fdp.SetValue(strSensorID, dp.f64Value)
+		case constant.TEXT:
+			fdp.SetValue(strSensorID, dp.strValue)
 		}
+		tfWriter.Write(tr1)
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
-		for index, dp := range dpslice {
-			tsCurNew = time.Now()
-			tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
-			costTsRow = time.Since(tsCurNew).Nanoseconds()
-			tsCurNew = time.Now()
-			fdp = &(dataSlice[index])
-			switch iType {
-			case constant.INT32:
-				fdp.SetValue(strSensorID, dp.i32Value)
-			case constant.INT64:
-				fdp.SetValue(strSensorID, dp.i64Value)
-			case constant.FLOAT:
-				fdp.SetValue(strSensorID, dp.f32Value)
-			case constant.DOUBLE:
-				fdp.SetValue(strSensorID, dp.f64Value)
-			case constant.TEXT:
-				fdp.SetValue(strSensorID, dp.strValue)
-			}
-			costTsDataPt = time.Since(tsCurNew).Nanoseconds()
-			tsCurNew = time.Now()
-			dataSliceEx[index] = fdp
-			tr1.SetDataPointSli(dataSliceEx[index : index+1])
-			//tr1.AddTuple(fdp)
-			costTsAddTuple = time.Since(tsCurNew).Nanoseconds()
-			tsCurNew = time.Now()
-			tfWriter.Write(tr1)
-			costTsWrite = time.Since(tsCurNew).Nanoseconds()
-
-			CostTimeTs += costTsRow + costTsDataPt + costTsAddTuple + costTsWrite
-			CostTimeTsRow += costTsRow
-			CostTimeTsDataPt += costTsDataPt
-			CostTimeTsAddTuple += costTsAddTuple
-			CostTimeTsWrite += costTsWrite
-			//CostTimeTs += time.Since(tsCurNew).Nanoseconds()
-		}
-	} else {
-		tsCurNew = time.Now()
-		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
-		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
-		tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(0, "")
-		if trErr != nil {
-			log.Info("init tsRecord error.")
-		}
-		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
-		for index, dp := range dpslice {
-			tsCurNew = time.Now()
-			tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
-			fdp = &(dataSlice[index])
-			switch iType {
-			case constant.INT32:
-				fdp.SetValue(strSensorID, dp.i32Value)
-			case constant.INT64:
-				fdp.SetValue(strSensorID, dp.i64Value)
-			case constant.FLOAT:
-				fdp.SetValue(strSensorID, dp.f32Value)
-			case constant.DOUBLE:
-				fdp.SetValue(strSensorID, dp.f64Value)
-			case constant.TEXT:
-				fdp.SetValue(strSensorID, dp.strValue)
-			}
-			dataSliceEx[index] = fdp
-			tr1.SetDataPointSli(dataSliceEx[index : index+1])
-			//tr1.AddTuple(fdp)
-			tfWriter.Write(tr1)
-			CostTimeTs += time.Since(tsCurNew).Nanoseconds()
-		}
 	}
 	//return int64(time.Since(tsCur))
 }
@@ -281,10 +219,6 @@ func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Durat
 	if bMoreInfo {
 		logcost.CostWriteTimesTest1 = CostTimeTsOpen
 		logcost.CostWriteTimesTest2 = CostTimeTsClose
-		logcost.CostWriteTimesTest3 = CostTimeTsRow
-		logcost.CostWriteTimesTest4 = CostTimeTsDataPt
-		logcost.CostWriteTimesTest5 = CostTimeTsAddTuple
-		logcost.CostWriteTimesTest6 = CostTimeTsWrite
 		fmt.Printf("%s %s %s cost time %d = %fms \ntotal=%d \ntest1=%d \ntest2=%d \ntest3=%d \ntest4=%d \ntest5=%d \ntest6=%d\n",
 			inputFile, tag, tsFile, iCostTime.Nanoseconds(),
 			iCostTime.Seconds()*1000, iCostTime.Nanoseconds(),
@@ -305,10 +239,9 @@ func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Durat
 	logcost.CostWriteTimesTest6 = 0
 }
 
-func TestWriteTsFilePerf(debug int, debugErr int, bReadTs bool, bMoreInfo bool, bDebugMore bool) {
+func TestWriteTsFilePerf(debug int, debugErr int, bReadTs bool, bMoreInfo bool) {
 	var DebugErr int = debugErr //RLE 调试
 	var DebugI int = debug      //0调试所有
-	bDebugMoreInfo = bDebugMore
 	var iCacheCount int = 1000
 	//TS_2DIFF 1,2,3,4
 	//PLAIN TEXT 5
