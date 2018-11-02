@@ -19,8 +19,8 @@ import (
 
 type PlainEncoder struct {
 	tsDataType   constant.TSDataType
-	encodeEndian int16
-	valueCount   int
+	encodeEndian int8
+	//valueCount   int
 }
 
 func (p *PlainEncoder) Encode(value interface{}, buffer *bytes.Buffer) {
@@ -78,6 +78,6 @@ func NewPlainEncoder(dataType constant.TSDataType) (*PlainEncoder, error) {
 	return &PlainEncoder{
 		tsDataType:   dataType,
 		encodeEndian: 1,
-		valueCount:   -1,
+		//valueCount:   -1,
 	}, nil
 }

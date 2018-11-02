@@ -36,7 +36,7 @@ func GetEncoder(et int16, tdt int16) Encoder {
 		} else if dataType == constant.INT64 {
 			encoder = NewRleEncoder(constant.INT64)
 		} else if dataType == constant.FLOAT || dataType == constant.DOUBLE {
-			encoder = NewFloatEncoder(encoding, conf.FloatPrecision, dataType)
+			encoder = NewFloatEncoder(encoding, int32(conf.FloatPrecision), dataType)
 		}
 	case encoding == constant.TS_2DIFF:
 		if dataType == constant.INT32 {

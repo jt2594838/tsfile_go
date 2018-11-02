@@ -1,6 +1,6 @@
 package constant
 
-type TSDataType int16
+type TSDataType int8
 
 const (
 	BOOLEAN TSDataType = 0

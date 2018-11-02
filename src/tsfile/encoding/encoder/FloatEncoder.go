@@ -13,7 +13,7 @@ type FloatEncoder struct {
 	dataType constant.TSDataType
 
 	baseEncoder             Encoder
-	maxPointNumber          int
+	maxPointNumber          int32
 	maxPointNumberSavedFlag bool
 	maxPointValue           float64
 }
@@ -49,7 +49,7 @@ func (d *FloatEncoder) GetOneItemMaxSize() int {
 	return d.baseEncoder.GetOneItemMaxSize()
 }
 
-func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType constant.TSDataType) *FloatEncoder {
+func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int32, dataType constant.TSDataType) *FloatEncoder {
 	d := &FloatEncoder{dataType: dataType}
 
 	if encoding == constant.RLE {
@@ -77,7 +77,7 @@ func NewFloatEncoder(encoding constant.TSEncoding, maxPointNumber int, dataType 
 		d.maxPointNumber = 0
 		d.maxPointValue = 1
 	} else {
-		d.maxPointValue = math.Pow10(maxPointNumber)
+		d.maxPointValue = math.Pow10(int(maxPointNumber))
 	}
 
 	d.maxPointNumberSavedFlag = false

@@ -1,6 +1,6 @@
 package constant
 
-type TSEncoding int16
+type TSEncoding int8
 
 const (
 	PLAIN            TSEncoding = 0
