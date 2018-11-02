@@ -202,13 +202,14 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 		tsCurNew = time.Now()
 		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
 		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
+		tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(0, "")
+		if trErr != nil {
+			log.Info("init tsRecord error.")
+		}
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 		for index, dp := range dpslice {
 			tsCurNew = time.Now()
-			tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(dp.ts, strDeviceID)
-			if trErr != nil {
-				log.Info("init tsRecord error.")
-			}
+			tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
 			costTsRow = time.Since(tsCurNew).Nanoseconds()
 			tsCurNew = time.Now()
 			fdp = &(dataSlice[index])
@@ -227,7 +228,7 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 			costTsDataPt = time.Since(tsCurNew).Nanoseconds()
 			tsCurNew = time.Now()
 			dataSliceEx[index] = fdp
-			tr1.SetTuple(dataSliceEx[index : index+1])
+			tr1.SetDataPointSli(dataSliceEx[index : index+1])
 			//tr1.AddTuple(fdp)
 			costTsAddTuple = time.Since(tsCurNew).Nanoseconds()
 			tsCurNew = time.Now()
@@ -245,13 +246,14 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 		tsCurNew = time.Now()
 		dataSlice := make([]tsFileWriter.DataPoint, len(dpslice))
 		dataSliceEx := make([]*tsFileWriter.DataPoint, len(dpslice))
+		tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(0, "")
+		if trErr != nil {
+			log.Info("init tsRecord error.")
+		}
 		CostTimeTs += time.Since(tsCurNew).Nanoseconds()
 		for index, dp := range dpslice {
 			tsCurNew = time.Now()
-			tr1, trErr := tsFileWriter.NewTsRecordUseTimestamp(dp.ts, strDeviceID)
-			if trErr != nil {
-				log.Info("init tsRecord error.")
-			}
+			tr1.SetTimestampDeviceID(dp.ts, strDeviceID)
 			fdp = &(dataSlice[index])
 			switch iType {
 			case constant.INT32:
@@ -266,7 +268,7 @@ func writeBufferToTsFile(tfWriter *tsFileWriter.TsFileWriter, dpslice []*MyTsRec
 				fdp.SetValue(strSensorID, dp.strValue)
 			}
 			dataSliceEx[index] = fdp
-			tr1.SetTuple(dataSliceEx[index : index+1])
+			tr1.SetDataPointSli(dataSliceEx[index : index+1])
 			//tr1.AddTuple(fdp)
 			tfWriter.Write(tr1)
 			CostTimeTs += time.Since(tsCurNew).Nanoseconds()

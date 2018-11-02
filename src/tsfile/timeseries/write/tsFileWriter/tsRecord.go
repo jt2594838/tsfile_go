@@ -26,7 +26,27 @@ func (t *TsRecord) SetTime(time time.Time) {
 	return
 }
 
-func (t *TsRecord) SetTuple(dataSlice []*DataPoint) {
+func (t *TsRecord) SetTimeDeviceID(time time.Time, dId string) {
+	//PushBack(t, tuple)
+	// t.dataPointMap[t.deviceId] = tuple
+	//t.dataPointMap[t.deviceId] = tuple
+	//t.DataPointSli = dataSlice
+	t.time = time.Unix()
+	t.deviceId = dId
+	return
+}
+
+func (t *TsRecord) SetTimestampDeviceID(ts int64, dId string) {
+	//PushBack(t, tuple)
+	// t.dataPointMap[t.deviceId] = tuple
+	//t.dataPointMap[t.deviceId] = tuple
+	//t.DataPointSli = dataSlice
+	t.time = ts
+	t.deviceId = dId
+	return
+}
+
+func (t *TsRecord) SetDataPointSli(dataSlice []*DataPoint) {
 	//PushBack(t, tuple)
 	// t.dataPointMap[t.deviceId] = tuple
 	//t.dataPointMap[t.deviceId] = tuple
