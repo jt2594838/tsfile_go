@@ -242,7 +242,7 @@ func logoutput(tsFile string, inputFile string, tag string, iCostTime time.Durat
 func TestWriteTsFilePerf(debug int, debugErr int, bReadTs bool, bMoreInfo bool) {
 	var DebugErr int = debugErr //RLE 调试
 	var DebugI int = debug      //0调试所有
-	var iCacheCount int = 1000
+	var iCacheCount int = 10000
 	//TS_2DIFF 1,2,3,4
 	//PLAIN TEXT 5
 	//RLE  6,7,8,9
