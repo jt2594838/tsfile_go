@@ -28,6 +28,10 @@ func (p *PageHeader) Max_timestamp() int64 {
 	return p.max_timestamp
 }
 
+func (p *PageHeader) GetStatistics() *statistics.Statistics {
+	return &(p.statistics)
+}
+
 func (h *PageHeader) Deserialize(reader *utils.FileReader, dataType constant.TSDataType) {
 	h.uncompressedSize = reader.ReadInt()
 	h.compressedSize = reader.ReadInt()

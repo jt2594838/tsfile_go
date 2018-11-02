@@ -9,7 +9,10 @@ package tsFileWriter
  */
 
 import (
+	"encoding/binary"
 	"tsfile/common/conf"
+	"tsfile/common/constant"
+	"tsfile/common/log"
 	"tsfile/file/header"
 	"tsfile/file/metadata/statistics"
 	"tsfile/timeseries/write/sensorDescriptor"
@@ -124,8 +127,71 @@ func (s *SeriesWriter) EstimateMaxSeriesMemSize() int64 {
 }
 
 func (s *SeriesWriter) WritePage() {
-	s.pageWriter.WritePageHeaderAndDataIntoBuff(s.valueWriter.GetByteBuffer(),
-		s.valueCount, s.pageStatistics, s.time, s.minTimestamp)
+	pageWriter := s.pageWriter
+	//pageWriter.WritePageHeaderAndDataIntoBuff(s.valueWriter.GetByteBuffer(),
+	//	s.valueCount, s.pageStatistics, s.time, s.minTimestamp)
+	dataBuffer := s.valueWriter.GetByteBuffer()
+	valueCount := s.valueCount
+	//sts statistics.Statistics
+	//maxTimestamp int64, minTimestamp int64
+	if pageWriter.desc.GetCompresstionType() == int16(constant.UNCOMPRESSED) {
+		//this uncompressedSize should be calculate from timeBuf and valueBuf
+		uncompressedSize := dataBuffer.Len()
+		var compressedSize int = uncompressedSize
+		pageHeader, pageHeaderErr := header.NewPageHeader(
+			int32(uncompressedSize), int32(compressedSize),
+			int32(valueCount), s.pageStatistics, s.time,
+			s.minTimestamp, pageWriter.desc.GetTsDataType())
+		if pageHeaderErr != nil {
+			log.Error("init pageHeader error: ", pageHeaderErr)
+		}
+		pageBuf := pageWriter.pageBuf
+		//pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetUncompressedSize())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetCompressedSize())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetNumberOfValues())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.Max_timestamp())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.Min_timestamp())
+		statistics.Serialize(*(pageHeader.GetStatistics()), pageBuf, pageWriter.desc.GetTsDataType())
+
+		pageBuf.Write(dataBuffer.Bytes())
+		pageWriter.totalValueCount += int64(valueCount)
+	} else {
+		//this uncompressedSize should be calculate from timeBuf and valueBuf
+		uncompressedSize := dataBuffer.Len()
+
+		// write pageData to pageBuf
+		//声明一个空的slice,容量为dataBuffer的长度
+		dataSlice := make([]byte, dataBuffer.Len())
+		//把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
+		dataBuffer.Read(dataSlice)
+
+		var compressedSize int
+		var enc []byte
+		aSlice := make([]byte, 0)
+		enc = pageWriter.compressor.GetEncompressor(
+			pageWriter.desc.GetCompresstionType()).Encompress(aSlice, dataSlice)
+		compressedSize = len(enc)
+
+		pageHeader, pageHeaderErr := header.NewPageHeader(
+			int32(uncompressedSize), int32(compressedSize), int32(valueCount),
+			s.pageStatistics, s.time, s.minTimestamp,
+			pageWriter.desc.GetTsDataType())
+		if pageHeaderErr != nil {
+			log.Error("init pageHeader error: ", pageHeaderErr)
+		}
+		// write pageheader to pageBuf
+		pageHeader.PageHeaderToMemory(pageWriter.pageBuf,
+			pageWriter.desc.GetTsDataType())
+
+		//// write pageData to pageBuf
+		////声明一个空的slice,容量为dataBuffer的长度
+		//dataSlice := make([]byte, dataBuffer.Len())
+		////把buf的内容读入到timeSlice内,因为timeSlice容量为timeSize,所以只读了timeSize个过来
+		pageWriter.pageBuf.Write(enc)
+		pageWriter.totalValueCount += int64(valueCount)
+	}
+
 	// pageStatistics
 	s.numOfPages += 1
 

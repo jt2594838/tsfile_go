@@ -10,6 +10,7 @@ package tsFileWriter
 
 import (
 	"bytes"
+	"encoding/binary"
 	"tsfile/common/constant"
 	"tsfile/common/log"
 	"tsfile/compress"
@@ -39,8 +40,16 @@ func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, va
 		if pageHeaderErr != nil {
 			log.Error("init pageHeader error: ", pageHeaderErr)
 		}
-		pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
-		p.pageBuf.Write(dataBuffer.Bytes())
+		pageBuf := p.pageBuf
+		//pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetUncompressedSize())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetCompressedSize())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetNumberOfValues())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.Max_timestamp())
+		binary.Write(pageBuf, binary.BigEndian, pageHeader.Min_timestamp())
+		statistics.Serialize(*(pageHeader.GetStatistics()), pageBuf, p.desc.GetTsDataType())
+
+		pageBuf.Write(dataBuffer.Bytes())
 		p.totalValueCount += int64(valueCount)
 	} else {
 		//this uncompressedSize should be calculate from timeBuf and valueBuf
