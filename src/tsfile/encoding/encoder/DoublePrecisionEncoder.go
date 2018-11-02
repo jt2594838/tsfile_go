@@ -2,63 +2,144 @@ package encoder
 
 import (
 	"bytes"
+	"encoding/binary"
 	"math"
+	"tsfile/common/conf"
 	"tsfile/common/constant"
 	"tsfile/common/utils"
-	"tsfile/common/conf"
-	"tsfile/common/log"
 )
 
 type DoublePrecisionEncoder struct {
 	encoding constant.TSEncoding
 	dataType constant.TSDataType
 
-	base     GorillaEncoder
+	base     *GorillaEncoder
 	preValue int64
 }
 
 func (d *DoublePrecisionEncoder) Encode(v interface{}, buffer *bytes.Buffer) {
-	if (!d.base.flag) {
+	base := d.base
+	if !base.flag {
 		// case: write first 8 byte value without any encoding
-		d.base.flag = true
+		base.flag = true
 		d.preValue = int64(math.Float64bits(v.(float64)))
-		d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
-		d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
-		var bufferLittle []byte
-		bufferLittle = utils.Int64ToByte(d.preValue, 1)
-		buffer.Write(bufferLittle)
+		base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+		base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
+		binary.Write(buffer, binary.LittleEndian, d.preValue)
+		//var bufferLittle []byte
+		//bufferLittle = utils.Int64ToByte(d.preValue, 1)
+		//buffer.Write(bufferLittle)
 	} else {
-		var nextValue int64;
-		var tmp int64;
-		nextValue = int64(math.Float64bits(v.(float64)))
-		tmp = nextValue ^ d.preValue
-		if (tmp == 0) {
+		nextValue := int64(math.Float64bits(v.(float64)))
+		tmp := nextValue ^ d.preValue
+		if tmp == 0 {
 			// case: write '0'
-			d.base.writeBit(false, buffer)
+			//base.writeBit(false, buffer)
+			base.buffer <<= 1
+			base.numberLeftInBuffer++
+			if base.numberLeftInBuffer == 8 {
+				base.CleanBuffer(buffer)
+			}
 		} else {
-			var leadingZeroNumTmp int32
-			var tailingZeroNumTmp int32
-			leadingZeroNumTmp = utils.NumberOfLeadingZerosLong(tmp)
-			tailingZeroNumTmp = utils.NumberOfTrailingZerosLong(tmp)
-			if (leadingZeroNumTmp >= d.base.leadingZeroNum && tailingZeroNumTmp >= d.base.tailingZeroNum) {
+			var bit int64 = 0
+			var index int32 = 0
+			var value int64
+			leadingZeroNumTmp := utils.NumberOfLeadingZerosLong(tmp)
+			tailingZeroNumTmp := utils.NumberOfTrailingZerosLong(tmp)
+			if leadingZeroNumTmp >= base.leadingZeroNum && tailingZeroNumTmp >= base.tailingZeroNum {
 				// case: write '10' and effective bits without first leadingZeroNum '0' and last tailingZeroNum '0'
-				d.base.writeBit(true, buffer)
-				d.base.writeBit(false, buffer)
-				d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-d.base.leadingZeroNum, d.base.tailingZeroNum)
+				//base.writeBit(true, buffer)
+				//base.writeBit(false, buffer)
+				base.buffer <<= 1
+				base.buffer |= 1
+				base.numberLeftInBuffer++
+				if base.numberLeftInBuffer == 8 {
+					base.CleanBuffer(buffer)
+				}
+				base.buffer <<= 1
+				base.numberLeftInBuffer++
+				if base.numberLeftInBuffer == 8 {
+					base.CleanBuffer(buffer)
+				}
+
+				//d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-base.leadingZeroNum, base.tailingZeroNum)
+				for index = int32(conf.DOUBLE_LENGTH) - 1 - base.leadingZeroNum; index >= base.tailingZeroNum; index-- {
+					bit = tmp & (1 << uint32(index))
+
+					base.buffer <<= 1
+					if bit != 0 {
+						base.buffer |= 1
+					}
+					base.numberLeftInBuffer++
+					if base.numberLeftInBuffer == 8 {
+						base.CleanBuffer(buffer)
+					}
+				}
 			} else {
 				// case: write '11', leading zero num of value, effective bits len and effective bit value
-				d.base.writeBit(true, buffer);
-				d.base.writeBit(true, buffer);
-				d.writeBits(int64(leadingZeroNumTmp), buffer, int32(conf.DOUBLE_LEADING_ZERO_LENGTH)-1, 0)
-				d.writeBits(int64(int32(conf.DOUBLE_LENGTH)-leadingZeroNumTmp-tailingZeroNumTmp), buffer, int32(conf.DOUBLE_VALUE_LENGTH)-1, 0)
-				d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-leadingZeroNumTmp, tailingZeroNumTmp)
+				//d.base.writeBit(true, buffer)
+				//d.base.writeBit(true, buffer)
+				base.buffer <<= 1
+				base.buffer |= 1
+				base.numberLeftInBuffer++
+				if base.numberLeftInBuffer == 8 {
+					base.CleanBuffer(buffer)
+				}
+				base.buffer <<= 1
+				base.buffer |= 1
+				base.numberLeftInBuffer++
+				if base.numberLeftInBuffer == 8 {
+					base.CleanBuffer(buffer)
+				}
 
+				//d.writeBits(int64(leadingZeroNumTmp), buffer, int32(conf.DOUBLE_LEADING_ZERO_LENGTH)-1, 0)
+				//d.writeBits(int64(int32(conf.DOUBLE_LENGTH)-leadingZeroNumTmp-tailingZeroNumTmp), buffer, int32(conf.DOUBLE_VALUE_LENGTH)-1, 0)
+				//d.writeBits(tmp, buffer, int32(conf.DOUBLE_LENGTH)-1-leadingZeroNumTmp, tailingZeroNumTmp)
+				value = int64(leadingZeroNumTmp)
+				for index = int32(conf.DOUBLE_LEADING_ZERO_LENGTH) - 1; index >= 0; index-- {
+					bit = value & (1 << uint32(index))
+
+					base.buffer <<= 1
+					if bit != 0 {
+						base.buffer |= 1
+					}
+					base.numberLeftInBuffer++
+					if base.numberLeftInBuffer == 8 {
+						base.CleanBuffer(buffer)
+					}
+				}
+
+				value = int64(int32(conf.DOUBLE_LENGTH) - leadingZeroNumTmp - tailingZeroNumTmp)
+				for index = int32(conf.DOUBLE_VALUE_LENGTH) - 1; index >= 0; index-- {
+					bit = value & (1 << uint32(index))
+
+					base.buffer <<= 1
+					if bit != 0 {
+						base.buffer |= 1
+					}
+					base.numberLeftInBuffer++
+					if base.numberLeftInBuffer == 8 {
+						base.CleanBuffer(buffer)
+					}
+				}
+
+				for index = int32(conf.DOUBLE_LENGTH) - 1 - leadingZeroNumTmp; index >= tailingZeroNumTmp; index-- {
+					bit = tmp & (1 << uint32(index))
+
+					base.buffer <<= 1
+					if bit != 0 {
+						base.buffer |= 1
+					}
+					base.numberLeftInBuffer++
+					if base.numberLeftInBuffer == 8 {
+						base.CleanBuffer(buffer)
+					}
+				}
 			}
 			d.preValue = nextValue
-			d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
-			d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
+			base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+			base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 		}
-
 	}
 }
 
@@ -70,27 +151,37 @@ func (d *DoublePrecisionEncoder) Flush(buffer *bytes.Buffer) {
 
 func (d *DoublePrecisionEncoder) GetMaxByteSize() int64 {
 	// max(first 4 byte, case '11' bit + 5bit + 6bit + 32bit = 45bit) + NaN(case '11' bit + 5bit + 6bit + 32bit = 45bit) = 90bit
-	return 20;
+	return 20
 }
 
 func (d *DoublePrecisionEncoder) GetOneItemMaxSize() int {
 	// case '11'
 	// 2bit + 5bit + 6bit + 32bit = 45bit
-	return 10;
+	return 10
 }
 
 func (d *DoublePrecisionEncoder) writeBits(num int64, buffer *bytes.Buffer, start int32, end int32) {
-	var bit int64 = 0;
+	var bit int64 = 0
 	var i int32 = 0
+	base := d.base
 	for i = start; i >= end; i-- {
-		bit = num & ( 1 << uint32(i))
-		d.base.writeLongBit(bit, buffer)
+		bit = num & (1 << uint32(i))
+
+		base.buffer <<= 1
+		if bit != 0 {
+			base.buffer |= 1
+		}
+		base.numberLeftInBuffer++
+		if base.numberLeftInBuffer == 8 {
+			base.CleanBuffer(buffer)
+		}
 	}
 }
 
-func NewDoublePrecisionEncoder(dataType constant.TSDataType) (*DoublePrecisionEncoder) {
-	log.Info("double using Gorilla")
+func NewDoublePrecisionEncoder(dataType constant.TSDataType) *DoublePrecisionEncoder {
+	//log.Info("double using Gorilla")
 	d := &DoublePrecisionEncoder{dataType: dataType}
+	d.base = &GorillaEncoder{}
 	d.base.flag = false
 	return d
 }
