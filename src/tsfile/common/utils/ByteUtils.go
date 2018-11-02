@@ -7,7 +7,7 @@ import (
 // get one bit in input byte. the offset is from low to high and start with 0
 // e.g.<br>
 // data:16(00010000), if offset is 4, return 1(000 "1" 0000) if offset is 7, return 0("0" 0010000)
-func GetByteN(data byte, offset int) int {
+func getByteN(data byte, offset int) int {
 	offset &= 0x7
 
 	if (data & (1 << uint(7-offset))) != 0 {
@@ -30,7 +30,7 @@ func GetByteN(data byte, offset int) int {
  * @param value  value to set
  * @return byte variable
  */
-func SetByteN(data byte, offset int, value int) byte {
+func setByteN(data byte, offset int, value int) byte {
 	offset &= 0x7
 
 	if value == 1 {
@@ -51,7 +51,7 @@ func SetByteN(data byte, offset int, value int) byte {
  * @param offset bit offset
  * @return 0 or 1
  */
-func GetIntN(data int32, offset int) int32 {
+func getIntN(data int32, offset int) int32 {
 	offset &= 0x1f
 
 	if (data & (1 << uint32(offset))) != 0 {
@@ -67,7 +67,7 @@ func GetIntN(data int32, offset int) int32 {
 // if offset is 4, value is 1, return 1016({00000000 00000000 00000011 111 "1" 1000})
 // if offset is 9, value is 0 return 488({00000000 00000000 000000 "0" 1 11101000})
 // if offset is 0, value is 0 return 1000(no change)
-func SetIntN(data int32, offset int, value int) int32 {
+func setIntN(data int32, offset int, value int) int32 {
 	offset &= 0x1f
 
 	if value == 1 {
@@ -85,7 +85,7 @@ func SetIntN(data int32, offset int, value int) int32 {
  * @param offset bit offset
  * @return 0/1
  */
-func GetLongN(data int64, offset int) int32 {
+func getLongN(data int64, offset int) int32 {
 	offset &= 0x3f
 
 	if (data & (int64(1) << uint32(offset))) != 0 {
@@ -96,7 +96,7 @@ func GetLongN(data int64, offset int) int32 {
 }
 
 // set one bit in input long. the offset is from low to high and start with index 0
-func SetLongN(data int64, offset int, value int) int64 {
+func setLongN(data int64, offset int, value int) int64 {
 	offset &= 0x3f
 
 	if value == 1 {
@@ -107,13 +107,20 @@ func SetLongN(data int64, offset int, value int) int64 {
 }
 
 // given a byte array, read width bits from specified position bits and convert it to an integer
-func BytesToInt(result []byte, pos int, width int) int32 {
+func BytesToInt(data []byte, pos int, width int) int32 {
 	var value int32 = 0
 
 	offset := pos + width - 1
 	for i := 0; i < width; i++ {
 		index := offset - i
-		value = SetIntN(value, i, GetByteN(result[index/8], index))
+		//value = SetIntN(value, i, getByteN(result[index/8], index))
+
+		offset = i & 0x3f
+		if (data[index/8] & (1 << uint32(7-index&7))) != 0 {
+			value = (value | (1 << uint32(offset)))
+		} else {
+			value = (value & ^(1 << uint32(offset)))
+		}
 	}
 	return value
 }
@@ -125,7 +132,14 @@ func BytesToLong(data []byte, pos int, width int) int64 {
 	offset := pos + width - 1
 	for i := 0; i < width; i++ {
 		index := offset - i
-		value = SetLongN(value, i, GetByteN(data[index/8], index))
+		//value = SetLongN(value, i, getByteN(data[index/8], index))
+
+		offset = i & 0x3f
+		if (data[index/8] & (1 << uint32(7-index&7))) != 0 {
+			value = (value | (1 << uint32(offset)))
+		} else {
+			value = (value & ^(1 << uint32(offset)))
+		}
 	}
 
 	return value
@@ -145,7 +159,7 @@ func IntToBytes(srcNum int32, result []byte, pos int, width int) {
 
 	for i := 0; i < width; i++ {
 		temp := int32(offset-i) / 8
-		result[temp] = SetByteN(result[temp], offset-i, int(GetIntN(srcNum, i)))
+		result[temp] = setByteN(result[temp], offset-i, int(getIntN(srcNum, i)))
 	}
 }
 
@@ -163,7 +177,7 @@ func LongToBytes(srcNum int64, result []byte, pos int, width int) {
 
 	for i := 0; i < width; i++ {
 		temp := (offset - i) / 8
-		result[temp] = SetByteN(result[temp], offset-i, int(GetLongN(srcNum, i)))
+		result[temp] = setByteN(result[temp], offset-i, int(getLongN(srcNum, i)))
 	}
 }
 
