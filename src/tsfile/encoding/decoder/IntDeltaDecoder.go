@@ -18,9 +18,9 @@ type IntDeltaDecoder struct {
 	dataType constant.TSDataType
 	reader   *utils.BytesReader
 
-	count int
-	width int
-	index int
+	count int32
+	width int32
+	index int32
 
 	baseValue     int32
 	firstValue    int32
@@ -46,9 +46,20 @@ func (d *IntDeltaDecoder) Next() interface{} {
 	}
 }
 
+func (d *IntDeltaDecoder) NextEx() int32 {
+	if d.index == d.count {
+		return d.loadPack()
+	} else {
+		result := d.decodedValues[d.index]
+		d.index++
+
+		return int32(result)
+	}
+}
+
 func (d *IntDeltaDecoder) loadPack() int32 {
-	d.count = int(d.reader.ReadInt())
-	d.width = int(d.reader.ReadInt())
+	d.count = int32(d.reader.ReadInt())
+	d.width = int32(d.reader.ReadInt())
 	d.baseValue = d.reader.ReadInt()
 	d.firstValue = d.reader.ReadInt()
 
@@ -60,12 +71,36 @@ func (d *IntDeltaDecoder) loadPack() int32 {
 
 	previousValue := d.firstValue
 	d.decodedValues = make([]int32, d.count)
-	for i := 0; i < d.count; i++ {
-		p := d.width * i
-		v := utils.BytesToInt(valueBuffer, p, d.width)
-		d.decodedValues[i] = previousValue + d.baseValue + v
 
-		previousValue = d.decodedValues[i]
+	var value int32
+
+	var iCount int32
+	var width int32 = d.width
+	var offset int32 = width - 1
+	var index int32 = 0
+	var i int32
+	for iCount = 0; iCount < d.count; iCount++ {
+		////pos = width * iCount
+		//value = utils.BytesToInt(valueBuffer, pos, width)
+		value = 0
+		//offset = pos + width - 1
+		index = offset
+		for i = 0; i < width; i++ {
+			//index := offset - i
+			//value = setIntN(value, i, getByteN(data[index/8], index))
+
+			if (valueBuffer[index/8] & (1 << uint32(7-index&7))) != 0 {
+				value = (value | (1 << uint32(i&0x1f)))
+			} else {
+				value = (value & ^(1 << uint32(i&0x1f)))
+			}
+			index--
+		}
+
+		d.decodedValues[iCount] = previousValue + d.baseValue + value
+		previousValue = d.decodedValues[iCount]
+
+		offset += width
 	}
 
 	return d.firstValue

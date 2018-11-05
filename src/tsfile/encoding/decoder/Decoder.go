@@ -43,9 +43,9 @@ func CreateDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) D
 		} else if dataType == constant.INT64 {
 			decoder = NewLongDeltaDecoder(dataType)
 		} else if dataType == constant.FLOAT {
-			decoder = NewFloatDecoder(encoding, dataType)
+			decoder = NewFloatDeltaDecoder(encoding, dataType)
 		} else if dataType == constant.DOUBLE {
-			decoder = NewDoubleDecoder(encoding, dataType)
+			decoder = NewDoubleDeltaDecoder(encoding, dataType)
 		}
 	case encoding == constant.GORILLA:
 		if dataType == constant.FLOAT {
