@@ -18,9 +18,9 @@ type LongDeltaDecoder struct {
 	dataType constant.TSDataType
 	reader   *utils.BytesReader
 
-	count int
-	width int
-	index int
+	count int32
+	width int32
+	index int32
 
 	baseValue     int64
 	firstValue    int64
@@ -47,8 +47,8 @@ func (d *LongDeltaDecoder) Next() interface{} {
 }
 
 func (d *LongDeltaDecoder) loadPack() int64 {
-	d.count = int(d.reader.ReadInt())
-	d.width = int(d.reader.ReadInt())
+	d.count = int32(d.reader.ReadInt())
+	d.width = int32(d.reader.ReadInt())
 	d.baseValue = d.reader.ReadLong()
 	d.firstValue = d.reader.ReadLong()
 
@@ -60,12 +60,32 @@ func (d *LongDeltaDecoder) loadPack() int64 {
 
 	previousValue := d.firstValue
 	d.decodedValues = make([]int64, d.count)
-	for i := 0; i < d.count; i++ {
-		p := d.width * i
-		v := utils.BytesToLong(valueBuffer, p, d.width)
-		d.decodedValues[i] = previousValue + d.baseValue + v
+	var width int32 = d.width
+	var value int64
+	var offset int32 = width - 1
+	var index int32 = 0
+	var i int32 = 0
+	var iCount int32
+	for iCount = 0; iCount < d.count; iCount++ {
+		////pos = width * iCount
+		//value = utils.BytesToLong(valueBuffer, pos, width)
+		value = 0
+		index = offset
+		//offset := pos + width - 1
+		for i = 0; i < width; i++ {
+			//index := offset - i
+			//value = setLongN(value, i, getByteN(data[index/8], index))
+			if (valueBuffer[index/8] & (1 << uint32(7-index&7))) != 0 {
+				value = (value | (1 << uint32(i&0x3f)))
+			} else {
+				value = (value & ^(1 << uint32(i&0x3f)))
+			}
+			index--
+		}
 
-		previousValue = d.decodedValues[i]
+		d.decodedValues[iCount] = previousValue + d.baseValue + value
+		previousValue = d.decodedValues[iCount]
+		offset += width
 	}
 
 	return d.firstValue
