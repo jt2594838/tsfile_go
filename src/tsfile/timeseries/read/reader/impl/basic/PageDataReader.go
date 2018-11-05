@@ -28,6 +28,13 @@ func (r *PageDataReader) HasNext() bool {
 	return r.TimeDecoder.HasNext() && r.ValueDecoder.HasNext()
 }
 
+func (r *PageDataReader) Next2(pair *datatype.TimeValuePair) error {
+	pair.Timestamp = r.TimeDecoder.Next().(int64)
+	pair.Value = r.ValueDecoder.Next()
+	return nil
+	//return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.Next().(int64), Value: r.ValueDecoder.Next()}, nil
+}
+
 func (r *PageDataReader) Next() (*datatype.TimeValuePair, error) {
 	// TODO: catch errors
 	return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.Next().(int64), Value: r.ValueDecoder.Next()}, nil
