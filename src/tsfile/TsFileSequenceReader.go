@@ -9,6 +9,7 @@ import (
 	"tsfile/common/constant"
 	"tsfile/encoding/decoder"
 	"tsfile/timeseries/read"
+	"tsfile/timeseries/read/datatype"
 
 	"tsfile/timeseries/read/reader/impl/basic"
 )
@@ -59,7 +60,7 @@ func TestRead(strPath string) {
 
 }
 
-func TestReadFile(strPath string, strTag string, bDebugValue bool) time.Duration {
+func TestReadFile(ts *ReadTestResult, bDebugValue bool) time.Duration {
 	defer func() {
 		if err := recover(); err != nil {
 			log.Println("Error:", err)
@@ -68,7 +69,7 @@ func TestReadFile(strPath string, strTag string, bDebugValue bool) time.Duration
 
 	tsCurNew := time.Now()
 	f := new(read.TsFileSequenceReader)
-	f.Open(strPath)
+	f.Open(ts.StrTsFile)
 	defer f.Close()
 
 	_ = f.ReadHeadMagic()
@@ -80,26 +81,38 @@ func TestReadFile(strPath string, strTag string, bDebugValue bool) time.Duration
 	_ = f.ReadFileMetadata()
 	//log.Println("File version: " + strconv.Itoa(fileMetadata.GetCurrentVersion()))
 
+	var pair *datatype.TimeValuePair = &datatype.TimeValuePair{}
+	//var curTime time.Time
 	for f.HasNextRowGroup() {
+		//curTime = time.Now()
 		groupHeader := f.ReadRowGroupHeader()
+		//ts.CostTimeTest1 += time.Since(curTime).Nanoseconds()
+
 		//log.Println("row group: " + groupHeader.GetDevice() + ", chunk number: " + strconv.Itoa(int(groupHeader.GetNumberOfChunks())) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 		for i := 0; i < int(groupHeader.GetNumberOfChunks()); i++ {
+			//curTime = time.Now()
 			chunkHeader := f.ReadChunkHeader()
 			//log.Println("  chunk: " + chunkHeader.GetSensor() + ", page number: " + strconv.Itoa(chunkHeader.GetNumberOfPages()) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 			defaultTimeDecoder := decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)
 			valueDecoder := decoder.CreateDecoder(chunkHeader.GetEncodingType(), chunkHeader.GetDataType())
+			//ts.CostTimeTest2 += time.Since(curTime).Nanoseconds()
 			for j := 0; j < chunkHeader.GetNumberOfPages(); j++ {
+				//curTime = time.Now()
 				pageHeader := f.ReadPageHeader(chunkHeader.GetDataType())
 				//log.Println("    page dps: " + strconv.Itoa(int(pageHeader.GetNumberOfValues())) + ", page data size: " + strconv.Itoa(int(pageHeader.GetCompressedSize())) + ", end posistion: " + strconv.FormatInt(f.Pos(), 10))
 
 				pageData := f.ReadPage(pageHeader, chunkHeader.GetCompressionType())
 				reader1 := &basic.PageDataReader{DataType: chunkHeader.GetDataType(), ValueDecoder: valueDecoder, TimeDecoder: defaultTimeDecoder}
 				reader1.Read(pageData)
+				//ts.CostTimeTest3 += time.Since(curTime).Nanoseconds()
 				for reader1.HasNext() {
-					pair, _ := reader1.Next()
+					//curTime = time.Now()
+					reader1.Next2(pair)
+					//pair, _ := reader1.Next()
 					if bDebugValue {
 						fmt.Printf("%d %v\n", pair.Timestamp, pair.Value)
 					}
+					//ts.CostTimeTest4 += time.Since(curTime).Nanoseconds()
 					//log.Println("      (time,value): " + strconv.FormatInt(pair.Timestamp, 10) + ", " + fmt.Sprintf("%v", pair.Value))
 				}
 			}
@@ -112,55 +125,54 @@ func TestReadFile(strPath string, strTag string, bDebugValue bool) time.Duration
 }
 
 type ReadTestResult struct {
-	StrTsFile string
-	StrTag    string
-	CostTime  time.Duration
+	StrTsFile     string
+	StrTag        string
+	CostTime      time.Duration
+	CostTimeTest1 int64
+	CostTimeTest2 int64
+	CostTimeTest3 int64
+	CostTimeTest4 int64
+	CostTimeTest5 int64
+	CostTimeTest6 int64
 }
 
-func TestReadEx(strDir string, bDebugValue bool) {
+func TestReadEx(strDir string, bDebugMoreInfo bool, bDebugValue bool) {
 	var t *ReadTestResult
 	var arrResult []*ReadTestResult = make([]*ReadTestResult, 15)
 
 	arrResult[0] = &ReadTestResult{StrTsFile: strDir + "output1.ts", StrTag: "TS_2DIFF   int32", CostTime: 0}
-	arrResult[1] = &ReadTestResult{strDir + "output2.ts", "TS_2DIFF   int64", 0}
-	arrResult[2] = &ReadTestResult{strDir + "output3.ts", "TS_2DIFF float32", 0}
-	arrResult[3] = &ReadTestResult{strDir + "output4.ts", "TS_2DIFF float64", 0}
-	arrResult[4] = &ReadTestResult{strDir + "output5.ts", "PLAIN       Text", 0}
-	arrResult[5] = &ReadTestResult{strDir + "output6.ts", "RLE        int32", 0}
-	arrResult[6] = &ReadTestResult{strDir + "output7.ts", "RLE        int64", 0}
-	arrResult[7] = &ReadTestResult{strDir + "output8.ts", "RLE      float32", 0}
-	arrResult[8] = &ReadTestResult{strDir + "output9.ts", "RLE      float64", 0}
-	arrResult[9] = &ReadTestResult{strDir + "output10.ts", "GORILLA float32", 0}
-	arrResult[10] = &ReadTestResult{strDir + "output11.ts", "GORILLA float64", 0}
-	arrResult[11] = &ReadTestResult{strDir + "output12.ts", "PLAIN     int32", 0}
-	arrResult[12] = &ReadTestResult{strDir + "output13.ts", "PLAIN     int64", 0}
-	arrResult[13] = &ReadTestResult{strDir + "output14.ts", "PLAIN   float32", 0}
-	arrResult[14] = &ReadTestResult{strDir + "output15.ts", "PLAIN   float64", 0}
+	arrResult[1] = &ReadTestResult{StrTsFile: strDir + "output2.ts", StrTag: "TS_2DIFF   int64", CostTime: 0}
+	arrResult[2] = &ReadTestResult{StrTsFile: strDir + "output3.ts", StrTag: "TS_2DIFF float32", CostTime: 0}
+	arrResult[3] = &ReadTestResult{StrTsFile: strDir + "output4.ts", StrTag: "TS_2DIFF float64", CostTime: 0}
+	arrResult[4] = &ReadTestResult{StrTsFile: strDir + "output5.ts", StrTag: "PLAIN       Text", CostTime: 0}
+	arrResult[5] = &ReadTestResult{StrTsFile: strDir + "output6.ts", StrTag: "RLE        int32", CostTime: 0}
+	arrResult[6] = &ReadTestResult{StrTsFile: strDir + "output7.ts", StrTag: "RLE        int64", CostTime: 0}
+	arrResult[7] = &ReadTestResult{StrTsFile: strDir + "output8.ts", StrTag: "RLE      float32", CostTime: 0}
+	arrResult[8] = &ReadTestResult{StrTsFile: strDir + "output9.ts", StrTag: "RLE      float64", CostTime: 0}
+	arrResult[9] = &ReadTestResult{StrTsFile: strDir + "output10.ts", StrTag: "GORILLA float32", CostTime: 0}
+	arrResult[10] = &ReadTestResult{StrTsFile: strDir + "output11.ts", StrTag: "GORILLA float64", CostTime: 0}
+	arrResult[11] = &ReadTestResult{StrTsFile: strDir + "output12.ts", StrTag: "PLAIN     int32", CostTime: 0}
+	arrResult[12] = &ReadTestResult{StrTsFile: strDir + "output13.ts", StrTag: "PLAIN     int64", CostTime: 0}
+	arrResult[13] = &ReadTestResult{StrTsFile: strDir + "output14.ts", StrTag: "PLAIN   float32", CostTime: 0}
+	arrResult[14] = &ReadTestResult{StrTsFile: strDir + "output15.ts", StrTag: "PLAIN   float64", CostTime: 0}
 
 	var iMax int32 = 1
 	for i := int32(0); i < iMax; i++ {
 		for _, t = range arrResult {
-			t.CostTime += TestReadFile(t.StrTsFile, t.StrTag, bDebugValue)
+			t.CostTime += TestReadFile(t, bDebugValue)
 		}
 	}
 	for _, t = range arrResult {
 		t.CostTime = time.Duration(t.CostTime.Nanoseconds() / int64(iMax))
-		fmt.Printf("%s %s cost time %d = %fms\n", t.StrTsFile, t.StrTag,
-			t.CostTime.Nanoseconds(), t.CostTime.Seconds()*1000)
+		if bDebugMoreInfo {
+			fmt.Printf("%s %s cost time %d = %fms\ntotal:%d\ntest1:%d\ntest2:%d\ntest3:%d\ntest4:%d\ntest5:%d\ntest6:%d\n", t.StrTsFile, t.StrTag,
+				t.CostTime.Nanoseconds(), t.CostTime.Seconds()*1000,
+				t.CostTime.Nanoseconds(), t.CostTimeTest1,
+				t.CostTimeTest2, t.CostTimeTest3, t.CostTimeTest4, t.CostTimeTest5, t.CostTimeTest6)
+		} else {
+			fmt.Printf("%s %s cost time %d = %fms\n", t.StrTsFile, t.StrTag,
+				t.CostTime.Nanoseconds(), t.CostTime.Seconds()*1000)
+		}
+
 	}
-	/*arrResult[0] += TestReadFile(strDir+"output1.ts", "TS_2DIFF   int32", bDebugValue)
-	arrResult[1] += TestReadFile(strDir+"output2.ts", "TS_2DIFF   int64", bDebugValue)
-	arrResult[2] += TestReadFile(strDir+"output3.ts", "TS_2DIFF float32", bDebugValue)
-	arrResult[3] += TestReadFile(strDir+"output4.ts", "TS_2DIFF float64", bDebugValue)
-	arrResult[4] += TestReadFile(strDir+"output5.ts", "PLAIN       Text", bDebugValue)
-	arrResult[5] += TestReadFile(strDir+"output6.ts", "RLE        int32", bDebugValue)
-	arrResult[6] += TestReadFile(strDir+"output7.ts", "RLE        int64", bDebugValue)
-	arrResult[7] += TestReadFile(strDir+"output8.ts", "RLE      float32", bDebugValue)
-	arrResult[8] += TestReadFile(strDir+"output9.ts", "RLE      float64", bDebugValue)
-	arrResult[9] += TestReadFile(strDir+"output10.ts", "GORILLA float32", bDebugValue)
-	arrResult[10] += TestReadFile(strDir+"output11.ts", "GORILLA float64", bDebugValue)
-	arrResult[11] += TestReadFile(strDir+"output12.ts", "PLAIN     int32", bDebugValue)
-	arrResult[12] += TestReadFile(strDir+"output13.ts", "PLAIN     int64", bDebugValue)
-	arrResult[13] += TestReadFile(strDir+"output14.ts", "PLAIN   float32", bDebugValue)
-	arrResult[14] += TestReadFile(strDir+"output15.ts", "PLAIN   float64", bDebugValue)*/
 }
