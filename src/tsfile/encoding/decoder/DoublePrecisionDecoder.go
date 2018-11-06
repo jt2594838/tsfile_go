@@ -32,19 +32,21 @@ func (d *DoublePrecisionDecoder) NextInt64() int64 {
 
 func (d *DoublePrecisionDecoder) Next() interface{} {
 	if !d.flag {
+		base := &(d.base)
+		reader := d.reader
 		d.flag = true
 
-		ch := d.reader.ReadSlice(8)
+		ch := reader.ReadSlice(8)
 		var res int64 = 0
 		for i := 0; i < 8; i++ {
 			res += int64(ch[i]) << uint(i*8)
 		}
 		d.preValue = res
 
-		d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
-		d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
+		base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+		base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 		tmp := math.Float64frombits(uint64(d.preValue))
-		d.base.fillBuffer(d.reader)
+		base.fillBuffer(reader)
 		d.getNextValue()
 
 		return tmp
@@ -58,17 +60,19 @@ func (d *DoublePrecisionDecoder) Next() interface{} {
 
 func (d *DoublePrecisionDecoder) getNextValue() {
 	// case: '0'
-	if !d.base.readBit(d.reader) {
+	base := &(d.base)
+	reader := d.reader
+	if !base.readBit(reader) {
 		return
 	}
-	if !d.base.readBit(d.reader) {
+	if !base.readBit(reader) {
 		// case: '10'
 		var tmp int64 = 0
-		l := conf.DOUBLE_LENGTH - int(d.base.leadingZeroNum+d.base.tailingZeroNum)
-		t := conf.DOUBLE_LENGTH - int(d.base.leadingZeroNum+1)
+		l := conf.DOUBLE_LENGTH - int(base.leadingZeroNum+d.base.tailingZeroNum)
+		t := conf.DOUBLE_LENGTH - int(base.leadingZeroNum+1)
 		for i := 0; i < l; i++ {
 			var bit int
-			if d.base.readBit(d.reader) {
+			if base.readBit(reader) {
 				bit = 1
 			} else {
 				bit = 0
@@ -79,15 +83,15 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 		d.preValue = tmp
 	} else {
 		// case: '11'
-		leadingZeroNumTmp := int(d.base.readIntFromStream(d.reader, conf.DOUBLE_LEADING_ZERO_LENGTH))
-		lenTmp := int(d.base.readIntFromStream(d.reader, conf.DOUBLE_VALUE_LENGTH))
-		var tmp int64 = d.base.readLongFromStream(d.reader, lenTmp)
+		leadingZeroNumTmp := int(base.readIntFromStream(d.reader, conf.DOUBLE_LEADING_ZERO_LENGTH))
+		lenTmp := int(base.readIntFromStream(d.reader, conf.DOUBLE_VALUE_LENGTH))
+		var tmp int64 = base.readLongFromStream(d.reader, lenTmp)
 		tmp <<= uint(conf.DOUBLE_LENGTH - leadingZeroNumTmp - lenTmp)
 		tmp ^= d.preValue
 		d.preValue = tmp
 	}
-	d.base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
-	d.base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
+	base.leadingZeroNum = utils.NumberOfLeadingZerosLong(d.preValue)
+	base.tailingZeroNum = utils.NumberOfTrailingZerosLong(d.preValue)
 }
 
 func NewDoublePrecisionDecoder(dataType constant.TSDataType) *DoublePrecisionDecoder {
