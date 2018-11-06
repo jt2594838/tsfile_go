@@ -26,9 +26,9 @@ func (g *GorillaDecoder) fillBuffer(reader *utils.BytesReader) {
 	g.numberLeftInBuffer = 8
 }
 
-func (g *GorillaDecoder) readIntFromStream(reader *utils.BytesReader, len int) int32 {
+func (g *GorillaDecoder) readIntFromStream(reader *utils.BytesReader, len int32) int32 {
 	var num int32 = 0
-	for i := 0; i < len; i++ {
+	for i := int32(0); i < len; i++ {
 		var bit int32
 		if g.readBit(reader) {
 			bit = 1
@@ -40,9 +40,9 @@ func (g *GorillaDecoder) readIntFromStream(reader *utils.BytesReader, len int) i
 	return num
 }
 
-func (g *GorillaDecoder) readLongFromStream(reader *utils.BytesReader, len int) int64 {
+func (g *GorillaDecoder) readLongFromStream(reader *utils.BytesReader, len int32) int64 {
 	var num int64 = 0
-	for i := 0; i < len; i++ {
+	for i := int32(0); i < len; i++ {
 		var bit int64
 		if g.readBit(reader) {
 			bit = 1

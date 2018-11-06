@@ -19,12 +19,12 @@ const (
 	RLE_MAX_BIT_PACKED_NUM int32 = 63
 
 	// Gorilla encoding configuration
-	FLOAT_LENGTH               int = 32
-	FLAOT_LEADING_ZERO_LENGTH  int = 5
-	FLOAT_VALUE_LENGTH         int = 6
-	DOUBLE_LENGTH              int = 64
-	DOUBLE_LEADING_ZERO_LENGTH int = 6
-	DOUBLE_VALUE_LENGTH        int = 7
+	FLOAT_LENGTH               int32 = 32
+	FLAOT_LEADING_ZERO_LENGTH  int32 = 5
+	FLOAT_VALUE_LENGTH         int32 = 6
+	DOUBLE_LENGTH              int32 = 64
+	DOUBLE_LEADING_ZERO_LENGTH int32 = 6
+	DOUBLE_VALUE_LENGTH        int32 = 7
 )
 
 // Memory size threshold for flushing to disk or HDFS, default value is 128MB

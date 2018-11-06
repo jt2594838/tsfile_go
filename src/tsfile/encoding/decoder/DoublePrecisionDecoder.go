@@ -68,10 +68,10 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 	if !base.readBit(reader) {
 		// case: '10'
 		var tmp int64 = 0
-		l := conf.DOUBLE_LENGTH - int(base.leadingZeroNum+d.base.tailingZeroNum)
-		t := conf.DOUBLE_LENGTH - int(base.leadingZeroNum+1)
-		for i := 0; i < l; i++ {
-			var bit int
+		l := conf.DOUBLE_LENGTH - (base.leadingZeroNum + d.base.tailingZeroNum)
+		t := conf.DOUBLE_LENGTH - (base.leadingZeroNum + 1)
+		for i := int32(0); i < l; i++ {
+			var bit int64
 			if base.readBit(reader) {
 				bit = 1
 			} else {
@@ -83,8 +83,8 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 		d.preValue = tmp
 	} else {
 		// case: '11'
-		leadingZeroNumTmp := int(base.readIntFromStream(d.reader, conf.DOUBLE_LEADING_ZERO_LENGTH))
-		lenTmp := int(base.readIntFromStream(d.reader, conf.DOUBLE_VALUE_LENGTH))
+		leadingZeroNumTmp := base.readIntFromStream(d.reader, conf.DOUBLE_LEADING_ZERO_LENGTH)
+		lenTmp := base.readIntFromStream(d.reader, conf.DOUBLE_VALUE_LENGTH)
 		var tmp int64 = base.readLongFromStream(d.reader, lenTmp)
 		tmp <<= uint(conf.DOUBLE_LENGTH - leadingZeroNumTmp - lenTmp)
 		tmp ^= d.preValue

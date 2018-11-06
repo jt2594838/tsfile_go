@@ -59,21 +59,21 @@ func (d *SinglePrecisionDecoder) getNextValue() {
 	if !d.base.readBit(d.reader) {
 		// case: '10'
 		var tmp int32 = 0
-		for i := 0; i < conf.FLOAT_LENGTH-int(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
+		for i := int32(0); i < conf.FLOAT_LENGTH-(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
 			var bit int32
 			if d.base.readBit(d.reader) {
 				bit = 1
 			} else {
 				bit = 0
 			}
-			tmp |= bit << uint(conf.FLOAT_LENGTH-1-int(d.base.leadingZeroNum)-i)
+			tmp |= bit << uint(conf.FLOAT_LENGTH-1-(d.base.leadingZeroNum)-i)
 		}
 		tmp ^= d.preValue
 		d.preValue = tmp
 	} else {
 		// case: '11'
-		leadingZeroNumTmp := int(d.base.readIntFromStream(d.reader, conf.FLAOT_LEADING_ZERO_LENGTH))
-		lenTmp := int(d.base.readIntFromStream(d.reader, conf.FLOAT_VALUE_LENGTH))
+		leadingZeroNumTmp := d.base.readIntFromStream(d.reader, conf.FLAOT_LEADING_ZERO_LENGTH)
+		lenTmp := d.base.readIntFromStream(d.reader, conf.FLOAT_VALUE_LENGTH)
 		var tmp int32 = d.base.readIntFromStream(d.reader, lenTmp)
 		tmp <<= uint(conf.FLOAT_LENGTH - leadingZeroNumTmp - lenTmp)
 		tmp ^= d.preValue
