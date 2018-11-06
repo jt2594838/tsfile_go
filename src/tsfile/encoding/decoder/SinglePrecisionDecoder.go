@@ -26,6 +26,10 @@ func (d *SinglePrecisionDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
+func (d *SinglePrecisionDecoder) NextInt64() int64 {
+	return 0
+}
+
 func (d *SinglePrecisionDecoder) Next() interface{} {
 	if !d.flag {
 		d.flag = true

@@ -1,14 +1,14 @@
 package seek
 
 import (
+	"errors"
 	"tsfile/common/constant"
+	"tsfile/common/log"
 	"tsfile/encoding/decoder"
 	"tsfile/file/header"
 	"tsfile/timeseries/read"
 	"tsfile/timeseries/read/datatype"
 	"tsfile/timeseries/read/reader/impl/basic"
-	"errors"
-	"tsfile/common/log"
 )
 
 type SeekableSeriesReader struct {
@@ -16,7 +16,7 @@ type SeekableSeriesReader struct {
 
 	pageHeaders []*header.PageHeader
 	current     *datatype.TimeValuePair
-	exhausted bool
+	exhausted   bool
 }
 
 func (r *SeekableSeriesReader) Seek(timestamp int64) bool {
@@ -83,8 +83,11 @@ func (r *SeekableSeriesReader) nextPageReader() error {
 	if r.PageIndex >= r.PageLimit {
 		return errors.New("page exhausted")
 	}
-	r.PageReader = &SeekablePageDataReader{&basic.PageDataReader{DataType: r.DType, ValueDecoder: decoder.CreateDecoder(r.Encoding, r.DType),
-		TimeDecoder: decoder.CreateDecoder(constant.TS_2DIFF, constant.INT64)}, nil}
+	//r.PageReader = &SeekablePageDataReader{&basic.PageDataReader{DataType: r.DType, ValueDecoder: decoder.CreateDecoder(r.Encoding, r.DType),
+	//	TimeDecoder: decoder.NewLongDeltaDecoder(constant.INT64)}, nil}
+	r.PageReader = basic.NewPageDataReader(r.DType,
+		decoder.CreateDecoder(r.Encoding, r.DType),
+		decoder.NewLongDeltaDecoder(constant.INT64))
 	r.PageReader.Read(r.FileReader.ReadRaw(r.Offsets[r.PageIndex], r.Sizes[r.PageIndex]))
 	return nil
 }

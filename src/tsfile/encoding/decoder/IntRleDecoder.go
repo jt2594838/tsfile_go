@@ -61,6 +61,10 @@ func (d *IntRleDecoder) HasNext() bool {
 	return false
 }
 
+func (d *IntRleDecoder) NextInt64() int64 {
+	return 0
+}
+
 func (d *IntRleDecoder) Next() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number

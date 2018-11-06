@@ -46,6 +46,10 @@ func (d *IntDeltaDecoder) Next() interface{} {
 	}
 }
 
+func (d *IntDeltaDecoder) NextInt64() int64 {
+	return 0
+}
+
 func (d *IntDeltaDecoder) NextEx() int32 {
 	if d.index == d.count {
 		return d.loadPack()

@@ -61,6 +61,44 @@ func (d *LongRleDecoder) HasNext() bool {
 	return false
 }
 
+func (d *LongRleDecoder) NextInt64() int64 {
+	if !d.isReadingBegan {
+		// read length and bit width of current package before we decode number
+		d.length = int(d.reader.ReadUnsignedVarInt())
+
+		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(d.length))
+		d.bitWidth = int(d.packageReader.Read())
+
+		d.packer = &bitpacking.LongPacker{BitWidth: d.bitWidth}
+
+		d.isReadingBegan = true
+	}
+
+	if d.currentCount == 0 {
+		d.readPackage()
+	}
+
+	d.currentCount--
+
+	var result int64 = 0
+	switch d.mode {
+	case RLE:
+		result = d.currentValue
+		break
+	case BIT_PACKED:
+		result = d.decodedValues[d.bitPackingNum-d.currentCount-1]
+		break
+	default:
+		panic("tsfile-encoding LongRleDecoder: not a valid mode")
+	}
+
+	//	if d.currentCount > 0 || d.packageReader.Len() <= 0 {
+	//		d.isReadingBegan = false
+	//	}
+
+	return result
+}
+
 func (d *LongRleDecoder) Next() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number

@@ -46,6 +46,17 @@ func (d *LongDeltaDecoder) Next() interface{} {
 	}
 }
 
+func (d *LongDeltaDecoder) NextInt64() int64 {
+	if d.index == d.count {
+		return d.loadPack()
+	} else {
+		result := d.decodedValues[d.index]
+		d.index++
+
+		return result
+	}
+}
+
 func (d *LongDeltaDecoder) NextEx() int64 {
 	if d.index == d.count {
 		return d.loadPack()

@@ -45,6 +45,10 @@ func (d *DoubleDecoder) HasNext() bool {
 	return d.baseDecoder.HasNext()
 }
 
+func (d *DoubleDecoder) NextInt64() int64 {
+	return 0
+}
+
 func (d *DoubleDecoder) Next() interface{} {
 	value := d.baseDecoder.Next().(int64)
 	result := float64(value) / d.maxPointValue

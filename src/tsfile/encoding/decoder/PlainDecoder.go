@@ -21,6 +21,22 @@ func (d *PlainDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
+func (d *PlainDecoder) NextInt64() int64 {
+	switch {
+	case d.dataType == constant.INT64:
+		result := d.reader.ReadSlice(8)
+		return int64(binary.LittleEndian.Uint64(result))
+	case d.dataType == constant.BOOLEAN:
+	case d.dataType == constant.INT32:
+	case d.dataType == constant.FLOAT:
+	case d.dataType == constant.DOUBLE:
+	case d.dataType == constant.TEXT:
+	default:
+		return 0
+	}
+	return 0
+}
+
 func (d *PlainDecoder) Next() interface{} {
 	switch {
 	case d.dataType == constant.BOOLEAN:

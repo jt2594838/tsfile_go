@@ -16,6 +16,7 @@ type Decoder interface {
 	Init(data []byte)
 	HasNext() bool
 	Next() interface{}
+	NextInt64() int64
 }
 
 func CreateDecoder(encoding constant.TSEncoding, dataType constant.TSDataType) Decoder {
