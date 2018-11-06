@@ -70,9 +70,16 @@ func (d *DoublePrecisionDecoder) getNextValue() {
 		var tmp int64 = 0
 		l := conf.DOUBLE_LENGTH - (base.leadingZeroNum + d.base.tailingZeroNum)
 		t := conf.DOUBLE_LENGTH - (base.leadingZeroNum + 1)
+
 		for i := int32(0); i < l; i++ {
 			var bit int64
-			if base.readBit(reader) {
+			if base.numberLeftInBuffer == 0 {
+				base.fillBuffer(reader)
+			}
+
+			base.numberLeftInBuffer--
+			if ((base.buffer >> uint32(base.numberLeftInBuffer)) & 1) == 1 {
+				//if base.readBit(reader) {
 				bit = 1
 			} else {
 				bit = 0

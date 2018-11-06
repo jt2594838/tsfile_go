@@ -59,14 +59,16 @@ func (d *SinglePrecisionDecoder) getNextValue() {
 	if !d.base.readBit(d.reader) {
 		// case: '10'
 		var tmp int32 = 0
-		for i := int32(0); i < conf.FLOAT_LENGTH-(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
+		iLen := conf.FLOAT_LENGTH - (d.base.leadingZeroNum + d.base.tailingZeroNum)
+		iTempMoved := conf.FLOAT_LENGTH - 1 - (d.base.leadingZeroNum)
+		for i := int32(0); i < iLen; i++ {
 			var bit int32
 			if d.base.readBit(d.reader) {
 				bit = 1
 			} else {
 				bit = 0
 			}
-			tmp |= bit << uint(conf.FLOAT_LENGTH-1-(d.base.leadingZeroNum)-i)
+			tmp |= bit << uint(iTempMoved-i)
 		}
 		tmp ^= d.preValue
 		d.preValue = tmp
