@@ -17,7 +17,7 @@ type PageDataReader struct {
 
 func (r *PageDataReader) Read(data []byte) {
 	reader := utils.NewBytesReader(data)
-	timeInputStreamLength := int(reader.ReadUnsignedVarInt())
+	timeInputStreamLength := reader.ReadUnsignedVarInt()
 	pos := reader.Pos()
 
 	r.TimeDecoder.Init(data[pos : timeInputStreamLength+pos])

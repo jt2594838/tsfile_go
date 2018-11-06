@@ -52,9 +52,9 @@ func (d *PlainDecoder) Next() interface{} {
 	case d.dataType == constant.DOUBLE:
 		return d.reader.ReadDouble()
 	case d.dataType == constant.TEXT:
-		len_bytes := d.reader.ReadSlice(4)
-		len := int32(binary.LittleEndian.Uint32(len_bytes))
-		return string(d.reader.ReadSlice(int(len)))
+		//len_bytes := d.reader.ReadSlice(4)
+		len1 := int32(binary.LittleEndian.Uint32(d.reader.ReadSlice(4)))
+		return string(d.reader.ReadSlice(len1))
 	default:
 		panic("ReadValue not supported: " + strconv.Itoa(int(d.dataType)))
 	}

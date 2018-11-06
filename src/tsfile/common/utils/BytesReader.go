@@ -9,19 +9,19 @@ import (
 // bytes slice reader, result is the reference of source
 type BytesReader struct {
 	buf []byte
-	pos int
+	pos int32
 }
 
 func NewBytesReader(data []byte) *BytesReader {
 	return &BytesReader{data, 0}
 }
 
-func (r *BytesReader) Pos() int {
+func (r *BytesReader) Pos() int32 {
 	return r.pos
 }
 
-func (r *BytesReader) Len() int {
-	return len(r.buf) - r.pos
+func (r *BytesReader) Len() int32 {
+	return int32(len(r.buf)) - r.pos
 }
 
 func (r *BytesReader) Remaining() []byte {
@@ -44,44 +44,37 @@ func (r *BytesReader) ReadShort() int16 {
 
 func (r *BytesReader) ReadInt() int32 {
 	bytes := r.buf[r.pos : r.pos+4]
-	result := int32(binary.BigEndian.Uint32(bytes))
 	r.pos += 4
-
-	return result
+	return int32(binary.BigEndian.Uint32(bytes))
 }
 
 func (r *BytesReader) ReadLong() int64 {
 	result := int64(binary.BigEndian.Uint64(r.buf[r.pos : r.pos+8]))
 	r.pos += 8
-
 	return result
 }
 
 func (r *BytesReader) ReadFloat() float32 {
 	bits := binary.LittleEndian.Uint32(r.buf[r.pos : r.pos+4])
-	result := math.Float32frombits(bits)
 	r.pos += 4
-
-	return result
+	return math.Float32frombits(bits)
 }
 
 func (r *BytesReader) ReadDouble() float64 {
 	bits := binary.LittleEndian.Uint64(r.buf[r.pos : r.pos+8])
-	result := math.Float64frombits(bits)
 	r.pos += 8
-
-	return result
+	return math.Float64frombits(bits)
 }
 
 func (r *BytesReader) ReadString() string {
-	length := int(r.ReadInt())
+	length := r.ReadInt()
 	result := string(r.buf[r.pos : r.pos+length])
 	r.pos += length
 
 	return result
 }
 
-func (r *BytesReader) ReadBytes(length int) []byte {
+func (r *BytesReader) ReadBytes(length int32) []byte {
 	dst := make([]byte, length)
 	copy(dst, r.buf[r.pos:r.pos+length])
 
@@ -91,7 +84,7 @@ func (r *BytesReader) ReadBytes(length int) []byte {
 }
 
 func (r *BytesReader) ReadStringBinary() []byte {
-	length := int(r.ReadInt())
+	length := r.ReadInt()
 
 	dst := make([]byte, length)
 	copy(dst, r.buf[r.pos:r.pos+length])
@@ -101,10 +94,9 @@ func (r *BytesReader) ReadStringBinary() []byte {
 	return dst
 }
 
-func (r *BytesReader) ReadSlice(length int) []byte {
+func (r *BytesReader) ReadSlice(length int32) []byte {
 	result := r.buf[r.pos : r.pos+length]
 	r.pos += length
-
 	return result
 }
 
@@ -123,8 +115,9 @@ func (r *BytesReader) ReadUnsignedVarInt() int32 {
 
 	b := r.buf[r.pos]
 	r.pos++
+	var iLen = int32(len(r.buf))
 
-	for r.pos <= len(r.buf) && (b&0x80) != 0 {
+	for r.pos <= iLen && (b&0x80) != 0 {
 		value |= int32(b&0x7F) << i
 		i += 7
 

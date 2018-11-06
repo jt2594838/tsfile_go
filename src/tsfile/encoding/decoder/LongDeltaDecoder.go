@@ -77,7 +77,7 @@ func (d *LongDeltaDecoder) loadPack() int64 {
 	d.index = 0
 
 	//how many bytes data takes after encoding
-	encodingLength := int(math.Ceil(float64(d.count*d.width) / 8.0))
+	encodingLength := int32(math.Ceil(float64(d.count*d.width) / 8.0))
 	valueBuffer := d.reader.ReadSlice(encodingLength)
 
 	previousValue := d.firstValue

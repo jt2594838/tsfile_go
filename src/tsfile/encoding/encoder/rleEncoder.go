@@ -15,9 +15,9 @@ type RleEncoder struct {
 	encodeEndian        int16
 	values_32           []int32
 	values_64           []int64
-	bitWidth            int
-	repeatCount         int
-	bitPackedGroupCount int
+	bitWidth            int32
+	repeatCount         int32
+	bitPackedGroupCount int32
 	bytesBuffer         []byte
 	isBitPackRun        bool
 	preValue_32         int32
@@ -26,7 +26,7 @@ type RleEncoder struct {
 	byteCache           *bytes.Buffer
 	packer_32           *bitpacking.IntPacker
 	packer_64           *bitpacking.LongPacker
-	numBufferedValues   int
+	numBufferedValues   int32
 	bufferedValues_32   []int32
 	bufferedValues_64   []int64
 }
@@ -71,7 +71,7 @@ func (this *RleEncoder) EncInt64(value int64, buffer *bytes.Buffer) {
 	this.values_64 = append(this.values_64, value)
 }
 
-func getIntMaxBitWidth(list []int32) int {
+func getIntMaxBitWidth(list []int32) int32 {
 	max := int32(1)
 	for _, num := range list {
 		bitWidth := 32 - utils.NumberOfLeadingZeros(num)
@@ -79,10 +79,10 @@ func getIntMaxBitWidth(list []int32) int {
 			max = bitWidth
 		}
 	}
-	return int(max)
+	return max
 }
 
-func getLongMaxBitWidth(list []int64) int {
+func getLongMaxBitWidth(list []int64) int32 {
 	max := int32(1)
 	for _, num := range list {
 		bitWidth := 64 - utils.NumberOfLeadingZerosLong(num)
@@ -90,7 +90,7 @@ func getLongMaxBitWidth(list []int64) int {
 			max = bitWidth
 		}
 	}
-	return int(max)
+	return max
 }
 
 func (this *RleEncoder) endPreviousBitPackedRun(lastBitPackedNum int32) {
@@ -132,8 +132,8 @@ func (this *RleEncoder) convertBuffer() {
 	case (constant.BOOLEAN):
 	case (constant.INT32):
 		tmpBuffer := make([]int32, conf.RLE_MIN_REPEATED_NUM)
-		for i := 0; i < conf.RLE_MIN_REPEATED_NUM; i++ {
-			if i < len(this.bufferedValues_32) {
+		for i := int32(0); i < conf.RLE_MIN_REPEATED_NUM; i++ {
+			if i < int32(len(this.bufferedValues_32)) {
 				tmpBuffer[i] = (this.bufferedValues_32[i])
 			}
 		}
@@ -142,8 +142,8 @@ func (this *RleEncoder) convertBuffer() {
 		break
 	case (constant.INT64):
 		tmpBuffer := make([]int64, 0) //conf.RLE_MIN_REPEATED_NUM)
-		for i := 0; i < conf.RLE_MIN_REPEATED_NUM; i++ {
-			if i < len(this.bufferedValues_64) {
+		for i := int32(0); i < conf.RLE_MIN_REPEATED_NUM; i++ {
+			if i < int32(len(this.bufferedValues_64)) {
 				tmpBuffer = append(tmpBuffer, this.bufferedValues_64[i])
 			} else {
 				tmpBuffer = append(tmpBuffer, 0)
@@ -229,12 +229,12 @@ func (this *RleEncoder) clearBuffer() {
 		switch this.tsDataType {
 		case (constant.BOOLEAN):
 		case (constant.INT32):
-			if i < len(this.bufferedValues_32) {
+			if i < int32(len(this.bufferedValues_32)) {
 				this.bufferedValues_32 = append(this.bufferedValues_32, 0)
 			}
 			break
 		case (constant.INT64):
-			if i < len(this.bufferedValues_64) {
+			if i < int32(len(this.bufferedValues_64)) {
 				this.bufferedValues_64 = append(this.bufferedValues_64, 0)
 			}
 			break
@@ -289,15 +289,15 @@ func (this *RleEncoder) Flush(buffer *bytes.Buffer) {
 	switch this.tsDataType {
 	case (constant.BOOLEAN):
 	case (constant.INT32):
-		this.bitWidth = int(getIntMaxBitWidth(this.values_32))
-		this.packer_32 = &bitpacking.IntPacker{BitWidth: int(this.bitWidth)}
+		this.bitWidth = getIntMaxBitWidth(this.values_32)
+		this.packer_32 = &bitpacking.IntPacker{BitWidth: this.bitWidth}
 		for _, v := range this.values_32 {
 			this.encodeValue(int64(v))
 		}
 		break
 	case (constant.INT64):
-		this.bitWidth = int(getLongMaxBitWidth(this.values_64))
-		this.packer_64 = &bitpacking.LongPacker{BitWidth: int(this.bitWidth)}
+		this.bitWidth = getLongMaxBitWidth(this.values_64)
+		this.packer_64 = &bitpacking.LongPacker{BitWidth: this.bitWidth}
 		for _, v := range this.values_64 {
 			this.encodeValue(int64(v))
 		}

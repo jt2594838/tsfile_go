@@ -14,11 +14,11 @@ type BitmapDecoder struct {
 	reader *utils.BytesReader
 
 	// how many bytes for all encoded data
-	length int
+	length int32
 	// number of encoded data
-	number int
+	number int32
 	// number of data left for reading in current buffer
-	currentCount int
+	currentCount int32
 	// decoder reads all bitmap index from byteCache and save in
 	buffer map[int32][]byte
 }
@@ -43,8 +43,8 @@ func (d *BitmapDecoder) Next() interface{} {
 		d.buffer = make(map[int32][]byte)
 
 		// getLengthAndNumber
-		d.length = int(d.reader.ReadUnsignedVarInt())
-		d.number = int(d.reader.ReadUnsignedVarInt())
+		d.length = d.reader.ReadUnsignedVarInt()
+		d.number = d.reader.ReadUnsignedVarInt()
 
 		d.readPackage()
 	}
@@ -65,9 +65,9 @@ func (d *BitmapDecoder) Next() interface{} {
 }
 
 func (d *BitmapDecoder) readPackage() {
-	packageReader := utils.NewBytesReader(d.reader.ReadSlice(int(d.length)))
+	packageReader := utils.NewBytesReader(d.reader.ReadSlice(d.length))
 
-	len := (d.number + 7) / 8
+	len := int32((d.number + 7) / 8)
 	for packageReader.Len() > 0 {
 		value := packageReader.ReadUnsignedVarInt()
 		data := packageReader.ReadBytes(len)

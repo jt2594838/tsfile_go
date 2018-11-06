@@ -31,15 +31,15 @@ type IntRleDecoder struct {
 
 	packageReader *utils.BytesReader
 	// how many bytes for all encoded data
-	length int
+	length int32
 	// bit width for bit-packing and rle to decode
-	bitWidth int
+	bitWidth int32
 	// number of data left for reading in current buffer
-	currentCount int
+	currentCount int32
 	// mode to indicate current encoding type
-	mode int
+	mode int32
 	// number of bit-packing group in which is saved in header
-	bitPackingNum int
+	bitPackingNum int32
 
 	currentValue  int32
 	decodedValues []int32
@@ -68,10 +68,10 @@ func (d *IntRleDecoder) NextInt64() int64 {
 func (d *IntRleDecoder) Next() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
-		d.length = int(d.reader.ReadUnsignedVarInt())
+		d.length = d.reader.ReadUnsignedVarInt()
 
-		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(int(d.length)))
-		d.bitWidth = int(d.packageReader.Read())
+		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(d.length))
+		d.bitWidth = d.packageReader.Read()
 
 		d.packer = &bitpacking.IntPacker{BitWidth: d.bitWidth}
 
@@ -104,7 +104,7 @@ func (d *IntRleDecoder) Next() interface{} {
 }
 
 func (d *IntRleDecoder) readPackage() {
-	header := int(d.packageReader.ReadUnsignedVarInt())
+	header := d.packageReader.ReadUnsignedVarInt()
 	if (header & 1) == 0 {
 		d.mode = RLE
 	} else {
@@ -119,7 +119,7 @@ func (d *IntRleDecoder) readPackage() {
 	case BIT_PACKED:
 		bitPackedGroupCount := header >> 1
 		// in last bit-packing group, there may be some useless value, lastBitPackedNum indicates how many values is useful
-		lastBitPackedNum := int(d.packageReader.Read())
+		lastBitPackedNum := d.packageReader.Read()
 		if bitPackedGroupCount > 0 {
 			d.currentCount = (bitPackedGroupCount-1)*conf.RLE_MIN_REPEATED_NUM + lastBitPackedNum
 			d.bitPackingNum = d.currentCount
@@ -134,18 +134,18 @@ func (d *IntRleDecoder) readPackage() {
 }
 
 // unpack all values from packageReader into decodedValues
-func (d *IntRleDecoder) readBitPackingBuffer(bitPackedGroupCount int, lastBitPackedNum int, bitWidth int) {
+func (d *IntRleDecoder) readBitPackingBuffer(bitPackedGroupCount int32, lastBitPackedNum int32, bitWidth int32) {
 	bytesToRead := bitPackedGroupCount * bitWidth
 	if bytesToRead > d.packageReader.Len() {
 		bytesToRead = d.packageReader.Len()
 	}
-	bytes := d.packageReader.ReadSlice(int(bytesToRead))
+	bytes := d.packageReader.ReadSlice(bytesToRead)
 
 	d.decodedValues = make([]int32, bitPackedGroupCount*conf.RLE_MIN_REPEATED_NUM)
 	d.packer.UnpackAllValues(bytes, bytesToRead, d.decodedValues)
 }
 
-func (d *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int32 {
+func (d *IntRleDecoder) readIntLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int32) int32 {
 	paddedByteNum := (bitWidth + 7) / 8
 	if paddedByteNum > 4 {
 		panic("readIntLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
