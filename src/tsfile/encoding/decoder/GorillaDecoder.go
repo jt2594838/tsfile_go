@@ -8,8 +8,8 @@ import (
 
 type GorillaDecoder struct {
 	leadingZeroNum, tailingZeroNum int32
-	buffer                         int32
-	numberLeftInBuffer             int32
+	buffer                         byte
+	numberLeftInBuffer             uint32
 }
 
 func (g *GorillaDecoder) readBit(reader *utils.BytesReader) bool {
@@ -22,34 +22,30 @@ func (g *GorillaDecoder) readBit(reader *utils.BytesReader) bool {
 }
 
 func (g *GorillaDecoder) fillBuffer(reader *utils.BytesReader) {
-	g.buffer = reader.Read()
+	g.buffer = reader.ReadByte()
 	g.numberLeftInBuffer = 8
 }
 
 func (g *GorillaDecoder) readIntFromStream(reader *utils.BytesReader, len int32) int32 {
 	var num int32 = 0
+	var iTemp uint32 = uint32(len - 1)
 	for i := int32(0); i < len; i++ {
-		var bit int32
 		if g.readBit(reader) {
-			bit = 1
-		} else {
-			bit = 0
+			num |= 1 << iTemp
 		}
-		num |= bit << uint(len-1-i)
+		iTemp--
 	}
 	return num
 }
 
 func (g *GorillaDecoder) readLongFromStream(reader *utils.BytesReader, len int32) int64 {
 	var num int64 = 0
+	var iTemp uint32 = uint32(len - 1)
 	for i := int32(0); i < len; i++ {
-		var bit int64
 		if g.readBit(reader) {
-			bit = 1
-		} else {
-			bit = 0
+			num |= 1 << iTemp
 		}
-		num |= bit << uint(len-1-i)
+		iTemp--
 	}
 	return num
 }

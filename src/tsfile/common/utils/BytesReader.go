@@ -108,6 +108,13 @@ func (r *BytesReader) Read() int32 {
 	return int32(result)
 }
 
+func (r *BytesReader) ReadByte() byte {
+	result := r.buf[r.pos]
+	r.pos++
+
+	return result
+}
+
 // for decoding
 func (r *BytesReader) ReadUnsignedVarInt() int32 {
 	var value int32 = 0
