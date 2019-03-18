@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 // tsfile project main.go
 package main
 
@@ -10,7 +29,7 @@ import (
 	"tsfile/timeseries/write/tsFileWriter"
 )
 
-func TestWrite(t *testing.T) {
+func TestCompression(t *testing.T) {
 	fileName := "D:/test.ts"
 
 	if _, err := os.Stat(fileName); !os.IsNotExist(err) {
@@ -21,21 +40,21 @@ func TestWrite(t *testing.T) {
 	tfWriter, _ := tsFileWriter.NewTsFileWriter(fileName)
 
 	// init sensorDescriptor
-	sd1, _ := sensorDescriptor.NewWithCompressor("sensor_1", constant.INT32, constant.RLE, constant.SNAPPY)
-	sd2, _ := sensorDescriptor.NewWithCompressor("sensor_2", constant.INT64, constant.RLE, constant.SNAPPY)
-	sd3, _ := sensorDescriptor.NewWithCompressor("sensor_3", constant.FLOAT, constant.RLE, constant.SNAPPY)
-	sd4, _ := sensorDescriptor.NewWithCompressor("sensor_4", constant.DOUBLE, constant.RLE, constant.SNAPPY)
-	sd5, _ := sensorDescriptor.NewWithCompressor("sensor_5", constant.INT32, constant.TS_2DIFF, constant.SNAPPY)
-	sd6, _ := sensorDescriptor.NewWithCompressor("sensor_6", constant.INT64, constant.TS_2DIFF, constant.SNAPPY)
-	sd7, _ := sensorDescriptor.NewWithCompressor("sensor_7", constant.FLOAT, constant.TS_2DIFF, constant.SNAPPY)
-	sd8, _ := sensorDescriptor.NewWithCompressor("sensor_8", constant.DOUBLE, constant.TS_2DIFF, constant.SNAPPY)
-	sd9, _ := sensorDescriptor.NewWithCompressor("sensor_9", constant.FLOAT, constant.GORILLA, constant.SNAPPY)
-	sd10, _ := sensorDescriptor.NewWithCompressor("sensor_10", constant.DOUBLE, constant.GORILLA, constant.SNAPPY)
-	sd11, _ := sensorDescriptor.NewWithCompressor("sensor_11", constant.INT32, constant.PLAIN, constant.SNAPPY)
-	sd12, _ := sensorDescriptor.NewWithCompressor("sensor_12", constant.INT64, constant.PLAIN, constant.SNAPPY)
-	sd13, _ := sensorDescriptor.NewWithCompressor("sensor_13", constant.FLOAT, constant.PLAIN, constant.SNAPPY)
-	sd14, _ := sensorDescriptor.NewWithCompressor("sensor_14", constant.DOUBLE, constant.PLAIN, constant.SNAPPY)
-	sd15, _ := sensorDescriptor.NewWithCompressor("sensor_15", constant.TEXT, constant.PLAIN, constant.SNAPPY)
+	sd1, _ := sensorDescriptor.NewWithCompress("sensor_1", constant.INT32, constant.RLE, constant.SNAPPY)
+	sd2, _ := sensorDescriptor.NewWithCompress("sensor_2", constant.INT64, constant.RLE, constant.SNAPPY)
+	sd3, _ := sensorDescriptor.NewWithCompress("sensor_3", constant.FLOAT, constant.RLE, constant.SNAPPY)
+	sd4, _ := sensorDescriptor.NewWithCompress("sensor_4", constant.DOUBLE, constant.RLE, constant.SNAPPY)
+	sd5, _ := sensorDescriptor.NewWithCompress("sensor_5", constant.INT32, constant.TS_2DIFF, constant.SNAPPY)
+	sd6, _ := sensorDescriptor.NewWithCompress("sensor_6", constant.INT64, constant.TS_2DIFF, constant.SNAPPY)
+	sd7, _ := sensorDescriptor.NewWithCompress("sensor_7", constant.FLOAT, constant.TS_2DIFF, constant.SNAPPY)
+	sd8, _ := sensorDescriptor.NewWithCompress("sensor_8", constant.DOUBLE, constant.TS_2DIFF, constant.SNAPPY)
+	sd9, _ := sensorDescriptor.NewWithCompress("sensor_9", constant.FLOAT, constant.GORILLA, constant.SNAPPY)
+	sd10, _ := sensorDescriptor.NewWithCompress("sensor_10", constant.DOUBLE, constant.GORILLA, constant.SNAPPY)
+	sd11, _ := sensorDescriptor.NewWithCompress("sensor_11", constant.INT32, constant.PLAIN, constant.SNAPPY)
+	sd12, _ := sensorDescriptor.NewWithCompress("sensor_12", constant.INT64, constant.PLAIN, constant.SNAPPY)
+	sd13, _ := sensorDescriptor.NewWithCompress("sensor_13", constant.FLOAT, constant.PLAIN, constant.SNAPPY)
+	sd14, _ := sensorDescriptor.NewWithCompress("sensor_14", constant.DOUBLE, constant.PLAIN, constant.SNAPPY)
+	sd15, _ := sensorDescriptor.NewWithCompress("sensor_15", constant.TEXT, constant.PLAIN, constant.SNAPPY)
 
 	// add sensorDescriptor to tfFileWriter
 	tfWriter.AddSensor(sd1)
@@ -92,7 +111,7 @@ func TestWrite(t *testing.T) {
 	tr.AddTuple(fdp15)
 
 	// write tsRecord to file
-	tfWriter.Write(*tr)
+	tfWriter.Write(tr)
 
 	// close file descriptor
 	tfWriter.Close()

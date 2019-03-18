@@ -1,16 +1,35 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+	"tsfile/common/constant"
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/filter/operator"
 	"tsfile/timeseries/query"
 	"tsfile/timeseries/read"
-	"tsfile/timeseries/write/tsFileWriter"
 	"tsfile/timeseries/write/sensorDescriptor"
-	"tsfile/common/constant"
-	"errors"
+	"tsfile/timeseries/write/tsFileWriter"
 )
 
 var tempFilePath = "temp_TsFile"
@@ -23,12 +42,12 @@ func prepareTsFile() (err error) {
 		root.d0.s1 : [1,5], [2,4],        [4,3], [5,2], [6,1]
 		root.d1.s0 :               [3,3], [4,4], [5,5]
 	*/
-	d0s0_time := []int64{1,2,3,4,5}
-	d0s0_val := []int32{1,2,3,4,5}
-	d0s1_time := []int64{1,2,4,5,6}
-	d0s1_val := []int32{5,4,3,2,1}
-	d1s0_time := []int64{3,4,5}
-	d1s0_val := []int32{3,4,5}
+	d0s0_time := []int64{1, 2, 3, 4, 5}
+	d0s0_val := []int32{1, 2, 3, 4, 5}
+	d0s1_time := []int64{1, 2, 4, 5, 6}
+	d0s1_val := []int32{5, 4, 3, 2, 1}
+	d1s0_time := []int64{3, 4, 5}
+	d1s0_val := []int32{3, 4, 5}
 
 	writer, err := tsFileWriter.NewTsFileWriter(tempFilePath)
 	if err != nil {
@@ -36,27 +55,27 @@ func prepareTsFile() (err error) {
 	}
 
 	des, _ := sensorDescriptor.New("s0", constant.INT32, constant.RLE)
-	writer.AddSensor(des);
+	writer.AddSensor(des)
 	des, _ = sensorDescriptor.New("s1", constant.INT32, constant.RLE)
-	writer.AddSensor(des);
+	writer.AddSensor(des)
 
 	for i, t := range d0s0_time {
 		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d0")
 		pt, _ := tsFileWriter.NewInt("s0", constant.INT32, d0s0_val[i])
 		record.AddTuple(pt)
-		writer.Write(*record)
+		writer.Write(record)
 	}
 	for i, t := range d0s1_time {
 		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d0")
 		pt, _ := tsFileWriter.NewInt("s1", constant.INT32, d0s1_val[i])
 		record.AddTuple(pt)
-		writer.Write(*record)
+		writer.Write(record)
 	}
 	for i, t := range d1s0_time {
 		record, _ := tsFileWriter.NewTsRecordUseTimestamp(t, "root.d1")
 		pt, _ := tsFileWriter.NewInt("s0", constant.INT32, d1s0_val[i])
 		record.AddTuple(pt)
-		writer.Write(*record)
+		writer.Write(record)
 	}
 
 	if !writer.Close() {
@@ -147,7 +166,7 @@ func TestEngine(t *testing.T) {
 	var s0Vals []interface{}
 	s0Vals = append(s0Vals, 1, 2, 3, 4, 5, nil)
 	var s1Vals []interface{}
-	s1Vals = append(s1Vals,5, 4, nil, 3, 2, 1 )
+	s1Vals = append(s1Vals, 5, 4, nil, 3, 2, 1)
 	for dataSet.HasNext() {
 		record, err := dataSet.Next()
 		if err != nil {

@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package decoder
 
 import (
@@ -31,15 +50,15 @@ type LongRleDecoder struct {
 
 	packageReader *utils.BytesReader
 	// how many bytes for all encoded data
-	length int32
+	length int
 	// bit width for bit-packing and rle to decode
-	bitWidth int32
+	bitWidth int
 	// number of data left for reading in current buffer
-	currentCount int32
+	currentCount int
 	// mode to indicate current encoding type
-	mode int32
+	mode int
 	// number of bit-packing group in which is saved in header
-	bitPackingNum int32
+	bitPackingNum int
 
 	currentValue  int64
 	decodedValues []int64
@@ -61,51 +80,13 @@ func (d *LongRleDecoder) HasNext() bool {
 	return false
 }
 
-func (d *LongRleDecoder) NextInt64() int64 {
-	if !d.isReadingBegan {
-		// read length and bit width of current package before we decode number
-		d.length = d.reader.ReadUnsignedVarInt()
-
-		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(d.length))
-		d.bitWidth = d.packageReader.Read()
-
-		d.packer = &bitpacking.LongPacker{BitWidth: d.bitWidth}
-
-		d.isReadingBegan = true
-	}
-
-	if d.currentCount == 0 {
-		d.readPackage()
-	}
-
-	d.currentCount--
-
-	var result int64 = 0
-	switch d.mode {
-	case RLE:
-		result = d.currentValue
-		break
-	case BIT_PACKED:
-		result = d.decodedValues[d.bitPackingNum-d.currentCount-1]
-		break
-	default:
-		panic("tsfile-encoding LongRleDecoder: not a valid mode")
-	}
-
-	//	if d.currentCount > 0 || d.packageReader.Len() <= 0 {
-	//		d.isReadingBegan = false
-	//	}
-
-	return result
-}
-
 func (d *LongRleDecoder) Next() interface{} {
 	if !d.isReadingBegan {
 		// read length and bit width of current package before we decode number
-		d.length = d.reader.ReadUnsignedVarInt()
+		d.length = int(d.reader.ReadUnsignedVarInt())
 
 		d.packageReader = utils.NewBytesReader(d.reader.ReadSlice(d.length))
-		d.bitWidth = d.packageReader.Read()
+		d.bitWidth = int(d.packageReader.Read())
 
 		d.packer = &bitpacking.LongPacker{BitWidth: d.bitWidth}
 
@@ -138,7 +119,7 @@ func (d *LongRleDecoder) Next() interface{} {
 }
 
 func (d *LongRleDecoder) readPackage() {
-	header := d.packageReader.ReadUnsignedVarInt()
+	header := int(d.packageReader.ReadUnsignedVarInt())
 	if (header & 1) == 0 {
 		d.mode = RLE
 	} else {
@@ -153,7 +134,7 @@ func (d *LongRleDecoder) readPackage() {
 	case BIT_PACKED:
 		bitPackedGroupCount := header >> 1
 		// in last bit-packing group, there may be some useless value, lastBitPackedNum indicates how many values is useful
-		lastBitPackedNum := d.packageReader.Read()
+		lastBitPackedNum := int(d.packageReader.Read())
 		if bitPackedGroupCount > 0 {
 			d.currentCount = (bitPackedGroupCount-1)*conf.RLE_MIN_REPEATED_NUM + lastBitPackedNum
 			d.bitPackingNum = d.currentCount
@@ -168,25 +149,25 @@ func (d *LongRleDecoder) readPackage() {
 }
 
 // unpack all values from packageReader into decodedValues
-func (d *LongRleDecoder) readBitPackingBuffer(bitPackedGroupCount int32, lastBitPackedNum int32, bitWidth int32) {
+func (d *LongRleDecoder) readBitPackingBuffer(bitPackedGroupCount int, lastBitPackedNum int, bitWidth int) {
 	bytesToRead := bitPackedGroupCount * bitWidth
 	if bytesToRead > d.packageReader.Len() {
 		bytesToRead = d.packageReader.Len()
 	}
-	bytes := d.packageReader.ReadSlice(bytesToRead)
+	bytes := d.packageReader.ReadSlice(int(bytesToRead))
 
 	d.decodedValues = make([]int64, bitPackedGroupCount*(conf.RLE_MIN_REPEATED_NUM))
 	d.packer.UnpackAllValues(bytes, bytesToRead, d.decodedValues)
 }
 
-func (r *LongRleDecoder) readLongLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int32) int64 {
+func (r *LongRleDecoder) readLongLittleEndianPaddedOnBitWidth(reader *utils.BytesReader, bitWidth int) int64 {
 	paddedByteNum := (bitWidth + 7) / 8
 	if paddedByteNum > 8 {
 		panic("ReadLongLittleEndianPaddedOnBitWidth(): encountered value that requires more than 4 bytes")
 	}
 
 	var result int64 = 0
-	for i := int32(0); i < paddedByteNum; i++ {
+	for i := 0; i < paddedByteNum; i++ {
 		ch := reader.Read()
 		result <<= 8
 		result |= int64(ch & 0xff)

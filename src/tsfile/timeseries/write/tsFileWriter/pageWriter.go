@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package tsFileWriter
 
 /**
@@ -10,7 +29,6 @@ package tsFileWriter
 
 import (
 	"bytes"
-	"encoding/binary"
 	"tsfile/common/constant"
 	"tsfile/common/log"
 	"tsfile/compress"
@@ -40,16 +58,8 @@ func (p *PageWriter) WritePageHeaderAndDataIntoBuff(dataBuffer *bytes.Buffer, va
 		if pageHeaderErr != nil {
 			log.Error("init pageHeader error: ", pageHeaderErr)
 		}
-		pageBuf := p.pageBuf
-		//pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
-		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetUncompressedSize())
-		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetCompressedSize())
-		binary.Write(pageBuf, binary.BigEndian, pageHeader.GetNumberOfValues())
-		binary.Write(pageBuf, binary.BigEndian, pageHeader.Max_timestamp())
-		binary.Write(pageBuf, binary.BigEndian, pageHeader.Min_timestamp())
-		statistics.Serialize(*(pageHeader.GetStatistics()), pageBuf, p.desc.GetTsDataType())
-
-		pageBuf.Write(dataBuffer.Bytes())
+		pageHeader.PageHeaderToMemory(p.pageBuf, p.desc.GetTsDataType())
+		p.pageBuf.Write(dataBuffer.Bytes())
 		p.totalValueCount += int64(valueCount)
 	} else {
 		//this uncompressedSize should be calculate from timeBuf and valueBuf

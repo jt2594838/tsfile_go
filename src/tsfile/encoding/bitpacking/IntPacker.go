@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package bitpacking
 
 import (
@@ -26,12 +45,12 @@ import (
  */
 
 const (
-	NUM_OF_INTS int32 = 8
+	NUM_OF_INTS int = 8
 )
 
 type IntPacker struct {
 	//bit-width
-	BitWidth int32
+	BitWidth int
 }
 
 /**
@@ -41,17 +60,17 @@ type IntPacker struct {
  * @param offset - the offset of first Integer to be encoded
  * @param buf    - encoded bytes, buf size must be equal to ({@link IntPacker#NUM_OF_INTS} * {@link IntPacker#width} / 8)
  */
-func (p *IntPacker) Pack8Values(values []int32, offset int32, buf []byte) {
-	var bufIdx int32 = 0
-	var valueIdx int32 = offset
+func (p *IntPacker) Pack8Values(values []int32, offset int, buf []byte) {
+	var bufIdx int = 0
+	var valueIdx int = offset
 	//remaining bits for the current unfinished Integer
-	var leftBit int32 = 0
+	var leftBit int = 0
 
 	for valueIdx < NUM_OF_INTS+offset {
 		// buffer is used for saving 32 bits as a part of result
 		var buffer int32 = 0
 		// remaining size of bits in the 'buffer'
-		var leftSize int32 = 32
+		var leftSize int = 32
 
 		// encode the left bits of current Integer to 'buffer'
 		if leftBit > 0 {
@@ -93,12 +112,12 @@ func (p *IntPacker) Pack8Values(values []int32, offset int32, buf []byte) {
  * @param offset - offset of first byte to be decoded in buf
  * @param values - decoded result , the length of 'values' should be @{link IntPacker#NUM_OF_INTS}
  */
-func (p *IntPacker) Unpack8Values(buf []byte, offset int32, values []int32) {
-	var byteIdx int32 = offset
+func (p *IntPacker) Unpack8Values(buf []byte, offset int, values []int32) {
+	var byteIdx int = offset
 	var buffer int64 = 0
 	//total bits which have read from 'buf' to 'buffer'. i.e., number of available bits to be decoded.
-	var totalBits int32 = 0
-	var valueIdx int32 = 0
+	var totalBits int = 0
+	var valueIdx int = 0
 
 	for valueIdx < NUM_OF_INTS {
 		//If current available bits are not enough to decode one Integer, then add next byte from buf to 'buffer'
@@ -129,14 +148,14 @@ func (p *IntPacker) Unpack8Values(buf []byte, offset int32, values []int32) {
  * @param length: length of bytes to be decoded in buf.
  * @param values: decoded result.
  */
-func (p *IntPacker) UnpackAllValues(buf []byte, length int32, values []int32) {
-	var idx int32 = 0
-	var k int32 = 0
+func (p *IntPacker) UnpackAllValues(buf []byte, length int, values []int32) {
+	var idx int = 0
+	var k int = 0
 	for idx < length {
 		tv := make([]int32, 8)
 		//decode 8 values one time, current result will be saved in the array named 'tv'
 		p.Unpack8Values(buf, idx, tv)
-		for i := int32(0); i < 8; i++ {
+		for i := 0; i < 8; i++ {
 			values[k+i] = tv[i]
 		}
 

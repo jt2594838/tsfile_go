@@ -1,19 +1,38 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package impl
 
 import (
+	"errors"
 	"tsfile/common/constant"
+	"tsfile/common/log"
 	"tsfile/timeseries/filter"
 	"tsfile/timeseries/read/reader"
 	"tsfile/timeseries/read/reader/impl/basic"
-	"tsfile/common/log"
-	"errors"
 )
 
 type RowRecordTimestampGenerator struct {
 	reader reader.IRowRecordReader
 	filter filter.Filter
 
-	currTime int64
+	currTime  int64
 	exhausted bool
 }
 
@@ -23,7 +42,7 @@ func (gen *RowRecordTimestampGenerator) Close() {
 
 func NewRowRecordTimestampGenerator(paths []string, readerMap map[string]reader.TimeValuePairReader, filter filter.Filter) *RowRecordTimestampGenerator {
 	reader := basic.NewRecordReader(paths, readerMap)
-	return &RowRecordTimestampGenerator{reader: reader, filter: filter, currTime: constant.INVALID_TIMESTAMP, exhausted:false}
+	return &RowRecordTimestampGenerator{reader: reader, filter: filter, currTime: constant.INVALID_TIMESTAMP, exhausted: false}
 }
 
 func (gen *RowRecordTimestampGenerator) fetch() {

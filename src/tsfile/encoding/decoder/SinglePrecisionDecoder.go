@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package decoder
 
 import (
@@ -13,12 +32,9 @@ type SinglePrecisionDecoder struct {
 	dataType   constant.TSDataType
 	reader     *utils.BytesReader
 	flag       bool
-	preValue   uint32
+	preValue   int32
 
-	leadingZeroNum     uint32
-	tailingZeroNum     uint32
-	buffer             byte
-	numberLeftInBuffer uint32
+	base GorillaDecoder
 }
 
 func (d *SinglePrecisionDecoder) Init(data []byte) {
@@ -29,23 +45,16 @@ func (d *SinglePrecisionDecoder) HasNext() bool {
 	return d.reader.Len() > 0
 }
 
-func (d *SinglePrecisionDecoder) NextInt64() int64 {
-	return 0
-}
-
 func (d *SinglePrecisionDecoder) Next() interface{} {
 	if !d.flag {
 		d.flag = true
-		reader := d.reader
 
-		ch := reader.ReadSlice(4)
-		d.preValue = uint32(ch[0]) + uint32(ch[1])<<8 + uint32(ch[2])<<16 + uint32(ch[3])<<24
-		d.leadingZeroNum = NumberOfLeadingZeros(d.preValue)
-		d.tailingZeroNum = NumberOfTrailingZeros(d.preValue)
+		ch := d.reader.ReadSlice(4)
+		d.preValue = int32(ch[0]) + int32(ch[1])<<8 + int32(ch[2])<<16 + int32(ch[3])<<24
+		d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
+		d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
 		tmp := math.Float32frombits(uint32(d.preValue))
-		//d.base.fillBuffer(d.reader)
-		d.buffer = reader.ReadByte()
-		d.numberLeftInBuffer = 8
+		d.base.fillBuffer(d.reader)
 		d.getNextValue()
 
 		return tmp
@@ -58,168 +67,35 @@ func (d *SinglePrecisionDecoder) Next() interface{} {
 }
 
 func (d *SinglePrecisionDecoder) getNextValue() {
-	reader := d.reader
 	// case: '0'
-	if d.numberLeftInBuffer == 0 {
-		d.buffer = reader.ReadByte()
-		d.numberLeftInBuffer = 8
-	}
-	d.numberLeftInBuffer--
-	if ((d.buffer >> d.numberLeftInBuffer) & 1) != 1 {
+	if !d.base.readBit(d.reader) {
 		return
 	}
-	if d.numberLeftInBuffer == 0 {
-		d.buffer = reader.ReadByte()
-		d.numberLeftInBuffer = 8
-	}
-	d.numberLeftInBuffer--
-	if ((d.buffer >> d.numberLeftInBuffer) & 1) != 1 {
+	if !d.base.readBit(d.reader) {
 		// case: '10'
-		var tmp uint32 = 0
-		iLen := conf.FLOAT_LENGTH - int32(d.leadingZeroNum+d.tailingZeroNum)
-		iMoved := uint32(conf.FLOAT_LENGTH) - 1 - (d.leadingZeroNum)
-
-		bRead := d.buffer
-		numberLeftInBuffer := d.numberLeftInBuffer
-		for i := int32(0); i < iLen; i++ {
-			if numberLeftInBuffer == 0 {
-				bRead = reader.ReadByte()
-				numberLeftInBuffer = 8
+		var tmp int32 = 0
+		for i := 0; i < conf.FLOAT_LENGTH-int(d.base.leadingZeroNum+d.base.tailingZeroNum); i++ {
+			var bit int32
+			if d.base.readBit(d.reader) {
+				bit = 1
+			} else {
+				bit = 0
 			}
-			numberLeftInBuffer--
-			if ((bRead >> uint32(numberLeftInBuffer)) & 1) == 1 {
-				//if base.readBit(reader) {
-				tmp |= 1 << iMoved
-			}
-			iMoved--
+			tmp |= bit << uint(conf.FLOAT_LENGTH-1-int(d.base.leadingZeroNum)-i)
 		}
-		d.buffer = bRead
-		d.numberLeftInBuffer = numberLeftInBuffer
 		tmp ^= d.preValue
 		d.preValue = tmp
 	} else {
 		// case: '11'
-		bRead := d.buffer
-		numberLeftInBuffer := d.numberLeftInBuffer
-
-		var iMoved uint32
-		var i uint32
-		var iForLen uint32
-
-		//leadingZeroNumTmp := d.base.readIntFromStream(d.reader, conf.FLAOT_LEADING_ZERO_LENGTH)
-		var leadingZeroNumTmp uint32 = 0
-		iMoved = uint32(conf.FLAOT_LEADING_ZERO_LENGTH - 1)
-		iForLen = uint32(conf.FLAOT_LEADING_ZERO_LENGTH)
-		for i = uint32(0); i < iForLen; i++ {
-			if numberLeftInBuffer == 0 {
-				bRead = reader.ReadByte()
-				numberLeftInBuffer = 8
-			}
-			numberLeftInBuffer--
-			if ((bRead >> numberLeftInBuffer) & 1) == 1 {
-				leadingZeroNumTmp |= 1 << iMoved
-			}
-			iMoved--
-		}
-
-		//lenTmp := d.base.readIntFromStream(d.reader, conf.FLOAT_VALUE_LENGTH)
-		var lenTmp uint32 = 0
-		iMoved = uint32(conf.FLOAT_VALUE_LENGTH - 1)
-		iForLen = uint32(conf.FLOAT_VALUE_LENGTH)
-		for i = uint32(0); i < iForLen; i++ {
-			if numberLeftInBuffer == 0 {
-				bRead = reader.ReadByte()
-				numberLeftInBuffer = 8
-			}
-			numberLeftInBuffer--
-			if ((bRead >> numberLeftInBuffer) & 1) == 1 {
-				lenTmp |= 1 << iMoved
-			}
-			iMoved--
-		}
-		//var tmp int32 = d.base.readIntFromStream(d.reader, lenTmp)
-		var tmp uint32 = 0
-		iMoved = uint32(lenTmp - 1)
-		iForLen = uint32(lenTmp)
-		for i = uint32(0); i < iForLen; i++ {
-			if numberLeftInBuffer == 0 {
-				bRead = reader.ReadByte()
-				numberLeftInBuffer = 8
-			}
-			numberLeftInBuffer--
-			if ((bRead >> numberLeftInBuffer) & 1) == 1 {
-				tmp |= 1 << iMoved
-			}
-			iMoved--
-		}
-
-		d.buffer = bRead
-		d.numberLeftInBuffer = numberLeftInBuffer
-
-		tmp <<= (uint32(conf.FLOAT_LENGTH) - leadingZeroNumTmp - lenTmp)
+		leadingZeroNumTmp := int(d.base.readIntFromStream(d.reader, conf.FLAOT_LEADING_ZERO_LENGTH))
+		lenTmp := int(d.base.readIntFromStream(d.reader, conf.FLOAT_VALUE_LENGTH))
+		var tmp int32 = d.base.readIntFromStream(d.reader, lenTmp)
+		tmp <<= uint(conf.FLOAT_LENGTH - leadingZeroNumTmp - lenTmp)
 		tmp ^= d.preValue
 		d.preValue = tmp
 	}
-	d.leadingZeroNum = NumberOfLeadingZeros(d.preValue)
-	d.tailingZeroNum = NumberOfTrailingZeros(d.preValue)
-}
-
-func NumberOfLeadingZeros(i uint32) uint32 {
-	if i == 0 {
-		return 32
-	}
-
-	var n uint32 = 1
-	if uint32(i)>>16 == 0 {
-		n += 16
-		i <<= 16
-	}
-	if uint32(i)>>24 == 0 {
-		n += 8
-		i <<= 8
-	}
-	if uint32(i)>>28 == 0 {
-		n += 4
-		i <<= 4
-	}
-	if uint32(i)>>30 == 0 {
-		n += 2
-		i <<= 2
-	}
-	n -= uint32(uint32(i) >> 31)
-
-	return n
-}
-
-func NumberOfTrailingZeros(i uint32) uint32 {
-	if i == 0 {
-		return 32
-	}
-
-	var y uint32
-	var n uint32 = 31
-	y = i << 16
-	if y != 0 {
-		n = n - 16
-		i = y
-	}
-	y = i << 8
-	if y != 0 {
-		n = n - 8
-		i = y
-	}
-	y = i << 4
-	if y != 0 {
-		n = n - 4
-		i = y
-	}
-	y = i << 2
-	if y != 0 {
-		n = n - 2
-		i = y
-	}
-
-	return n - uint32(uint32(i<<1)>>31)
+	d.base.leadingZeroNum = utils.NumberOfLeadingZeros(d.preValue)
+	d.base.tailingZeroNum = utils.NumberOfTrailingZeros(d.preValue)
 }
 
 func NewSinglePrecisionDecoder(dataType constant.TSDataType) *SinglePrecisionDecoder {

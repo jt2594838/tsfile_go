@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package basic
 
 import (
@@ -17,7 +36,7 @@ type PageDataReader struct {
 
 func (r *PageDataReader) Read(data []byte) {
 	reader := utils.NewBytesReader(data)
-	timeInputStreamLength := reader.ReadUnsignedVarInt()
+	timeInputStreamLength := int(reader.ReadUnsignedVarInt())
 	pos := reader.Pos()
 
 	r.TimeDecoder.Init(data[pos : timeInputStreamLength+pos])
@@ -26,13 +45,6 @@ func (r *PageDataReader) Read(data []byte) {
 
 func (r *PageDataReader) HasNext() bool {
 	return r.TimeDecoder.HasNext() && r.ValueDecoder.HasNext()
-}
-
-func (r *PageDataReader) Next2(pair *datatype.TimeValuePair) error {
-	pair.Timestamp = r.TimeDecoder.NextInt64()
-	pair.Value = r.ValueDecoder.Next()
-	return nil
-	//return &datatype.TimeValuePair{Timestamp: r.TimeDecoder.Next().(int64), Value: r.ValueDecoder.Next()}, nil
 }
 
 func (r *PageDataReader) Next() (*datatype.TimeValuePair, error) {
@@ -45,12 +57,4 @@ func (r *PageDataReader) Skip() {
 }
 
 func (r *PageDataReader) Close() {
-}
-
-func NewPageDataReader(dataType constant.TSDataType,
-	valueDecoder decoder.Decoder,
-	timeDecoder decoder.Decoder) *PageDataReader {
-	return &PageDataReader{DataType: dataType,
-		ValueDecoder: valueDecoder,
-		TimeDecoder:  timeDecoder}
 }

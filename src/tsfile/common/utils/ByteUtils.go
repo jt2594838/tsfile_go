@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package utils
 
 import (
@@ -330,7 +349,7 @@ func WriteUnsignedVarInt(value int32, buffer *bytes.Buffer) {
 	buffer.WriteByte(byte(value & 0x7F))
 }
 
-func WriteIntLittleEndianPaddedOnBitWidth(value int32, out *bytes.Buffer, bitWidth int32) {
+func WriteIntLittleEndianPaddedOnBitWidth(value int32, out *bytes.Buffer, bitWidth int) {
 	paddedByteNum := (bitWidth + 7) / 8
 	var offset uint8 = 0
 	for {
@@ -343,7 +362,7 @@ func WriteIntLittleEndianPaddedOnBitWidth(value int32, out *bytes.Buffer, bitWid
 	}
 }
 
-func WriteLongLittleEndianPaddedOnBitWidth(value int64, out *bytes.Buffer, bitWidth int32) {
+func WriteLongLittleEndianPaddedOnBitWidth(value int64, out *bytes.Buffer, bitWidth int) {
 	//paddedByteNum := (bitWidth + 7) / 8;
 	out.Write(Int64ToByte(value, 0))
 }

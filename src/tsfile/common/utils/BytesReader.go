@@ -1,3 +1,22 @@
+/**
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package utils
 
 import (
@@ -9,19 +28,19 @@ import (
 // bytes slice reader, result is the reference of source
 type BytesReader struct {
 	buf []byte
-	pos int32
+	pos int
 }
 
 func NewBytesReader(data []byte) *BytesReader {
 	return &BytesReader{data, 0}
 }
 
-func (r *BytesReader) Pos() int32 {
+func (r *BytesReader) Pos() int {
 	return r.pos
 }
 
-func (r *BytesReader) Len() int32 {
-	return int32(len(r.buf)) - r.pos
+func (r *BytesReader) Len() int {
+	return len(r.buf) - r.pos
 }
 
 func (r *BytesReader) Remaining() []byte {
@@ -44,37 +63,44 @@ func (r *BytesReader) ReadShort() int16 {
 
 func (r *BytesReader) ReadInt() int32 {
 	bytes := r.buf[r.pos : r.pos+4]
+	result := int32(binary.BigEndian.Uint32(bytes))
 	r.pos += 4
-	return int32(binary.BigEndian.Uint32(bytes))
+
+	return result
 }
 
 func (r *BytesReader) ReadLong() int64 {
 	result := int64(binary.BigEndian.Uint64(r.buf[r.pos : r.pos+8]))
 	r.pos += 8
+
 	return result
 }
 
 func (r *BytesReader) ReadFloat() float32 {
 	bits := binary.LittleEndian.Uint32(r.buf[r.pos : r.pos+4])
+	result := math.Float32frombits(bits)
 	r.pos += 4
-	return math.Float32frombits(bits)
+
+	return result
 }
 
 func (r *BytesReader) ReadDouble() float64 {
 	bits := binary.LittleEndian.Uint64(r.buf[r.pos : r.pos+8])
+	result := math.Float64frombits(bits)
 	r.pos += 8
-	return math.Float64frombits(bits)
+
+	return result
 }
 
 func (r *BytesReader) ReadString() string {
-	length := r.ReadInt()
+	length := int(r.ReadInt())
 	result := string(r.buf[r.pos : r.pos+length])
 	r.pos += length
 
 	return result
 }
 
-func (r *BytesReader) ReadBytes(length int32) []byte {
+func (r *BytesReader) ReadBytes(length int) []byte {
 	dst := make([]byte, length)
 	copy(dst, r.buf[r.pos:r.pos+length])
 
@@ -84,7 +110,7 @@ func (r *BytesReader) ReadBytes(length int32) []byte {
 }
 
 func (r *BytesReader) ReadStringBinary() []byte {
-	length := r.ReadInt()
+	length := int(r.ReadInt())
 
 	dst := make([]byte, length)
 	copy(dst, r.buf[r.pos:r.pos+length])
@@ -94,9 +120,10 @@ func (r *BytesReader) ReadStringBinary() []byte {
 	return dst
 }
 
-func (r *BytesReader) ReadSlice(length int32) []byte {
+func (r *BytesReader) ReadSlice(length int) []byte {
 	result := r.buf[r.pos : r.pos+length]
 	r.pos += length
+
 	return result
 }
 
@@ -108,13 +135,6 @@ func (r *BytesReader) Read() int32 {
 	return int32(result)
 }
 
-func (r *BytesReader) ReadByte() byte {
-	result := r.buf[r.pos]
-	r.pos++
-
-	return result
-}
-
 // for decoding
 func (r *BytesReader) ReadUnsignedVarInt() int32 {
 	var value int32 = 0
@@ -122,9 +142,8 @@ func (r *BytesReader) ReadUnsignedVarInt() int32 {
 
 	b := r.buf[r.pos]
 	r.pos++
-	var iLen = int32(len(r.buf))
 
-	for r.pos <= iLen && (b&0x80) != 0 {
+	for r.pos <= len(r.buf) && (b&0x80) != 0 {
 		value |= int32(b&0x7F) << i
 		i += 7
 
