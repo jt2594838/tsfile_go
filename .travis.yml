@@ -5,5 +5,6 @@ matrix:
       language: go
       go:
         - tip
+      go_import_path: tsfile_go/src/tsfile
       script:
         - "build.sh"
