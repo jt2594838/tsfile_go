@@ -38,7 +38,9 @@ func TestRead(t *testing.T) {
 		}
 	}()
 
-	file := "D:/test.ts"
+	TestWrite(t)
+
+	file := "tsfile.ts"
 	f := new(read.TsFileSequenceReader)
 	f.Open(file)
 	defer f.Close()

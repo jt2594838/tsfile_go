@@ -30,7 +30,7 @@ import (
 )
 
 func TestCompression(t *testing.T) {
-	fileName := "D:/test.ts"
+	fileName := "tsfile_compressed.ts"
 
 	if _, err := os.Stat(fileName); !os.IsNotExist(err) {
 		os.Remove(fileName)

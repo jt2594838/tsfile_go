@@ -8,4 +8,4 @@ matrix:
       install:
         - export GOPATH="$GOPATH:$HOME/gopath/src/github.com/zyccld/tsfile_go"
         - go get -v github.com/golang/snappy
-      script: go test tsfile
+      script: go test -v tsfile

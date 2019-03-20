@@ -30,7 +30,7 @@ import (
 )
 
 func TestWrite(t *testing.T) {
-	fileName := "D:/test.ts"
+	fileName := "tsfile.ts"
 
 	if _, err := os.Stat(fileName); !os.IsNotExist(err) {
 		os.Remove(fileName)
