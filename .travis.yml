@@ -6,5 +6,6 @@ matrix:
       go:
         - tip
       install:
+        - export GOPATH=$HOME/gopath/zyccld/tsfile_go
         - go get -v github.com/golang/snappy
       script: go build tsfile
