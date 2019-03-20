@@ -1,1 +1,1 @@
-This is a travis-ci test.
+This is a travis-ci test project.
