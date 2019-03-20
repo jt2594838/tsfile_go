@@ -1,5 +1,14 @@
 matrix:
   include:
+    - os: osx
+      name: linux-go
+      language: go
+      go:
+        - 1.10.x
+      install:
+        - export GOPATH="$GOPATH:$TRAVIS_BUILD_DIR/tsfile-go"
+        - go get -v github.com/golang/snappy
+      script: go test -v tsfile
     - os: linux
       name: linux-go
       language: go
