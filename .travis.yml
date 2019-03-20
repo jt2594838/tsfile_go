@@ -1,21 +1,11 @@
 matrix:
   include:
-    - os: osx
-      name: osx-go
-      language: go
-      go:
-        - 1.10.x
-      install:
-        - export GOPATH="$GOPATH:$HOME/gopath/src/github.com/zyccld/tsfile_go"
-        - go get -v github.com/golang/snappy
-      script: go test -v tsfile
-
     - os: linux
       name: linux-go
       language: go
       go:
         - 1.10.x
       install:
-        - export GOPATH="$GOPATH:$HOME/gopath/src/github.com/zyccld/tsfile_go"
+        - export GOPATH="$GOPATH:$HOME/gopath/src/github.com/zyccld/iotdb/tsfile_go"
         - go get -v github.com/golang/snappy
       script: go test -v tsfile
