@@ -114,7 +114,7 @@ func (e *Engine) getPageInfo(path string, needHeader bool) (dataType constant.TS
 	pathSplits := strings.Split(path, constant.PATH_SEPARATOR)
 	pathLevelLen := len(pathSplits)
 	if pathLevelLen < 2 {
-		log.Println(fmt.Println("Invalid path : %s", path))
+		log.Println(fmt.Sprintf("Invalid path : %s", path))
 		return 0, 0, nil, nil, nil
 	}
 	deviceId := strings.Join(pathSplits[0:pathLevelLen-1], constant.PATH_SEPARATOR)
