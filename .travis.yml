@@ -5,6 +5,7 @@ matrix:
       language: go
       go:
         - tip
-      go_import_path: zyccld/tsfile_go/src/tsfile
-      script:
-        - "build.sh"
+      install:
+        - export GOPATH=$HOME/gopath/src/github.com/zyccld/tsfile_go
+        - go get -v github.com/golang/snappy
+      script: go test
