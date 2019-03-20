@@ -10,7 +10,7 @@ matrix:
         - go get -v github.com/golang/snappy
       script: go test -v tsfile
 
-      - os: linux
+    - os: linux
       name: linux-go
       language: go
       go:
