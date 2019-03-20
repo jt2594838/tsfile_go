@@ -4,7 +4,7 @@ matrix:
       name: linux-go
       language: go
       go:
-        - tip
+        - 1.10.x
       install:
         - export GOPATH="$GOPATH:$HOME/gopath/src/github.com/zyccld/tsfile_go"
         - go get -v github.com/golang/snappy
