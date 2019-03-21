@@ -1,5 +1,11 @@
+language: java
+
 matrix:
   include:
+    - os: osx
+      osx_image: xcode10.1 # with JDK11.0.1+13 installed
+      name: osx-oraclejdk11
+
     - os: osx
       name: osx-go
       language: go
@@ -29,3 +35,21 @@ matrix:
 #        - export GOPATH="$GOPATH:$TRAVIS_BUILD_DIR/tsfile-go"
 #        - go get -v github.com/golang/snappy
 #      script: go test -v tsfile/...
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
+    
+# skip `before_install` stage
+before_install: true
+
+# skip `install` stage
+install: true
+
+script:
+  - java -version
+  - mvn apache-rat:check
+  - mvn clean integration-test
+
+after_success:
