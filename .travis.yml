@@ -7,7 +7,7 @@ matrix:
       name: osx-oraclejdk8
 
     - os: osx
-      name: osx-go
+      name: osx-tsfile-go
       language: go
       go:
         - 1.10.x
@@ -17,7 +17,7 @@ matrix:
       script: go test -v tsfile
 
     - os: linux
-      name: linux-go
+      name: linux-tsfile-go
       language: go
       go:
         - 1.10.x
@@ -27,7 +27,7 @@ matrix:
       script: go test -v tsfile
 
 #    - os: windows
-#      name: windows-go
+#      name: windows-tsfile-go
 #      language: go
 #      go:
 #        - 1.10.x
