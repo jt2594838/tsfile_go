@@ -49,7 +49,7 @@ install: true
 
 script:
   - java -version
-  - mvn apache-rat:check
+#  - mvn apache-rat:check
   - mvn clean integration-test
 
 after_success:
