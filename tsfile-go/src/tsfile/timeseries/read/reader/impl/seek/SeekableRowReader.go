@@ -82,6 +82,7 @@ func (r *SeekableRowReader) fillCache() error {
 
 func (r *SeekableRowReader) fillRow() {
 	// fill the current cache using column caches
+	r.current = datatype.NewRowRecordWithPaths(r.paths)
 	for i, _ := range r.paths {
 		if r.cacheList[i] != nil && r.cacheList[i].Timestamp == r.currTime {
 			r.current.Values()[i] = r.cacheList[i].Value
@@ -107,10 +108,6 @@ func (r *SeekableRowReader) HasNext() bool {
 	return !r.exhausted
 }
 
-/*
-	Notice: The return value is IMMUTABLE because the RowRecord is reused through out the iteration to reduce memory
-	overhead. You can only copy the values in the RowRecord instead of copying the pointer of the return value.
-*/
 func (r *SeekableRowReader) Next() (*datatype.RowRecord, error) {
 	if r.exhausted {
 		return nil, errors.New("RowRecord exhausted")
